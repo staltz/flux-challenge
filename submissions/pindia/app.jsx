@@ -201,7 +201,20 @@ var WebSocketConnection = React.createClass({
   render() {
     return null;
   },
+});
 
+var Button = React.createClass({
+  propTypes: {
+    className: React.PropTypes.string.isRequired,
+    enabled: React.PropTypes.bool,
+    onClick: React.PropTypes.func,
+  },
+  render() {
+    return <button
+        className={this.props.className + (this.props.enabled ? '' : ' css-button-disabled')}
+        onClick={this.props.enabled ? this.props.onClick : undefined}
+    />
+  }
 });
 
 // Main app component
@@ -240,8 +253,8 @@ var App = React.createClass({
           }
         </div>
         <div className="css-scroll-buttons">
-          <button className={"css-button-up" + (allowScrollUp ? '' : ' css-button-disabled')} onClick={this.scrollUp}/>
-          <button className={"css-button-down" + (allowScrollDown ? '' : ' css-button-disabled')} onClick={this.scrollDown} />
+          <Button className="css-button-up" enabled={allowScrollUp} onClick={this.scrollUp}/>
+          <Button className="css-button-down" enabled={allowScrollDown} onClick={this.scrollDown} />
         </div>
       </div>
 
