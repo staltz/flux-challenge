@@ -2,17 +2,18 @@
 // ===== actions.jsx =====
 
 var actions = Reflux.createActions({
-  receivedPlanetUpdate: {},
-  requestCursor: {},
-  releaseCursor: {},
-  loadSithLord: {asyncResult: true},
+  receivedPlanetUpdate: {}, // Sent by WebSocket when it gets an update
+  requestCursor: {}, // Sent by UI when it wants to see a particular lord
+  releaseCursor: {}, // Sent by UI when it doesn't anymore
+  loadSithLord: {asyncResult: true}, // Sent by internal code when it knows the URL to load a cursor frm
 });
 
 var activeRequests = {};
 
+// Actually load a cursor from the network using a URL
 actions.loadSithLord.listen(function(cursor, url) {
   if(cursor in activeRequests)
-    return;
+    return; // Don't load a URL twice
   var promise = jQuery.get(url);
   promise.then(function(data) {
     delete activeRequests[cursor];
@@ -21,7 +22,7 @@ actions.loadSithLord.listen(function(cursor, url) {
   activeRequests[cursor] = promise;
 });
 
-// Requirement: abort requests if a cursor is released and it is active
+// Requirement: abort requests if a cursor is released
 actions.releaseCursor.listen(function(cursor){
   if(activeRequests[cursor])
     activeRequests[cursor].abort();
@@ -44,18 +45,23 @@ actions.releaseCursor.preEmit = function(cursor) {
     delete requestedCursors[cursor];
 };
 
+// Check to see if we can load cursors that were requested prior, but
+// we weren't able to load immediately
 function checkRequestedCursors() {
   _.each(requestedCursors, function(value, cursor) {
     cursor = parseInt(cursor);
+
     if(cursor in store.data.sithLords)
       return; // Cursor was already loaded
 
+    // We've loaded the lord before this one, so we can use its apprentice URL
     if(cursor-1 in store.data.sithLords && store.data.sithLords[cursor-1].loadState == 'done'){
       var url = store.data.sithLords[cursor-1].apprentice.url;
       if(url)
         actions.loadSithLord(cursor, url);
     }
 
+    // We've loaded the lord after this one, so we can use its master URL
     if(cursor+1 in store.data.sithLords && store.data.sithLords[cursor+1].loadState == 'done'){
       var url = store.data.sithLords[cursor+1].master.url;
       if(url)
@@ -64,6 +70,7 @@ function checkRequestedCursors() {
   });
 }
 
+// The store has the info that the UI wants in it
 var store = Reflux.createStore({
   init() {
     this.listenToMany(actions);
@@ -75,34 +82,38 @@ var store = Reflux.createStore({
   getInitialState() {
     return this.data;
   },
+  // Update current planet
   onReceivedPlanetUpdate(newData){
     this.data.currentPlanet = newData;
     this.trigger(this.data);
   },
+  // When load starts, insert a "Loading..." item
   onLoadSithLord(cursor, url) {
-    console.log('start', cursor, url);
     this.data.sithLords[cursor] = {
       loadState: 'loading'
     };
     this.trigger(this.data);
   },
+  // When load completed, insert the new data.
   onLoadSithLordCompleted(cursor, data) {
-    console.log('complete', cursor, data);
     this.data.sithLords[cursor] = data;
     this.data.sithLords[cursor].loadState = 'done';
     delete activeRequests[cursor];
     this.trigger(this.data);
-    checkRequestedCursors();
+    checkRequestedCursors(); // Check to see if this load completing lets us load something else too
   },
+  // Requirement: obliterate data when a cursor is released
   onReleaseCursor(cursor) {
     if(!requestedCursors[cursor]){
       if(cursor in this.data.sithLords) {
-        console.log('delete', cursor);
         delete this.data.sithLords[cursor];
         this.trigger(this.data);
       }
     }
   },
+
+  // Utility functions that can be called by the UI
+
   hasMoreApprentices() {
     var maxCursor = _(this.data.sithLords).keys().max();
     if(maxCursor in this.data.sithLords){
@@ -128,16 +139,19 @@ var store = Reflux.createStore({
     else {
       return false; // Edge case: false with no data
     }
-  }
+  },
+  currentPlanetHasLord() {
+    return _.any(this.data.sithLords, (lord) => {
+      return lord.loadState == 'done' && (lord.homeworld.id == this.data.currentPlanet.id);
+    })
+  },
 
 });
 
 // ===== components.jsx =====
 
 var Entry = React.createClass({
-  mixins: [Reflux.connectFilter(store, function(fullData) {
-    return fullData.sithLords[this.props.i] || {};
-  })],
+  mixins: [Reflux.connect(store)],
 
   propTypes: {
     i: React.PropTypes.number.isRequired,
@@ -152,10 +166,21 @@ var Entry = React.createClass({
   },
 
   render() {
-    if(this.state.loadState == 'loading' )
+
+    var currentLord = this.state.sithLords[this.props.i] || {};
+
+    if(currentLord.loadState == 'loading' )
       return <div className="css-slot">Loading...</div>;
-    else if(this.state.loadState == 'done')
-      return <div className="css-slot">{this.state.name}</div>;
+    else if(currentLord.loadState == 'done'){
+      var isCurrentPlanet = this.state.currentPlanet.id == currentLord.homeworld.id;
+      var style = isCurrentPlanet ? {color: 'red'} : {};
+      return (
+          <div className="css-slot" style={style}>
+            <h3>{currentLord.name}</h3>
+            <h6>Homeworld: {currentLord.homeworld.name}</h6>
+          </div>
+      );
+    }
     else
       return <div className="css-slot"></div>;
   }
@@ -194,6 +219,10 @@ var App = React.createClass({
   render() {
     var hasMoreApprentices = store.hasMoreApprentices();
     var hasMoreMasters = store.hasMoreMasters();
+    var currentPlanetHasLord = store.currentPlanetHasLord();
+
+    var allowScrollUp = hasMoreMasters && !store.currentPlanetHasLord();
+    var allowScrollDown = hasMoreApprentices && !store.currentPlanetHasLord();
 
     return (<div className="css-root">
       <WebSocketConnection />
@@ -205,8 +234,8 @@ var App = React.createClass({
           {_.map(_.range(5), (i) => <Entry i={this.state.cursor+i} key={this.state.cursor+i} />)}
         </div>
         <div className="css-scroll-buttons">
-          <button className={"css-button-up" + (hasMoreMasters ? '' : ' css-button-disabled')} onClick={this.scrollUp}/>
-          <button className={"css-button-down" + (hasMoreApprentices ? '' : ' css-button-disabled')} onClick={this.scrollDown} />
+          <button className={"css-button-up" + (allowScrollUp ? '' : ' css-button-disabled')} onClick={this.scrollUp}/>
+          <button className={"css-button-down" + (allowScrollDown ? '' : ' css-button-disabled')} onClick={this.scrollDown} />
         </div>
       </div>
 
