@@ -1,0 +1,17 @@
+{
+  "name": "flux-challenge-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "Andre Staltz <andre+npm@staltz.com> (http://andre.staltz.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "ws": "^0.8.0"
+  }
+}
