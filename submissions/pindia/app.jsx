@@ -29,20 +29,7 @@ actions.releaseCursor.listen(function(cursor){
 
 // ===== store.jsx =====
 
-var pendingRequests = {};
 var requestedCursors = {};
-
-//actions.loadSithLord.preEmit = function(cursor, url) {
-//  if(url)
-//    return undefined; // We know the URL of the Sith lord. Continue.
-//  else {
-//    if(cursor+1 in store.data.sithLords)
-//      return [cursor, store.data.sithLords[cursor+1].master.url];
-//    if(cursor-1 in store.data.sithLords)
-//      return [cursor, store.data.sithLords[cursor-1].apprentice.url];
-//    return undefined;
-//  }
-//};
 
 actions.requestCursor.listen(function(cursor){
   if(!(cursor in requestedCursors))
@@ -75,26 +62,7 @@ function checkRequestedCursors() {
         actions.loadSithLord(cursor, url);
     }
   });
-};
-//
-//actions.loadSithLord.shouldEmit = function(cursor, url) {
-//  if(activeRequests[cursor])
-//    return false;
-//  else{
-//    activeRequests[cursor] = true;
-//    return true;
-//  }
-//  //if(!url){
-//  //  pendingRequests[cursor] = true;
-//  //  return false;
-//  //} else {
-//  //  if(cursor in pendingRequests)
-//  //    delete pendingRequests[cursor];
-//  //  activeRequests[cursor] = true;
-//  //  console.log(activeRequests);
-//  //  return true;
-//  //}
-//};
+}
 
 var store = Reflux.createStore({
   init() {
