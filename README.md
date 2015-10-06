@@ -81,6 +81,7 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
 - Place all your client-side code in that repository, must include `index.html` in your submission folder.
 - Run the server like this: `cd server` then `npm install` (just once) then `npm start`.
 - Remember to use `styles.css` in your `index.html` solution.
+- Send a pull request
 
 ### Criteria
 
@@ -95,6 +96,4 @@ There is no "winner", the objective is just to **solve the problem by building t
 
 ### Purpose
 
-This challenge is meant to be solved with Flux or some variation of this architecture, such as architectures with the single state tree and "actions" (Om, Redux, etc). It's my personal belief that Flux does not provide an elegant way of coordinating multiple async data sources, but more experienced Flux users might disagree. This challenge's requirements were tailored to touch Flux's weakest spots, these are not typical web app requirements. That said, I am open and curious to be proven wrong. I'm curious about every solution's pros and cons, and I would prefer to discuss over evidence/artifacts instead of with platitude arguments.
-
-I would like to confirm whether Flux is meant for building a specific type of user interface, and is not mean for UIs with neatly coordinated multiple dynamic sources. I am just looking for tradeoffs, because I do not believe there is an architecture (or any solution in Computer Science) without tradeoffs. I believe no matter what the particular outcome of this challenge will be, we can learn as a community to acknowledge tradeoffs, identify requirements and know how to match them with appropriate solutions.
+This challenge is meant to be solved with Flux or some variation of this architecture, such as architectures with the single state tree and "actions" (Om, Redux, etc). It's my personal belief that *Flux does not provide an elegant way of coordinating multiple async data sources*, but more experienced Flux users might disagree. This challenge's requirements were tailored to touch Flux's weakest spots, these are not typical web app requirements. On the other hand, analytics and sensors dashboard UIs resemble this challenge a lot. That said, I am open and curious to be proven wrong about Flux. I'm curious about every solution's pros and cons, and I would prefer to discuss over evidence/artifacts instead of with platitude arguments.
