@@ -19,7 +19,7 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
 
 - Scroll buttons: up/down buttons, move the list 2 positions
 
-- When scroll moves, and load more rows, one row at a time
+- When scrolled, load more rows one at a time to fill in the blanks. Don't cache data, always request new data. (Other users might make live changes (typo fixing etc) to the data and Obi-Wan asked you to always make fresh requests)
 
 ![](docs/2.gif)
 
