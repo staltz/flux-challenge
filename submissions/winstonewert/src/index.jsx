@@ -5,6 +5,7 @@ import { compose, createStore, applyMiddleware } from 'redux';
 import { devTools, persistState } from 'redux-devtools';
 import { DevTools, DebugPanel, LogMonitor } from 'redux-devtools/lib/react';
 import { serverMiddleware} from './server'
+import '../../../styles.css'
 
 function reducer(state = {}, action) {
 	switch (action.type) {

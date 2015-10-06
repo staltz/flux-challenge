@@ -1,5 +1,7 @@
 var webpack = require('webpack');
 
+require('es6-promise').polyfill();
+
 module.exports = {
   entry: [
     'webpack-dev-server/client?http://localhost:8080',
@@ -16,6 +18,9 @@ module.exports = {
       test: /\.jsx?$/,
       exclude: /node_modules/,
       loader: 'react-hot!babel'
+    }, {
+      test: /\.css$/, // Only .css files
+      loader: 'style!css' // Run both loaders
     }]
   },
   resolve: {

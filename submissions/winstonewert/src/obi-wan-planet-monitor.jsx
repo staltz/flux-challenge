@@ -3,9 +3,13 @@ import {connect} from 'react-redux'
 
 class ObiWanPlanetMonitor extends React.Component {
 	render() {
-		return <h1 class="css-planet-monitor">
-			Obi-Wan currently on {this.props.location.name}
-		</h1>
+		if (this.props.location) {
+			return <h1 className="css-planet-monitor">
+				Obi-Wan currently on {this.props.location.name}
+			</h1>
+		} else {
+			return <div/>
+		}
 	}
 }
 
