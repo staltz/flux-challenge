@@ -24,8 +24,10 @@ actions.loadSithLord.listen(function(cursor, url) {
 
 // Requirement: abort requests if a cursor is released
 actions.releaseCursor.listen(function(cursor){
-  if(activeRequests[cursor])
+  if(activeRequests[cursor]){
     activeRequests[cursor].abort();
+    delete activeRequests[cursor];
+  }
 });
 
 // ===== store.jsx =====
