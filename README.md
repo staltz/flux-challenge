@@ -31,7 +31,7 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
 
 ![](docs/4.gif)
 
-- The list cannot be scrolled down if the last known sith has no apprentice. The list cannot be scrolled up if the first known sith has no master.
+- The list cannot be scrolled down if the last known sith has no apprentice. The list cannot be scrolled up if the first known sith has no master. Use `.css-button-disabled` on the buttons to indicate this status.
 
 ![](docs/5.gif)
 
