@@ -150,24 +150,26 @@ var store = Reflux.createStore({
 
 // ===== components.jsx =====
 
+
+// Componenet to manage each lord's row
 var Entry = React.createClass({
   mixins: [Reflux.connect(store)],
 
   propTypes: {
-    i: React.PropTypes.number.isRequired,
+    cursor: React.PropTypes.number.isRequired,
   },
 
   componentDidMount() {
-    actions.requestCursor(this.props.i);
+    actions.requestCursor(this.props.cursor);
   },
 
   componentWillUnmount() {
-    actions.releaseCursor(this.props.i);
+    actions.releaseCursor(this.props.cursor);
   },
 
   render() {
 
-    var currentLord = this.state.sithLords[this.props.i] || {};
+    var currentLord = this.state.sithLords[this.props.cursor] || {};
 
     if(currentLord.loadState == 'loading' )
       return <div className="css-slot">Loading...</div>;
@@ -187,6 +189,7 @@ var Entry = React.createClass({
 
 });
 
+// Component to manage lifecycle of WebSocket
 var WebSocketConnection = React.createClass({
   componentDidMount() {
     this.ws = new WebSocket('ws://localhost:4000');
@@ -201,20 +204,21 @@ var WebSocketConnection = React.createClass({
 
 });
 
-
+// Main app component
 var App = React.createClass({
   mixins: [Reflux.connect(store)],
   getInitialState() {
-    return {cursor: 0};
+    return {start: 0};
   },
   componentDidMount() {
+    // One hardcoded URL
     actions.loadSithLord(0, 'http://localhost:3000/dark-jedis/3616');
   },
   scrollDown() {
-    this.setState({cursor: this.state.cursor + 2});
+    this.setState({start: this.state.start + 2});
   },
   scrollUp() {
-    this.setState({cursor: this.state.cursor - 2});
+    this.setState({start: this.state.start - 2});
   },
   render() {
     var hasMoreApprentices = store.hasMoreApprentices();
@@ -231,7 +235,9 @@ var App = React.createClass({
       </div>
       <div className="css-scrollable-list" style={{marginTop: 10}}>
         <div className="css-slots">
-          {_.map(_.range(5), (i) => <Entry i={this.state.cursor+i} key={this.state.cursor+i} />)}
+          {_.map(_.range(5), (cursor) =>
+              <Entry cursor={this.state.start + cursor} key={this.state.start + cursor} />)
+          }
         </div>
         <div className="css-scroll-buttons">
           <button className={"css-button-up" + (allowScrollUp ? '' : ' css-button-disabled')} onClick={this.scrollUp}/>
