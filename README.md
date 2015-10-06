@@ -66,8 +66,8 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
       </ul>
 
       <div class="css-scroll-buttons">
-        <button class="scroll-up css-button-up"></button>
-        <button class="scroll-down css-button-down"></button>
+        <button class="css-button-up"></button>
+        <button class="css-button-down"></button>
       </div>
     </section>
   </div>
