@@ -14,10 +14,12 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
 
 ![](docs/1.gif)
 
+- Make requests to `http://localhost:3000/dark-jedis/` to populate the list. The first request must be to get Darth Sidious: `http://localhost:3000/dark-jedis/3616`
+    * The HTTP response for one row tells the URL for the next row `response.apprentice.url` and the previous row `response.master.url`.
+
 - Scroll buttons: up/down buttons, move the list 2 positions
 
 - When scroll moves, and load more rows, one row at a time
-    * The HTTP response for one row tells the URL for the next row and the previous row
 
 ![](docs/2.gif)
 
