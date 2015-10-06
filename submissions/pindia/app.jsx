@@ -40,16 +40,16 @@ actions.requestCursor.listen(function(cursor){
 
 actions.releaseCursor.preEmit = function(cursor) {
   requestedCursors[cursor] -= 1;
+  if(requestedCursors[cursor] == 0)
+    delete requestedCursors[cursor];
 };
 
 function checkRequestedCursors() {
   _.each(requestedCursors, function(value, cursor) {
     cursor = parseInt(cursor);
     if(cursor in store.data.sithLords)
-      return; // Cursor already being loaded
+      return; // Cursor was already loaded
 
-    //if(cursor+1 in store.data.sithLords)
-    //  actions.loadSithLord(cursor, store.data.sithLords[cursor+1].master.url);
     if(cursor-1 in store.data.sithLords && store.data.sithLords[cursor-1].loadState == 'done'){
       var url = store.data.sithLords[cursor-1].apprentice.url;
       if(url)
@@ -95,13 +95,40 @@ var store = Reflux.createStore({
     checkRequestedCursors();
   },
   onReleaseCursor(cursor) {
-    if(requestedCursors[cursor] == 0){
+    if(!requestedCursors[cursor]){
       if(cursor in this.data.sithLords) {
+        console.log('delete', cursor);
         delete this.data.sithLords[cursor];
         this.trigger(this.data);
       }
     }
   },
+  hasMoreApprentices() {
+    var maxCursor = _(this.data.sithLords).keys().max();
+    if(maxCursor in this.data.sithLords){
+      var lastLord = this.data.sithLords[maxCursor];
+      if(lastLord.loadState == 'loading')
+        return true; // Strange case but demo seemed to allow it
+      else
+        return !!lastLord.apprentice.url;
+    }
+    else {
+      return false; // Edge case: false with no data
+    }
+  },
+  hasMoreMasters() {
+    var minCursor = _(this.data.sithLords).keys().min();
+    if(minCursor in this.data.sithLords){
+      var firstLord = this.data.sithLords[minCursor];
+      if(firstLord.loadState == 'loading')
+        return true; // Strange case but demo seemed to allow it
+      else
+        return !!firstLord.master.url;
+    }
+    else {
+      return false; // Edge case: false with no data
+    }
+  }
 
 });
 
@@ -165,6 +192,9 @@ var App = React.createClass({
     this.setState({cursor: this.state.cursor - 2});
   },
   render() {
+    var hasMoreApprentices = store.hasMoreApprentices();
+    var hasMoreMasters = store.hasMoreMasters();
+
     return (<div className="css-root">
       <WebSocketConnection />
       <div className="css-planet-monitor">
@@ -175,8 +205,8 @@ var App = React.createClass({
           {_.map(_.range(5), (i) => <Entry i={this.state.cursor+i} key={this.state.cursor+i} />)}
         </div>
         <div className="css-scroll-buttons">
-          <button className="css-button-up" onClick={this.scrollUp}/>
-          <button className="css-button-down" onClick={this.scrollDown} />
+          <button className={"css-button-up" + (hasMoreMasters ? '' : ' css-button-disabled')} onClick={this.scrollUp}/>
+          <button className={"css-button-down" + (hasMoreApprentices ? '' : ' css-button-disabled')} onClick={this.scrollDown} />
         </div>
       </div>
 
