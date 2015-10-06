@@ -1,7 +1,12 @@
 import React from 'react'
+import ObiWanPlanetMonitor from './obi-wan-planet-monitor'
 
 export default class Root extends React.Component {
 	render() {
-		return <h1>Hello World</h1>
+		return <div class="app-container">
+			<div class="css-root">
+				<ObiWanPlanetMonitor />
+			</div>
+		</div>
 	}
 }

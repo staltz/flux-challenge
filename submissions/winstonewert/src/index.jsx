@@ -4,12 +4,19 @@ import Root from './root';
 import { compose, createStore, applyMiddleware } from 'redux';
 import { devTools, persistState } from 'redux-devtools';
 import { DevTools, DebugPanel, LogMonitor } from 'redux-devtools/lib/react';
+import { serverMiddleware} from './server'
 
-function reducer(state = {}) {
-	return state;
+function reducer(state = {}, action) {
+	switch (action.type) {
+		case "OBIWAN_LOCATION_CHANGE":
+			return {...state, obiwan_location: action.payload};
+		default:			
+			return state;
+	}
 }
 
 const finalCreateStore = compose(
+	applyMiddleware(serverMiddleware),		
 	devTools(),
 	persistState(window.location.href.match(/[?&]debug_session=([^&]+)\b/))
 )(createStore);
