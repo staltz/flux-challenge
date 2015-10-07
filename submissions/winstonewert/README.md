@@ -2,8 +2,10 @@
 
 Built using redux.
 
-I solved the problem of server requests by having a function which returns
-the list of requests that should currently be being made by the client. Middleware cancels and adds requests in order to make the current state of requests match that. I think this gives a pretty neat and readable way of handling that.
+My solution to the requests was inspired by react. I have a pure function
+of my redux state which indicates which requests should be made. I keep
+track of which requests I've actually made, and when there is a difference
+between the requests which I think I should have made and the one's I've actually made, I apply the difference. That is, I create or cancel requests so that the ones returned by the function are the same ones I'm doing.
 
 To run use:
 
