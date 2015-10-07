@@ -19,7 +19,7 @@ type Props = {
 /**
  * This is a stateless react component, see release notes for v0.14.
  */
-export default function AppView(props: Props) {
+export default function AppView(props: Props): ReactElement {
   return (
     <div className="app-container">
       <div className="css-root">
