@@ -1,7 +1,7 @@
 import React from 'react';
 import {Provider} from 'react-redux';
 import Root from './root';
-import { compose, createStore, applyMiddleware } from 'redux';
+import { compose, createStore, applyMiddleware, combineReducers } from 'redux';
 import { devTools, persistState } from 'redux-devtools';
 import { DevTools, DebugPanel, LogMonitor } from 'redux-devtools/lib/react';
 import { serverMiddleware} from './server'
@@ -19,14 +19,9 @@ const INITIAL_STATE = {
 }
 
 function update_dark_jedi(dark_jedi, payload) {
-	var update_index = _.findIndex(dark_jedi, (jedi) => jedi.id == payload.id);
 	return _.map(dark_jedi, (jedi, index) => {
-		if (index == update_index) {
+		if (jedi.id == payload.id) {
 			return payload;
-		} else if (index + 1 == update_index && !jedi.id) {
-			return {id: payload.master.id};
-		} else if (index - 1 == update_index && !jedi.id) {
-			return {id: payload.apprentice.id};
 		} else {
 			return jedi;
 		}
@@ -59,21 +54,42 @@ function down_clicked(dark_jedi) {
 	return _.drop(dark_jedi, 2).concat([{}, {}]);
 }
 
+function dark_jedi_apply_action(dark_jedi, action) {
+	switch (action.type) {
+		case "LOAD_DARK_JEDI":
+			return _.map(dark_jedi, (jedi, index) => {
+				if (jedi.id == action.payload.id) {
+					return action.payload;
+				} else {
+					return jedi;
+				}
+			});
+		case "UP_CLICKED":
+			return [{}, {}].concat(_.dropRight(dark_jedi, 2));
+		case "DOWN_CLICKED":
+			return _.drop(dark_jedi, 2).concat([{}, {}]);
+		default:			
+			return dark_jedi;
+	}
+}
 
-function reducer(state = INITIAL_STATE, action) {
+function dark_jedi_reducer(state = INITIAL_STATE['dark_jedi'], action) {
+	return infer_dark_jedi_ids(dark_jedi_apply_action(state, action))
+}
+
+function obiwan_location_reducer(state = {}, action) {
 	switch (action.type) {
 		case "OBIWAN_LOCATION_CHANGE":
-			return {...state, obiwan_location: action.payload};
-		case "LOAD_DARK_JEDI":
-			return {...state, dark_jedi: update_dark_jedi(state.dark_jedi, action.payload)};
-		case "UP_CLICKED":
-			return {...state, dark_jedi: infer_dark_jedi_ids(up_clicked(state.dark_jedi))};
-		case "DOWN_CLICKED":
-			return {...state, dark_jedi: infer_dark_jedi_ids(down_clicked(state.dark_jedi))};
-		default:			
+			return action.payload;
+		default:
 			return state;
 	}
 }
+
+const reducer = combineReducers({
+	obiwan_location: obiwan_location_reducer,
+	dark_jedi: dark_jedi_reducer
+});
 
 const finalCreateStore = compose(
 	applyMiddleware(serverMiddleware),		
