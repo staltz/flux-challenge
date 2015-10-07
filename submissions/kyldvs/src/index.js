@@ -4,9 +4,10 @@
 
 'use strict';
 
-import App from './App';
+import AppContainer from './AppContainer';
 import React from 'react';
+import ReactDOM from 'react-dom';
 
-const el = React.createElement(App, {});
+const el = React.createElement(AppContainer, {});
 const root = document.getElementById('app-root');
-React.render(el, root);
+ReactDOM.render(el, root);

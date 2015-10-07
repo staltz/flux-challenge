@@ -11,7 +11,8 @@
   "dependencies": {
     "flux": "^2.1.1",
     "immutable": "^3.7.5",
-    "react": "^0.13.3",
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0",
     "xhr": "^2.1.0"
   },
   "devDependencies": {
