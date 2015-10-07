@@ -19,14 +19,26 @@ class DarkJedi extends React.Component {
 class DarkJediList extends React.Component {
 	render() {
 		var jedis = _.map(this.props.dark_jedi, (jedi) => 
-			<DarkJedi jedi={jedi} />
+			<DarkJedi key={jedi.id} jedi={jedi} />
 		);
 		console.log(jedis);
 		return <section className="css-scrollable-list">
 			<ul className="css-slots">
 				{jedis}
 			</ul>
+			<div className="css-scroll-buttons">
+				<button className="css-button-up" onClick={this.upClicked.bind(this)}></button>
+				<button className="css-button-down" onClick={this.downClicked.bind(this)}></button>
+			</div>
 		</section>
+	}
+
+	upClicked() {
+		this.props.dispatch({type: "UP_CLICKED"});
+	}
+
+	downClicked() {
+		this.props.dispatch({type: "DOWN_CLICKED"});
 	}
 }
 

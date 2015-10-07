@@ -33,12 +33,43 @@ function update_dark_jedi(dark_jedi, payload) {
 	});
 }
 
+function infer_dark_jedi_ids(dark_jedi) {
+	return _.map(dark_jedi, (jedi, index) => {
+		if (!jedi.id) {
+			// We don't currently know the id of this jedi.
+			// Try the jedi before/after to look master/apprentice.
+			if (dark_jedi[index-1] 
+				&& dark_jedi[index-1].apprentice) {
+				return {id: dark_jedi[index-1].apprentice.id};
+			}
+			if (dark_jedi[index+1] 
+				&& dark_jedi[index+1].master) {
+				return {id: dark_jedi[index+1].master.id};
+			}
+		}
+		return jedi;			
+	});
+}
+
+function up_clicked(dark_jedi) {
+	return [{}, {}].concat(_.dropRight(dark_jedi, 2));
+}
+
+function down_clicked(dark_jedi) {
+	return _.drop(dark_jedi, 2).concat([{}, {}]);
+}
+
+
 function reducer(state = INITIAL_STATE, action) {
 	switch (action.type) {
 		case "OBIWAN_LOCATION_CHANGE":
 			return {...state, obiwan_location: action.payload};
 		case "LOAD_DARK_JEDI":
-			return {...state, dark_jedi: update_dark_jedi(state.dark_jedi, action.payload)}
+			return {...state, dark_jedi: update_dark_jedi(state.dark_jedi, action.payload)};
+		case "UP_CLICKED":
+			return {...state, dark_jedi: infer_dark_jedi_ids(up_clicked(state.dark_jedi))};
+		case "DOWN_CLICKED":
+			return {...state, dark_jedi: infer_dark_jedi_ids(down_clicked(state.dark_jedi))};
 		default:			
 			return state;
 	}
