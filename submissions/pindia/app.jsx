@@ -121,7 +121,7 @@ var store = Reflux.createStore({
     if(maxCursor in this.data.sithLords){
       var lastLord = this.data.sithLords[maxCursor];
       if(lastLord.loadState == 'loading')
-        return true; // Strange case but demo seemed to allow it
+        return false;
       else
         return !!lastLord.apprentice.url;
     }
@@ -134,7 +134,7 @@ var store = Reflux.createStore({
     if(minCursor in this.data.sithLords){
       var firstLord = this.data.sithLords[minCursor];
       if(firstLord.loadState == 'loading')
-        return true; // Strange case but demo seemed to allow it
+        return false;
       else
         return !!firstLord.master.url;
     }
