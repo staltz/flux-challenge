@@ -1,14 +1,4 @@
-(function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
-	else if(typeof define === 'function' && define.amd)
-		define([], factory);
-	else if(typeof exports === 'object')
-		exports["index"] = factory();
-	else
-		root["index"] = factory();
-})(this, function() {
-return /******/ (function(modules) { // webpackBootstrap
+/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -208,6 +198,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _react = __webpack_require__(3);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	/**
+	 * This is a stateless react component, see release notes for v0.14.
+	 */
 
 	function AppView(props) {
 	  return _react2['default'].createElement(
@@ -22755,6 +22749,4 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = __webpack_require__(5);
 
 /***/ }
-/******/ ])
-});
-;
+/******/ ]);
