@@ -1,11 +1,10 @@
-
 import React from 'react'
 import {connect} from 'react-redux'
+import {obiwanShouldInvestigate} from './data'
 
 class DarkJedi extends React.Component {
 	render() {
 		if (this.props.jedi.name) {
-			console.log(this.props);
 			var style;
 			if (this.props.obiwanLocationId == this.props.jedi.homeworld.id) {
 				style = {color: "red"}
@@ -36,14 +35,18 @@ class NavigationButton extends React.Component {
 
 class DarkJediList extends React.Component {
 	render() {
-		var obiwan_should_investigate = _.some(this.props.dark_jedi, (dark_jedi) => dark_jedi.homeworld && dark_jedi.homeworld.id == this.props.obiwan_location_id);
 
 		var jedis = _.map(this.props.dark_jedi, (jedi) => 
 			<DarkJedi key={jedi.id} jedi={jedi} obiwanLocationId={this.props.obiwan_location_id} />
 		);
 
-		var can_go_up = !obiwan_should_investigate && this.props.dark_jedi[0].master && this.props.dark_jedi[0].master.id;
-		var can_go_down = !obiwan_should_investigate && this.props.dark_jedi[4].master && this.props.dark_jedi[4].apprentice.id;
+		var can_go_up = !this.props.obiwan_should_investigate 
+			&& this.props.dark_jedi[0].master
+			&& this.props.dark_jedi[0].master.id;
+
+		var can_go_down = !this.props.obiwan_should_investigate 
+			&& this.props.dark_jedi[4].master
+			&& this.props.dark_jedi[4].apprentice.id;
 
 		return <section className="css-scrollable-list">
 			<ul className="css-slots">
@@ -66,8 +69,8 @@ class DarkJediList extends React.Component {
 }
 
 function mapStateToProps(state) {
-	console.log(state);
 	return {
+		obiwan_should_investigate: obiwanShouldInvestigate(state),
 		obiwan_location_id: state.obiwan_location.id,
 		dark_jedi: state.dark_jedi
 	}
