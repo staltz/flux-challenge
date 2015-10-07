@@ -130,7 +130,7 @@ var store = Reflux.createStore({
   },
   // When all requests are canceled, remove loading state from them
   onCancelAll(cursor) {
-    this.data.sithLords = _.filter(this.data.sithLords, (data, cursor) => {
+    this.data.sithLords = _.pick(this.data.sithLords, (data, cursor) => {
       return data.loadState == 'done';
     });
     this.trigger(this.data);
@@ -142,8 +142,11 @@ var store = Reflux.createStore({
     var maxCursor = _(this.data.sithLords).keys().max();
     if(maxCursor in this.data.sithLords){
       var lastLord = this.data.sithLords[maxCursor];
-      if(lastLord.loadState == 'loading')
-        return false;
+      // If the last lord is loading, allow iff the middle lord is done (so we won't scroll
+      // entirely off the screen
+      if(lastLord.loadState == 'loading'){
+        return _.get(this.data.sithLords, [parseInt(maxCursor)-3, 'loadState']) == 'done';
+      }
       else
         return !!lastLord.apprentice.url;
     }
@@ -155,8 +158,9 @@ var store = Reflux.createStore({
     var minCursor = _(this.data.sithLords).keys().min();
     if(minCursor in this.data.sithLords){
       var firstLord = this.data.sithLords[minCursor];
-      if(firstLord.loadState == 'loading')
-        return false;
+      if(firstLord.loadState == 'loading'){
+        return _.get(this.data.sithLords, [parseInt(minCursor)+3, 'loadState']) == 'done';
+      }
       else
         return !!firstLord.master.url;
     }
