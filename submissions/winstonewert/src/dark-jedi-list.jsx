@@ -25,7 +25,12 @@ class DarkJedi extends React.Component {
 
 class NavigationButton extends React.Component {
 	render() {
+		var className = this.props.disabled
+			? "css-button-disabled " + this.props.className
+			: this.props.className;
 
+
+		return <button className={className} onClick={this.props.onClick} disabled={this.props.disabled}/>
 	}
 }
 
@@ -36,13 +41,17 @@ class DarkJediList extends React.Component {
 		var jedis = _.map(this.props.dark_jedi, (jedi) => 
 			<DarkJedi key={jedi.id} jedi={jedi} obiwanLocationId={this.props.obiwan_location_id} />
 		);
+
+		var can_go_up = !obiwan_should_investigate && this.props.dark_jedi[0].master && this.props.dark_jedi[0].master.id;
+		var can_go_down = !obiwan_should_investigate && this.props.dark_jedi[4].master && this.props.dark_jedi[4].apprentice.id;
+
 		return <section className="css-scrollable-list">
 			<ul className="css-slots">
 				{jedis}
 			</ul>
 			<div className="css-scroll-buttons">
-				<button className={!obiwan_should_investigate ? "css-button-up" : "css-button-up css-button-disabled"} onClick={this.upClicked.bind(this)} disabled={obiwan_should_investigate}></button>
-				<button className={!obiwan_should_investigate ? "css-button-down" : "css-button-down css-button-disabled"} onClick={this.downClicked.bind(this)} disabled={obiwan_should_investigate}></button>
+				<NavigationButton className="css-button-up" onClick={this.upClicked.bind(this)} disabled={!can_go_up} />
+				<NavigationButton className="css-button-down" onClick={this.downClicked.bind(this)} disabled={!can_go_down} />
 			</div>
 		</section>
 	}
