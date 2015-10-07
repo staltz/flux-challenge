@@ -8,6 +8,9 @@ import App from './App';
 const store = configStore();
 
 const websocket = new WebSocket('ws://localhost:4000');
+websocket.onopen = function (event) {
+  websocket.send('hello!');
+};
 
 websocket.onmessage = function (event) {
   store.dispatch({

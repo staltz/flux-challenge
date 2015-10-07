@@ -17,6 +17,7 @@ class App extends React.Component {
     const jedis = slots.filter(x => x);
     const firstJedi = jedis[0];
     const lastJedi = jedis[jedis.length - 1];
+    const fullJediInTheMiddle = slots[2] && !slots[2].fetching;
 
     return <div className="css-root">
       <h1 className="css-planet-monitor">
@@ -33,11 +34,11 @@ class App extends React.Component {
         <div className="css-scroll-buttons">
           <NavButton
             direction="up"
-            disabled={wasAnyJediBornInCurrentPlanet || (firstJedi.master && !firstJedi.master.id)}
+            disabled={wasAnyJediBornInCurrentPlanet || !fullJediInTheMiddle || (firstJedi.master && !firstJedi.master.id)}
             onClick={this.props.onGoUp} />
           <NavButton
             direction="down"
-            disabled={wasAnyJediBornInCurrentPlanet || (lastJedi.apprentice && !lastJedi.apprentice.id)}
+            disabled={wasAnyJediBornInCurrentPlanet || !fullJediInTheMiddle || (lastJedi.apprentice && !lastJedi.apprentice.id)}
             onClick={this.props.onGoDown} />
         </div>
       </section>
