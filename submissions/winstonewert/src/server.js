@@ -1,8 +1,11 @@
 function missingDarkJedi(state) {
+	var obiwan_should_investigate = _.some(state.dark_jedi, (dark_jedi) => dark_jedi.homeworld && dark_jedi.homeworld.id == state.obiwan_location.id);
 	var missing = [];
-	for (var entry of state.dark_jedi) {
-		if (entry.id && !entry.name) {
-			missing.push(entry.id);
+	if (!obiwan_should_investigate) {
+		for (var entry of state.dark_jedi) {
+			if (entry.id && !entry.name) {
+				missing.push(entry.id);
+			}
 		}
 	}
 	return missing;
