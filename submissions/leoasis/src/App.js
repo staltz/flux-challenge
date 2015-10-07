@@ -10,14 +10,33 @@ import {
 import JediSlot from './JediSlot';
 import NavButton from './NavButton';
 
+function noFullJediIn(slots, position) {
+  return !slots[position] || slots[position].fetching;
+}
+
+function jediWithMasterIn(slots, position) {
+  return slots[position] && slots[position].master && slots[position].master.id;
+}
+
+function jediWithApprenticeIn(slots, position) {
+  return slots[position] && slots[position].apprentice && slots[position].apprentice.id;
+}
+
 class App extends React.Component {
   render() {
     const { currentPlanet, slots, wasAnyJediBornInCurrentPlanet } = this.props;
 
-    const jedis = slots.filter(x => x);
-    const firstJedi = jedis[0];
-    const lastJedi = jedis[jedis.length - 1];
-    const fullJediInTheMiddle = slots[2] && !slots[2].fetching;
+    const canGoUp = !wasAnyJediBornInCurrentPlanet && (
+      jediWithMasterIn(slots, 0) ||
+      (jediWithMasterIn(slots, 1) && noFullJediIn(slots, 0)) ||
+      (jediWithMasterIn(slots, 2) && noFullJediIn(slots, 1))
+    );
+
+    const canGoDown = !wasAnyJediBornInCurrentPlanet && (
+      jediWithApprenticeIn(slots, 4) ||
+      (jediWithApprenticeIn(slots, 3) && noFullJediIn(slots, 4)) ||
+      (jediWithApprenticeIn(slots, 2) && noFullJediIn(slots, 3))
+    );
 
     return <div className="css-root">
       <h1 className="css-planet-monitor">
@@ -34,11 +53,11 @@ class App extends React.Component {
         <div className="css-scroll-buttons">
           <NavButton
             direction="up"
-            disabled={wasAnyJediBornInCurrentPlanet || !fullJediInTheMiddle || (firstJedi.master && !firstJedi.master.id)}
+            disabled={!canGoUp}
             onClick={this.props.onGoUp} />
           <NavButton
             direction="down"
-            disabled={wasAnyJediBornInCurrentPlanet || !fullJediInTheMiddle || (lastJedi.apprentice && !lastJedi.apprentice.id)}
+            disabled={!canGoDown}
             onClick={this.props.onGoDown} />
         </div>
       </section>
