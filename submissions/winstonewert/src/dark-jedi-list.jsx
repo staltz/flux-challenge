@@ -21,7 +21,6 @@ class DarkJediList extends React.Component {
 		var jedis = _.map(this.props.dark_jedi, (jedi) => 
 			<DarkJedi key={jedi.id} jedi={jedi} />
 		);
-		console.log(jedis);
 		return <section className="css-scrollable-list">
 			<ul className="css-slots">
 				{jedis}

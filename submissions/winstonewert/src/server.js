@@ -26,18 +26,27 @@ export function serverMiddleware(store) {
 			var old_dark_jedi_requests = dark_jedi_requests;
 			dark_jedi_requests = {};
 			for(var id of missingDarkJedi(store.getState())) {
-				var request = new XMLHttpRequest();
-				request.open("GET", "http://localhost:3000/dark-jedis/" + id);
-				request.responseType = "json";
-				request.addEventListener("load", (event) => {
-					store.dispatch({
-						type: "LOAD_DARK_JEDI",
-						payload: request.response
-					});
-				});
-				request.send();
+				var request = old_dark_jedi_requests[id];
+				delete old_dark_jedi_requests[id];
 
+				if (!request) {
+					var request = new XMLHttpRequest();
+					request.open("GET", "http://localhost:3000/dark-jedis/" + id);
+					request.responseType = "json";
+					request.addEventListener("load", (event) => {
+						store.dispatch({
+							type: "LOAD_DARK_JEDI",
+							payload: request.response
+						});
+					});
+					dark_jedi_requests[id] = request;
+					request.send();
+				}
 			}
+
+			_.forIn(old_dark_jedi_requests, (request) => {
+				request.abort();
+			});
 			return result;
 		}
 	}
