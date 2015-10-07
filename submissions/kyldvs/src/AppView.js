@@ -70,8 +70,7 @@ function renderSithListElements(props: Props) {
 
 function renderUpButton(props: Props) {
   const {siths} = props;
-  const first = siths.get(0);
-  const disabled = inTheDangerZone(props) || !first.masterID;
+  const disabled = inTheDangerZone(props) || !siths.first().masterID;
   if (disabled) {
     return <button className="css-button-up css-button-disabled" />;
   } else {
@@ -81,8 +80,7 @@ function renderUpButton(props: Props) {
 
 function renderDownButton(props: Props) {
   const {siths} = props;
-  const last = siths.get(siths.size - 1);
-  const disabled = inTheDangerZone(props) || !last.apprenticeID;
+  const disabled = inTheDangerZone(props) || !siths.last().apprenticeID;
   if (disabled) {
     return <button className="css-button-down css-button-disabled" />;
   } else {

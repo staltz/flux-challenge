@@ -28,13 +28,13 @@ class SithStore extends ReduceStore<State> {
   reduce(state: State, action: Action): State {
     switch (action.type) {
       case 'scroll-down':
-        if (lastHasApprentice(state)) {
+        if (state.last().apprenticeID) {
           state = shift2(state);
         }
         return loadSiths(state);
 
       case 'scroll-up':
-        if (firstHasMaster(state)) {
+        if (state.first().masterID) {
           state = pop2(state);
         }
         return loadSiths(state);
@@ -61,16 +61,6 @@ class SithStore extends ReduceStore<State> {
 
 function sithLoaded(state: State, next: Sith): State {
   return state.map(sith => sith.requestID === next.requestID ? next : sith);
-}
-
-function lastHasApprentice(state: State): boolean {
-  const last = state.get(state.size - 1);
-  return !!last.apprenticeID;
-}
-
-function firstHasMaster(state: State): boolean {
-  const first = state.get(0);
-  return !!first.masterID;
 }
 
 /**

@@ -274,8 +274,7 @@
 	function renderUpButton(props) {
 	  var siths = props.siths;
 
-	  var first = siths.get(0);
-	  var disabled = inTheDangerZone(props) || !first.masterID;
+	  var disabled = inTheDangerZone(props) || !siths.first().masterID;
 	  if (disabled) {
 	    return _react2['default'].createElement('button', { className: 'css-button-up css-button-disabled' });
 	  } else {
@@ -286,8 +285,7 @@
 	function renderDownButton(props) {
 	  var siths = props.siths;
 
-	  var last = siths.get(siths.size - 1);
-	  var disabled = inTheDangerZone(props) || !last.apprenticeID;
+	  var disabled = inTheDangerZone(props) || !siths.last().apprenticeID;
 	  if (disabled) {
 	    return _react2['default'].createElement('button', { className: 'css-button-down css-button-disabled' });
 	  } else {
@@ -21879,13 +21877,13 @@
 	    value: function reduce(state, action) {
 	      switch (action.type) {
 	        case 'scroll-down':
-	          if (lastHasApprentice(state)) {
+	          if (state.last().apprenticeID) {
 	            state = shift2(state);
 	          }
 	          return loadSiths(state);
 
 	        case 'scroll-up':
-	          if (firstHasMaster(state)) {
+	          if (state.first().masterID) {
 	            state = pop2(state);
 	          }
 	          return loadSiths(state);
@@ -21917,16 +21915,6 @@
 	  return state.map(function (sith) {
 	    return sith.requestID === next.requestID ? next : sith;
 	  });
-	}
-
-	function lastHasApprentice(state) {
-	  var last = state.get(state.size - 1);
-	  return !!last.apprenticeID;
-	}
-
-	function firstHasMaster(state) {
-	  var first = state.get(0);
-	  return !!first.masterID;
 	}
 
 	/**
