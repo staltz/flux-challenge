@@ -77,10 +77,11 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
 
 ### Submission
 
-- Create a directory inside `submission` named after your GitHub username. E.g `submission/staltz/`.
+- Create a directory inside `submissions` named after your GitHub username. E.g `submissions/staltz/`.
 - Place all your client-side code in that repository, must include `index.html` in your submission folder.
 - Run the server like this: `cd server` then `npm install` (just once) then `npm start`.
 - Remember to use `styles.css` in your `index.html` solution.
+- Your solution should be executable by opening `submissions/username/index.html` in the browser with no build steps.
 - Send a pull request
 
 ### Criteria
