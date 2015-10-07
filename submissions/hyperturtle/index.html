@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="description" content="Cycle.js solution for the Flux challenge"/>
+  <title></title>
+  <link rel="stylesheet" href="../../styles.css" type="text/css">
+</head>
+<body>
+    <div class="app-container"></div>
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react-with-addons.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.0.2/redux.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.min.js"></script>
+    <script type="text/babel">
+
+      var initialState = {
+        jedis: [{id: 3616}, {}, {}, {}, {} ],
+        pending: {},
+      };
+
+      function check(state) {
+        var allDone = true;
+        for (let jedi = 0; jedi < 5; jedi +=1) {
+          allDone = allDone && state.jedis[jedi] && state.jedis[jedi].loaded;
+        }
+
+        if (!allDone) {
+          return getNext(state);
+        }
+        return state;
+      }
+
+      function cancel(pending, jedis) {
+        var leftOver = Object.assign({}, pending);
+        for (let jedi = 0; jedi < jedis.length; jedi +=1) {
+          let id = jedis[jedi].id;
+          let request = pending[id];
+          if (request) {
+            console.log("canceling", id);
+            delete leftOver[id];
+            request.abort();
+          }
+        }
+        return leftOver;
+      }
+
+      function cancelAll(state) {
+        for (let jedi = 0; jedi < state.jedis.length; jedi +=1) {
+          let id = state.jedis[jedi].id;
+          if (state.pending[id]) {
+            console.log("canceling", id);
+            state.pending[id].abort();
+            delete state.pending[id];
+          }
+        }
+        return Object.assign({}, state, {pending: {}});
+      }
+
+      function getNext(state) {
+        var pending = Object.assign({}, state.pending);
+        for (let jedi = 0; jedi < 5; jedi +=1) {
+          if (state.jedis[jedi] && !state.jedis[jedi].loaded && state.jedis[jedi].id) {
+            if (pending[state.jedis[jedi].id]) {
+              continue;
+            }
+            pending[state.jedis[jedi].id] = superagent.get("http://localhost:3000/dark-jedis/" + state.jedis[jedi].id).end(function (err, res) {
+              if (err) return;
+              store.dispatch({type: 'DONE_LOADING', data: res.body});
+            });
+          }
+        }
+        return Object.assign({}, state, { pending });
+      }
+
+      var store = Redux.createStore(function something(state = initialState, action) {
+        console.log(action);
+        switch (action.type) {
+          case 'OBIWAN_MOVED':
+            var lockdown = false;
+            for (let jedi = 0; jedi < 5; jedi +=1) {
+              let homeworld = state.jedis[jedi].homeworld;
+              if (homeworld && homeworld.id === action.location.id) {
+                lockdown = true;
+              }
+            }
+            if (lockdown) {
+              state = cancelAll(state);
+            }
+            if (!lockdown && state.lockdown) { // restart getting new jedi's
+              return check(Object.assign({}, state, { lockdown, location: action.location }))
+            }
+            return Object.assign({}, state, { lockdown, location: action.location });
+          case 'SCROLL_DOWN':
+            var pending = cancel(state.pending, state.jedis.slice(0,2));
+            var jedis = state.jedis.slice(2).concat([{}, {}]);
+            for (let jedi = 4; jedi >= 0; jedi -= 1) {
+              if (jedis[jedi].apprentice) {
+                jedis[jedi+1].id = jedis[jedi].apprentice.id;
+              }
+            }
+            
+            return check(Object.assign({}, state, { jedis, pending }));
+          case 'SCROLL_UP':
+            var pending = cancel(state.pending, state.jedis.slice(3));
+            var jedis = [{}, {}].concat(state.jedis.slice(0, 3));
+            for (let jedi = 1; jedi < 5; jedi += 1) {
+              if (jedis[jedi].master) {
+                jedis[jedi-1].id = jedis[jedi].master.id;
+              }
+            }
+            
+            return check(Object.assign({}, state, { jedis, pending }));
+          case 'DONE_LOADING':
+            var jedis = state.jedis.slice();
+            var lockdown = false;
+            for (let jedi = 0; jedi < 5; jedi +=1) {
+              if (jedis[jedi] === null) {
+                continue;
+              }
+              if (state.location && jedis[jedi].id === state.location.id) {
+                lockdown = true;
+              }
+              if (jedis[jedi].id === action.data.id) {
+                jedis[jedi] = Object.assign({}, action.data, {loaded: true});
+                if (action.data.master.id && jedi > 0) { 
+                  jedis[jedi - 1].id = action.data.master.id;
+                }
+                if (action.data.apprentice.id && jedi < 4) {
+                  jedis[jedi + 1].id = action.data.apprentice.id;
+                }
+              }
+            }
+            return check(Object.assign({}, state, { jedis }));
+          case 'GET_NEXT':
+            return getNext(state);
+          default:
+            return Object.assign({}, state);
+        }
+      });
+
+      store.dispatch({type:'GET_NEXT'});
+
+      var ws = new WebSocket('ws://localhost:4000');
+      ws.onmessage = function (event) {
+        store.dispatch({type: 'OBIWAN_MOVED', location: JSON.parse(event.data)})
+      };
+
+      class Dashboard extends React.Component {
+        constructor(props) {
+          super(props)
+          this.state = store.getState();
+        }
+        componentDidMount() {
+          this.unsub = store.subscribe(() => this.setState(store.getState()));
+        }
+        componentWillUnmount() {
+          this.unsub();
+        }
+        render() {
+          var jedis = [];
+          var allowUp = false;
+          var allowDown = false;
+          for (let jediIndex = 0; jediIndex < 5; jediIndex +=1) {
+            let jedi = this.state.jedis[jediIndex];
+            if (!jedi.loaded) {
+              jedis.push(<li className="css-slot" key={"BLANK_" + jediIndex}></li>);
+              continue
+            }
+            if (!this.state.lockdown && jediIndex < 3 && jedi.master && jedi.master.id) {
+              allowUp = true;
+            }
+            if (!this.state.lockdown && jediIndex > 1 && jedi.apprentice && jedi.apprentice.id) {
+              allowDown = true;
+            }
+            jedis.push(
+              <li
+                className="css-slot"
+                style={(jedi.homeworld.id === this.state.location.id) && {color:"red"} || {}}
+                key={jedi.id}
+              >
+                <h3>{jedi.name}</h3>
+                <h6>Homeworld: {jedi.homeworld.name}</h6>
+              </li>
+            );
+          }
+
+          return (
+            <div className="css-root">
+              <h1 className="css-planet-monitor">Obi-Wan currently on {this.state.location && this.state.location.name}</h1>
+              <section className="css-scrollable-list">
+                <ul className="css-slots">
+                  {jedis}
+                </ul>
+                <div className="css-scroll-buttons">
+                  <button
+                    disabled={!allowUp}
+                    onClick={() => {store.dispatch({type: "SCROLL_UP"})}}
+                    className={React.addons.classSet({"css-button-up": true, "css-button-disabled": !allowUp })}
+                  />
+                  <button
+                    disabled={!allowDown}
+                    onClick={() => {store.dispatch({type: "SCROLL_DOWN"})}}
+                    className={React.addons.classSet({"css-button-down": true, "css-button-disabled": !allowDown })}
+                  />
+                </div>
+              </section>
+            </div>
+          )
+        }
+      }
+      React.render(
+        <Dashboard />,
+        document.getElementsByClassName('app-container')[0]
+      );
+    </script>
+</body>
+</html>
