@@ -6,6 +6,7 @@ var actions = Reflux.createActions({
   requestCursor: {}, // Sent by UI when it wants to see a particular lord
   releaseCursor: {}, // Sent by UI when it doesn't anymore
   loadSithLord: {asyncResult: true}, // Sent by internal code when it knows the URL to load a cursor frm
+  cancelAll: {}, // Sent by internal code when all requests need to be canceled
 });
 
 var activeRequests = {};
@@ -28,6 +29,13 @@ actions.releaseCursor.listen(function(cursor){
     activeRequests[cursor].abort();
     delete activeRequests[cursor];
   }
+});
+
+actions.cancelAll.listen(function(){
+  _.map(activeRequests, (value, cursor) => {
+    activeRequests[cursor].abort();
+    delete activeRequests[cursor];
+  });
 });
 
 // ===== store.jsx =====
@@ -87,6 +95,13 @@ var store = Reflux.createStore({
   // Update current planet
   onReceivedPlanetUpdate(newData){
     this.data.currentPlanet = newData;
+
+    // Cancel outgoing requests if current planet has lord
+    if(this.currentPlanetHasLord())
+      actions.cancelAll();
+    else
+      checkRequestedCursors();
+
     this.trigger(this.data);
   },
   // When load starts, insert a "Loading..." item
@@ -112,6 +127,13 @@ var store = Reflux.createStore({
         this.trigger(this.data);
       }
     }
+  },
+  // When all requests are canceled, remove loading state from them
+  onCancelAll(cursor) {
+    this.data.sithLords = _.filter(this.data.sithLords, (data, cursor) => {
+      return data.loadState == 'done';
+    });
+    this.trigger(this.data);
   },
 
   // Utility functions that can be called by the UI
