@@ -1,0 +1,23 @@
+{
+    "name": "blocks",
+    "main": "dist/blocks.js",
+    "license": "MIT",
+    "author": {
+        "name": "Antonio Stoilkov",
+        "email": "antonio.stoilkov@gmail.com",
+        "url": "http://jsblocks.com"
+    },
+    "ignore": [
+        "build",
+        "examples",
+        "lib",
+        "node_modules",
+        "src",
+        "test",
+        "*.gitignore",
+        "Gruntile.js",
+        "package.json",
+        "dist/npm"
+    ],
+    "keywords": []
+}
