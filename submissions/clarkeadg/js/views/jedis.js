@@ -3,8 +3,8 @@
 
 	App.View('Jedis', {
 		options: {
-			route: blocks.route('/achievements'),
-			url: '/views/achievements.html'
+			route: blocks.route('/'),
+			url: 'templates/jedis.html'
 		},
 
 		jedis: Jedis().extend('filter', function (achievement) {
