@@ -56,20 +56,11 @@
 		pendingSith[absRow].onreadystatechange = function () {
 			if(pendingSith[absRow].readyState == 4) {
 				var slot = absRow - rowOffset;
-				if(slot >= 0 && slot < numSlots) { //check if data still needed
-					if(pendingSith[absRow].status == 200) {
-						var data = JSON.parse(pendingSith[absRow].responseText);
-						updateSlotData(slot, data.name, data.homeworld.name, data.master.url, data.apprentice.url);
-						pendingSith[absRow] = null;
-					}
-					else { //retry on error
-						pendingSith[absRow] = null;
-						requestSith(slot, url);
-					}
+				if(slot >= 0 && slot < numSlots && pendingSith[absRow].status == 200) {
+					var data = JSON.parse(pendingSith[absRow].responseText);
+					updateSlotData(slot, data.name, data.homeworld.name, data.master.url, data.apprentice.url);
 				}
-				else {
-					pendingSith[absRow] = null;
-				}
+				pendingSith[absRow] = null;
 			}
 		}
 		pendingSith[absRow].send();
@@ -197,19 +188,19 @@
 			slots[0].planet = null;
 			slots[0].name.innerHTML = "";
 			slots[0].location.innerHTML = "";
-			if(pendingSith[rowOffset]) {
-				pendingSith[rowOffset].abort();
-				pendingSith[rowOffset] = null;
-			}
 			buttonUp.className = "css-button-up css-button-disabled";
 			slots[1].above = null;
 			slots[1].below = null;
 			slots[1].planet = null;
 			slots[1].name.innerHTML = "";
 			slots[1].location.innerHTML = "";
-			if(pendingSith[rowOffset + 1]) {
-				pendingSith[rowOffset + 1].abort();
-				pendingSith[rowOffset + 1] = null;
+			if(pendingSith[rowOffset + numSlots - 2]) { //cancel requests that went offscreen
+				pendingSith[rowOffset + numSlots - 2].abort();
+				pendingSith[rowOffset + numSlots - 2] = null;
+			}		
+			if(pendingSith[rowOffset + numSlots - 1]) {
+				pendingSith[rowOffset + numSlots - 1].abort();
+				pendingSith[rowOffset + numSlots - 1] = null;
 			}
 			rowOffset -= 2;
 			if(slots[numSlots - 1].below) {
@@ -233,19 +224,19 @@
 			slots[numSlots - 1].planet = null;
 			slots[numSlots - 1].name.innerHTML = "";
 			slots[numSlots - 1].location.innerHTML = "";
-			if(pendingSith[rowOffset + numSlots - 1]) {
-				pendingSith[rowOffset + numSlots - 1].abort();
-				pendingSith[rowOffset + numSlots - 1] = null;
-			}
 			buttonDown.className = "css-button-down css-button-disabled";
 			slots[numSlots - 2].above = null;
 			slots[numSlots - 2].below = null;
 			slots[numSlots - 2].planet = null;
 			slots[numSlots - 2].name.innerHTML = "";
 			slots[numSlots - 2].location.innerHTML = "";
-			if(pendingSith[rowOffset + numSlots - 2]) {
-				pendingSith[rowOffset + numSlots - 2].abort();
-				pendingSith[rowOffset + numSlots - 2] = null;
+			if(pendingSith[rowOffset + 1]) { //cancel requests that went offscreen
+				pendingSith[rowOffset + 1].abort();
+				pendingSith[rowOffset + 1] = null;
+			}		
+			if(pendingSith[rowOffset]) {
+				pendingSith[rowOffset].abort();
+				pendingSith[rowOffset] = null;
 			}
 			rowOffset += 2;
 			if(slots[0].above) {
