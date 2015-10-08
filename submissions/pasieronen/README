@@ -1,0 +1,13 @@
+
+Running: npm install && npm start, then browse to http://localhost:3001/
+
+Both the dispatcher-to-store and store-to-view data flows use Bacon.js
+(a functional reactive programming library, similar to RxJS), which
+seems to work rather nicely here.
+
+All the interesting code is in JediStore.js -- the dispatcher and
+views are quite trivial. JediApp.js could probably be refactored a
+bit, but this was the first time I used React, and it's very simple
+code anyway.
+
+Pasi Eronen <pe@iki.fi>

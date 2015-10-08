@@ -1,0 +1,21 @@
+{
+  "name": "pasieronen-flux-challenge",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "cp ../../styles.css . && node_modules/browserify/bin/cmd.js --entry client.js > index.js && python -m SimpleHTTPServer 3001"
+  },
+  "dependencies": {
+    "babel": "5.8.23",
+    "babelify": "6.3.0",
+    "baconjs": "0.7.75",
+    "browserify": "11.2.0",
+    "jquery": "2.1.4",
+    "react": "0.13.3"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  }
+}
