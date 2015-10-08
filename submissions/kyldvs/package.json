@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "gulp dist",
+    "build": "gulp dist:min",
     "test": "jest"
   },
   "author": "Kyle Davis",
@@ -23,7 +23,7 @@
     "fbjs-scripts": "^0.2.2",
     "gulp": "^3.9.0",
     "jest-cli": "^0.5.10",
-    "kad-boilerplate": "0.0.7",
+    "kad-boilerplate": "0.0.8",
     "webpack": "^1.12.2"
   },
   "jest": {

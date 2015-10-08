@@ -12,7 +12,7 @@ Install dependencies then run the build script which uses `gulp`.
 
 ```bash
 npm install # only once
-gulp dist
+gulp dist:min
 ```
 
 Start up the server
