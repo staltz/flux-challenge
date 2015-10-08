@@ -15,10 +15,10 @@ let counter = 1;
 const requests = new Map();
 
 const SithDataManager = {
-  abort(id: ?number): void {
-    if (id && requests.has(id)) {
-      requests.get(id).abort();
-      requests.delete(id);
+  abort(requestID: ?number): void {
+    if (requestID && requests.has(requestID)) {
+      requests.get(requestID).abort();
+      requests.delete(requestID);
     }
   },
 

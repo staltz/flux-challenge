@@ -22330,10 +22330,10 @@
 	var requests = new Map();
 
 	var SithDataManager = {
-	  abort: function abort(id) {
-	    if (id && requests.has(id)) {
-	      requests.get(id).abort();
-	      requests['delete'](id);
+	  abort: function abort(requestID) {
+	    if (requestID && requests.has(requestID)) {
+	      requests.get(requestID).abort();
+	      requests['delete'](requestID);
 	    }
 	  },
 
