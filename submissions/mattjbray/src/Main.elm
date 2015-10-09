@@ -7,9 +7,18 @@ import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Json exposing ((:=))
+import List.Extra exposing (dropWhile, takeWhile)
 import Maybe exposing (andThen)
 import StartApp
 import Task
+
+
+--
+-- Config
+--
+
+scrollSpeed = 2
+nbSlots = 5
 
 --
 -- Wiring
@@ -39,8 +48,15 @@ port currentWorld : Signal (Maybe World)
 --
 
 type alias Model =
-  { world:Maybe World
+  { -- Obi-Wan's current location
+    world:Maybe World
+    -- The slots in view, which may contain dark jedis
   , jediSlots:Array (Maybe Jedi)
+    -- Current scroll position. When we fire off a request to fetch a new jedi,
+    -- we store the current index of the slot in which to inject the new jedi as
+    -- well as the current scroll position. When the request completes, the
+    -- index is adjusted for any scrolling which happened since the request
+    -- started.
   , scrollPos:Int
   }
 
@@ -71,7 +87,7 @@ darthSidious =
 init : JediUrl -> (Model, Effects Action)
 init jediUrl =
   ( { world = Nothing
-    , jediSlots = Array.repeat 5 Nothing
+    , jediSlots = Array.repeat nbSlots Nothing
     , scrollPos = 0
     }
   , fetchJedi 0 0 jediUrl
@@ -83,7 +99,9 @@ init jediUrl =
 
 type Action
   = SetWorld (Maybe World)
-  | SetJedi Int Int (Maybe Jedi)
+  | SetJedi Int -- the index of the slot to put the Jedi in
+            Int -- the scrollPosition when the request was initiated
+            (Maybe Jedi)
   | ScrollUp
   | ScrollDown
 
@@ -95,16 +113,17 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     SetJedi pos oldScrollPos newJedi ->
-      -- We adjust the position in which to inject the new jedi according to any
-      -- scrolling that's been done since the jedi was requested.
+      -- We adjust the position in which to inject the new jedi to account for
+      -- any scrolling that's been done since the jedi was requested.
       let offset = oldScrollPos - model.scrollPos
           adjustedPos = pos + offset
       in
         ( if inBounds adjustedPos model.jediSlots
             then { model | jediSlots <- Array.set adjustedPos newJedi model.jediSlots }
+            -- Don't update the model if this jedi has been scrolled off-screen.
             else model
-          -- fill the next/previous slot if it's empty
-        , Effects.batch
+        , -- Fetch jedis to fill the next/previous slot if it's empty
+          Effects.batch
             [ maybeFetchNextJedi adjustedPos newJedi model.jediSlots model.scrollPos
             , maybeFetchPrevJedi adjustedPos newJedi model.jediSlots model.scrollPos
             ]
@@ -116,31 +135,31 @@ update action model =
       )
 
     ScrollUp ->
-      let newJedis = Array.slice 0 (Array.length model.jediSlots - 2) model.jediSlots
+      let newJedis = Array.slice 0 (Array.length model.jediSlots - scrollSpeed) model.jediSlots
           firstJedi = Array.get 0 model.jediSlots
-          newScrollPos = model.scrollPos - 2
+          newScrollPos = model.scrollPos - scrollSpeed
       in
-        ( { model | jediSlots <- Array.append (Array.repeat 2 Nothing) newJedis
+        ( { model | jediSlots <- Array.append (Array.repeat scrollSpeed Nothing) newJedis
                   , scrollPos <- newScrollPos }
         , case firstJedi `andThen` flip andThen .master of
             Nothing ->
               Effects.none
             Just master ->
-              fetchJedi 1 newScrollPos master
+              fetchJedi (scrollSpeed - 1) newScrollPos master
         )
 
     ScrollDown ->
-      let newJedis = Array.slice 2 (Array.length model.jediSlots) model.jediSlots
+      let newJedis = Array.slice scrollSpeed (Array.length model.jediSlots) model.jediSlots
           lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
-          newScrollPos = model.scrollPos + 2
+          newScrollPos = model.scrollPos + scrollSpeed
       in
-        ( { model | jediSlots <- Array.append newJedis (Array.repeat 2 Nothing)
+        ( { model | jediSlots <- Array.append newJedis (Array.repeat scrollSpeed Nothing)
                   , scrollPos <- newScrollPos }
         , case lastJedi `andThen` flip andThen .apprentice of
             Nothing ->
               Effects.none
             Just apprentice ->
-              fetchJedi (Array.length model.jediSlots - 2)
+              fetchJedi (Array.length model.jediSlots - scrollSpeed)
                         newScrollPos
                         apprentice
         )
@@ -189,13 +208,24 @@ notNothing maybe =
     Nothing -> False
     Just _  -> True
 
+isNothing : Maybe x -> Bool
+isNothing = not << notNothing
+
+-- Naive Array.any
+any : (a -> Bool) -> Array a -> Bool
+any pred array = Array.length (Array.filter pred array) > 0
+
 -- Does the first Jedi have an apprentice?
 canScrollUp : Array (Maybe Jedi) -> Bool
 canScrollUp jediSlots =
   let loadedJedis = List.filter notNothing (Array.toList jediSlots)
       firstJedi = List.head loadedJedis
       master = firstJedi `andThen` (flip andThen .master)
-  in notNothing master
+      -- prevent scrolling if we're not sure there will still be a Jedi in view
+      jediInView = jediSlots
+                     |> Array.slice 0 -scrollSpeed
+                     |> any notNothing
+  in notNothing master && jediInView
 
 -- Does the last Jedi have an apprentice?
 canScrollDown : Array (Maybe Jedi) -> Bool
@@ -203,8 +233,12 @@ canScrollDown jediSlots =
   let loadedJedis = List.filter notNothing (Array.toList jediSlots)
       lastJedi = Array.get (List.length loadedJedis - 1) (Array.fromList loadedJedis)
       apprentice = lastJedi `andThen` (flip andThen .apprentice)
-  in notNothing apprentice
+      jediInView = jediSlots
+                     |> Array.slice scrollSpeed (Array.length jediSlots)
+                     |> any notNothing
+  in notNothing apprentice && jediInView
 
+-- Maybe.map2
 -- from elm-lang/core 3.0.0
 mMap2 : (a -> b -> value) -> Maybe a -> Maybe b -> Maybe value
 mMap2 func ma mb =
