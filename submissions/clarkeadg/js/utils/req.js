@@ -37,8 +37,9 @@ var Req = (function () {
 		var xhr = createXHR();
 		xhr.onreadystatechange = function(){	
 			if (xhr.readyState === 4){
-				console.log(xhr.responseText);
-				cb(xhr.responseText);
+				//console.log(xhr.responseText);
+				//cb(xhr.responseText);
+				cb(JSON.parse(xhr.responseText));
 			}
 		}
 		xhr.open(opts.send, opts.call, true)
