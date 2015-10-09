@@ -7,7 +7,6 @@ import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Json exposing ((:=))
-import List.Extra exposing (dropWhile, takeWhile)
 import Maybe exposing (andThen)
 import StartApp
 import Task
@@ -135,35 +134,69 @@ update action model =
       )
 
     ScrollUp ->
-      let newJedis = Array.slice 0 (Array.length model.jediSlots - scrollSpeed) model.jediSlots
-          firstJedi = Array.get 0 model.jediSlots
-          newScrollPos = model.scrollPos - scrollSpeed
-      in
-        ( { model | jediSlots <- Array.append (Array.repeat scrollSpeed Nothing) newJedis
-                  , scrollPos <- newScrollPos }
-        , case firstJedi `andThen` flip andThen .master of
-            Nothing ->
-              Effects.none
-            Just master ->
-              fetchJedi (scrollSpeed - 1) newScrollPos master
-        )
+      if not (canScroll ScrollUp model.jediSlots)
+        then (model, Effects.none)
+        else
+          let newJedis = Array.slice 0 (Array.length model.jediSlots - scrollSpeed) model.jediSlots
+              firstJedi = Array.get 0 model.jediSlots
+              newScrollPos = model.scrollPos - scrollSpeed
+          in
+            ( { model | jediSlots <- Array.append (Array.repeat scrollSpeed Nothing) newJedis
+                      , scrollPos <- newScrollPos }
+            , case firstJedi `andThen` flip andThen .master of
+                Nothing ->
+                  Effects.none
+                Just master ->
+                  fetchJedi (scrollSpeed - 1) newScrollPos master
+            )
 
     ScrollDown ->
-      let newJedis = Array.slice scrollSpeed (Array.length model.jediSlots) model.jediSlots
-          lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
-          newScrollPos = model.scrollPos + scrollSpeed
-      in
-        ( { model | jediSlots <- Array.append newJedis (Array.repeat scrollSpeed Nothing)
-                  , scrollPos <- newScrollPos }
-        , case lastJedi `andThen` flip andThen .apprentice of
-            Nothing ->
-              Effects.none
-            Just apprentice ->
-              fetchJedi (Array.length model.jediSlots - scrollSpeed)
-                        newScrollPos
-                        apprentice
-        )
+      if not (canScroll ScrollDown model.jediSlots)
+        then (model, Effects.none)
+        else
+          let newJedis = Array.slice scrollSpeed (Array.length model.jediSlots) model.jediSlots
+              lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
+              newScrollPos = model.scrollPos + scrollSpeed
+          in
+            ( { model | jediSlots <- Array.append newJedis (Array.repeat scrollSpeed Nothing)
+                      , scrollPos <- newScrollPos }
+            , case lastJedi `andThen` flip andThen .apprentice of
+                Nothing ->
+                  Effects.none
+                Just apprentice ->
+                  fetchJedi (Array.length model.jediSlots - scrollSpeed)
+                            newScrollPos
+                            apprentice
+            )
 
+--
+-- Lib
+--
+
+inBounds : Int -> Array x -> Bool
+inBounds pos slots =
+  pos >= 0 && pos < Array.length slots
+
+notNothing : Maybe x -> Bool
+notNothing maybe =
+  case maybe of
+    Nothing -> False
+    Just _  -> True
+
+isNothing : Maybe x -> Bool
+isNothing = not << notNothing
+
+-- Naive Array.any
+any : (a -> Bool) -> Array a -> Bool
+any pred array = Array.length (Array.filter pred array) > 0
+
+-- Maybe.map2
+-- from elm-lang/core 3.0.0
+mMap2 : (a -> b -> value) -> Maybe a -> Maybe b -> Maybe value
+mMap2 func ma mb =
+  case (ma,mb) of
+    (Just a, Just b) -> Just (func a b)
+    _ -> Nothing
 
 --
 -- Helpers
@@ -175,10 +208,6 @@ fetchJedi pos currentScrollPos {url} =
     |> Task.toMaybe
     |> Task.map (SetJedi pos currentScrollPos)
     |> Effects.task
-
-inBounds : Int -> Array (Maybe Jedi) -> Bool
-inBounds pos slots =
-  pos >= 0 && pos < Array.length slots
 
 maybeFetchJedi : Int -> (Jedi -> Maybe JediUrl) -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
 maybeFetchJedi pos apprenticeOrMaster currentMJedi jediSlots currentScrollPos =
@@ -194,57 +223,39 @@ maybeFetchJedi pos apprenticeOrMaster currentMJedi jediSlots currentScrollPos =
            Just jediUrl ->
              fetchJedi pos currentScrollPos jediUrl
 
+-- Fetch the Jedi apprentice in the next slot, unless we already have it or we
+-- are already at the last slot
 maybeFetchNextJedi : Int -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
 maybeFetchNextJedi currentPos =
   maybeFetchJedi (currentPos + 1) .apprentice
 
+-- Fetch the Jedi master in the previous slot, unless we already have it or we
+-- are already at the first slot
 maybeFetchPrevJedi : Int -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
 maybeFetchPrevJedi currentPos =
   maybeFetchJedi (currentPos - 1) .master
 
-notNothing : Maybe x -> Bool
-notNothing maybe =
-  case maybe of
-    Nothing -> False
-    Just _  -> True
-
-isNothing : Maybe x -> Bool
-isNothing = not << notNothing
-
--- Naive Array.any
-any : (a -> Bool) -> Array a -> Bool
-any pred array = Array.length (Array.filter pred array) > 0
-
--- Does the first Jedi have an apprentice?
-canScrollUp : Array (Maybe Jedi) -> Bool
-canScrollUp jediSlots =
-  let loadedJedis = List.filter notNothing (Array.toList jediSlots)
-      firstJedi = List.head loadedJedis
-      master = firstJedi `andThen` (flip andThen .master)
-      -- prevent scrolling if we're not sure there will still be a Jedi in view
+-- Return True if the first (last) jedi in the list has an apprentice (master)
+-- AND we would have at least one jedi in view after the scroll
+canScroll : Action -> Array (Maybe Jedi) -> Bool
+canScroll upOrDown jediSlots =
+  let (firstOrLast, apprenticeOrMaster) =
+        case upOrDown of
+          ScrollUp ->
+            ( Array.get 0
+            , .apprentice)
+          ScrollDown ->
+            ( (\jedis -> Array.get (Array.length jedis - 1) jedis)
+            , .master)
+      loadedJedis = Array.filter notNothing jediSlots
+      jedi = firstOrLast loadedJedis
+      next = jedi `andThen` (flip andThen apprenticeOrMaster)
       jediInView = jediSlots
-                     |> Array.slice 0 -scrollSpeed
+                     |> (case upOrDown of
+                           ScrollUp -> Array.slice 0 -scrollSpeed
+                           ScrollDown -> Array.slice scrollSpeed (Array.length jediSlots))
                      |> any notNothing
-  in notNothing master && jediInView
-
--- Does the last Jedi have an apprentice?
-canScrollDown : Array (Maybe Jedi) -> Bool
-canScrollDown jediSlots =
-  let loadedJedis = List.filter notNothing (Array.toList jediSlots)
-      lastJedi = Array.get (List.length loadedJedis - 1) (Array.fromList loadedJedis)
-      apprentice = lastJedi `andThen` (flip andThen .apprentice)
-      jediInView = jediSlots
-                     |> Array.slice scrollSpeed (Array.length jediSlots)
-                     |> any notNothing
-  in notNothing apprentice && jediInView
-
--- Maybe.map2
--- from elm-lang/core 3.0.0
-mMap2 : (a -> b -> value) -> Maybe a -> Maybe b -> Maybe value
-mMap2 func ma mb =
-  case (ma,mb) of
-    (Just a, Just b) -> Just (func a b)
-    _ -> Nothing
+  in notNothing next && jediInView
 
 onWorld : Maybe Jedi -> Maybe World -> Bool
 onWorld mJedi mWorld =
@@ -276,17 +287,11 @@ viewPlanetMonitor mWorld =
 
 viewJediList : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
 viewJediList address jediSlots mWorld =
-  let scrollDisabled    = List.any (flip onWorld mWorld) (Array.toList jediSlots)
-      scrollUpEnabled   = not scrollDisabled && canScrollUp jediSlots
-      scrollDownEnabled = not scrollDisabled && canScrollDown jediSlots
-  in
     div [ class "css-scrollable-list" ]
       [ ul [ class "css-slots" ]
           (List.map (viewJedi mWorld)
                     (Array.toList jediSlots))
-      , viewScrollButtons address
-                          scrollUpEnabled
-                          scrollDownEnabled
+      , viewScrollButtons address jediSlots mWorld
       ]
 
 viewJedi : Maybe World -> Maybe Jedi -> Html
@@ -305,13 +310,15 @@ viewJedi mWorld mJedi =
          ]
     )
 
-viewScrollButtons : Signal.Address Action -> Bool -> Bool -> Html
-viewScrollButtons address upEnabled downEnabled =
-  div [ class "css-scroll-buttons" ]
-    (List.map (viewScrollButton address)
-              [ (ScrollUp, "css-button-up", upEnabled)
-              , (ScrollDown, "css-button-down", downEnabled)
-              ])
+viewScrollButtons : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
+viewScrollButtons address jediSlots mWorld =
+  let scrollDisabled = any (flip onWorld mWorld) jediSlots
+  in
+    div [ class "css-scroll-buttons" ]
+      (List.map (viewScrollButton address)
+                [ (ScrollUp, "css-button-up", not scrollDisabled && canScroll ScrollUp jediSlots)
+                , (ScrollDown, "css-button-down", not scrollDisabled && canScroll ScrollDown jediSlots)
+                ])
 
 viewScrollButton : Signal.Address Action -> (Action, String, Bool) -> Html
 viewScrollButton address (action, className, enabled) =
@@ -323,7 +330,6 @@ viewScrollButton address (action, className, enabled) =
        then [onClick address action]
        else [])
     []
-
 
 --
 -- Decoders
