@@ -19674,19 +19674,19 @@
 
 	var _reducersMasterReducer2 = _interopRequireDefault(_reducersMasterReducer);
 
-	var _effectHandlersApiEffectsHandler = __webpack_require__(223);
+	var _effectHandlersApiEffectsHandler = __webpack_require__(225);
 
 	var _effectHandlersApiEffectsHandler2 = _interopRequireDefault(_effectHandlersApiEffectsHandler);
 
-	var _Siths = __webpack_require__(231);
+	var _Siths = __webpack_require__(233);
 
 	var _Siths2 = _interopRequireDefault(_Siths);
 
-	var _ControlButtons = __webpack_require__(232);
+	var _ControlButtons = __webpack_require__(234);
 
 	var _ControlButtons2 = _interopRequireDefault(_ControlButtons);
 
-	var _PlanetIndicator = __webpack_require__(234);
+	var _PlanetIndicator = __webpack_require__(236);
 
 	var _PlanetIndicator2 = _interopRequireDefault(_PlanetIndicator);
 
@@ -26562,13 +26562,17 @@
 
 	var ScrollingReducer = _interopRequireWildcard(_scrollingReducer);
 
-	var _sithLoadingReducer = __webpack_require__(221);
+	var _sithLoadingReducer = __webpack_require__(222);
 
 	var SithLoadingReducer = _interopRequireWildcard(_sithLoadingReducer);
 
-	var _planetReducer = __webpack_require__(222);
+	var _planetReducer = __webpack_require__(224);
 
 	var PlanetReducer = _interopRequireWildcard(_planetReducer);
+
+	var _queries = __webpack_require__(220);
+
+	var Queries = _interopRequireWildcard(_queries);
 
 	// Master reducer concept inspired by @Retolements
 	// http://www.code-experience.com/problems-with-flux/
@@ -26590,37 +26594,65 @@
 	          return SithLoadingReducer.sithLoaded(r, payload);
 	        });
 	        mutableReduction.update(function (r) {
-	          return ScrollingReducer.enableControlButtons(r);
+	          return SithLoadingReducer.triggerSithLoading(r);
 	        });
 	        mutableReduction.update(function (r) {
 	          return PlanetReducer.checkObiwanSpottedSith(r);
+	        });
+	        mutableReduction.update(function (r) {
+	          return SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r);
+	        });
+	        mutableReduction.update(function (r) {
+	          return ScrollingReducer.enableOrDisableControlButtons(r);
 	        });
 	      });
 	      break;
 	    case Actions.SCROLLED_UP:
 	      return reduction.withMutations(function (mutableReduction) {
-	        mutableReduction.update(function (r) {
-	          return ScrollingReducer.scrolledUp(r);
-	        });
-	        mutableReduction.update(function (r) {
-	          return ScrollingReducer.enableControlButtons(r);
-	        });
-	        mutableReduction.update(function (r) {
-	          return PlanetReducer.checkObiwanSpottedSith(r);
-	        });
+	        if (!mutableReduction.getIn(Queries.disabledUp)) {
+	          mutableReduction.update(function (r) {
+	            return SithLoadingReducer.cancelRequestsBeforeScrollUp(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return ScrollingReducer.scrollUp(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return SithLoadingReducer.triggerSithLoading(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return PlanetReducer.checkObiwanSpottedSith(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return ScrollingReducer.enableOrDisableControlButtons(r);
+	          });
+	        }
 	      });
 	      break;
 	    case Actions.SCROLLED_DOWN:
 	      return reduction.withMutations(function (mutableReduction) {
-	        mutableReduction.update(function (r) {
-	          return ScrollingReducer.scrolledDown(r);
-	        });
-	        mutableReduction.update(function (r) {
-	          return ScrollingReducer.enableControlButtons(r);
-	        });
-	        mutableReduction.update(function (r) {
-	          return PlanetReducer.checkObiwanSpottedSith(r);
-	        });
+	        if (!mutableReduction.getIn(Queries.disabledDown)) {
+	          mutableReduction.update(function (r) {
+	            return SithLoadingReducer.cancelRequestsBeforeScrollDown(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return ScrollingReducer.scrollDown(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return SithLoadingReducer.triggerSithLoading(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return PlanetReducer.checkObiwanSpottedSith(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r);
+	          });
+	          mutableReduction.update(function (r) {
+	            return ScrollingReducer.enableOrDisableControlButtons(r);
+	          });
+	        }
 	      });
 	      break;
 	    case Actions.PLANET_CHANGED:
@@ -26630,6 +26662,15 @@
 	        });
 	        mutableReduction.update(function (r) {
 	          return PlanetReducer.checkObiwanSpottedSith(r);
+	        });
+	        mutableReduction.update(function (r) {
+	          return SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r);
+	        });
+	        mutableReduction.update(function (r) {
+	          return SithLoadingReducer.triggerSithLoading(r);
+	        });
+	        mutableReduction.update(function (r) {
+	          return ScrollingReducer.enableOrDisableControlButtons(r);
 	        });
 	      });
 	      break;
@@ -26651,208 +26692,77 @@
 
 	'use strict';
 
-	var _interopRequireDefault = __webpack_require__(2)['default'];
-
 	var _interopRequireWildcard = __webpack_require__(212)['default'];
 
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
 
-	var _messageBuilder = __webpack_require__(213);
+	var _immutable = __webpack_require__(209);
 
-	var _messageBuilder2 = _interopRequireDefault(_messageBuilder);
-
-	var _constantsEffects = __webpack_require__(217);
-
-	var Effects = _interopRequireWildcard(_constantsEffects);
-
-	var _constantsConfiguration = __webpack_require__(218);
+	var _constantsConfiguration = __webpack_require__(217);
 
 	var Configuration = _interopRequireWildcard(_constantsConfiguration);
 
-	var _constantsSithStates = __webpack_require__(219);
+	var _constantsRecords = __webpack_require__(218);
 
-	var SithStates = _interopRequireWildcard(_constantsSithStates);
+	var _queries = __webpack_require__(220);
 
-	var _constantsRecords = __webpack_require__(220);
+	var Queries = _interopRequireWildcard(_queries);
 
-	// The method is responsible for enabling/disabling up/down buttons
-	var enableControlButtons = function enableControlButtons(reduction) {
+	var _predicates = __webpack_require__(221);
+
+	var Predicates = _interopRequireWildcard(_predicates);
+
+	var PAGINATION_RANGE = new _immutable.Range(0, Configuration.PAGINATION_STEP);
+
+	var enableOrDisableControlButtons = function enableOrDisableControlButtons(reduction) {
+	  var siths = reduction.getIn(Queries.siths);
+	  var disabledUp = siths.skipLast(Configuration.PAGINATION_STEP + 1).every(Predicates.newSith) || reduction.getIn(Queries.sithSpotted);
+	  var disabledDown = siths.skip(Configuration.PAGINATION_STEP + 1).every(Predicates.newSith) || reduction.getIn(Queries.sithSpotted);
+
+	  return reduction.setIn(Queries.disabledUp, disabledUp).setIn(Queries.disabledDown, disabledDown);
+	};
+
+	exports.enableOrDisableControlButtons = enableOrDisableControlButtons;
+	// Responsible just for scrolling down
+	// All the API calls are done in sithLoadingReducer
+	var scrollDown = function scrollDown(reduction) {
 	  return reduction.withMutations(function (mutableReduction) {
-	    var loadedSithsCount = mutableReduction.getIn(['appState', 'siths']).filter(function (sith) {
-	      return sith.get('state') === SithStates.LOADED;
-	    }).count();
+	    mutableReduction.setIn(Queries.scrollingDown, true).updateIn(Queries.siths, function (siths) {
+	      return PAGINATION_RANGE.reduce(function (memoSiths) {
+	        return memoSiths.shift().push(new _constantsRecords.SithRecord());
+	      }, siths);
+	    });
 
-	    if (loadedSithsCount === 1) {
-	      if (mutableReduction.getIn(['appState', 'siths', 0, 'state']) === SithStates.LOADED) {
-	        mutableReduction.setIn(['appState', 'disabledDown'], true);
-	      } else {
-	        mutableReduction.setIn(['appState', 'disabledUp'], true);
-	      }
-	    } else if (loadedSithsCount === 0) {
-	      mutableReduction.setIn(['appState', 'disabledUp'], true);
-	      mutableReduction.setIn(['appState', 'disabledDown'], true);
-	    } else {
-	      mutableReduction.setIn(['appState', 'disabledUp'], false);
-	      mutableReduction.setIn(['appState', 'disabledDown'], false);
-	    }
+	    var lastLoadedSithIndex = mutableReduction.getIn(Queries.siths).findLastIndex(Predicates.loadedSith);
+
+	    mutableReduction.setIn(Queries.sithId(lastLoadedSithIndex + 1), mutableReduction.getIn(Queries.sithApprentice(lastLoadedSithIndex)));
 	  });
 	};
 
-	exports.enableControlButtons = enableControlButtons;
-	var scrolledDown = function scrolledDown(reduction) {
+	exports.scrollDown = scrollDown;
+	// Responsible just for scrolling up
+	// All the API calls are done in sithLoadingReducer
+	var scrollUp = function scrollUp(reduction) {
 	  return reduction.withMutations(function (mutableReduction) {
-	    if (!mutableReduction.getIn(['appState', 'disabledDown']) && !mutableReduction.getIn(['appState', 'sithSpotted'])) {
-	      (function () {
-	        // Just a flag that we are scrolling down
-	        mutableReduction.setIn(['appState', 'scrollingDown'], true);
+	    mutableReduction.setIn(Queries.scrollingDown, false).updateIn(Queries.siths, function (siths) {
+	      return PAGINATION_RANGE.reduce(function (memoSiths) {
+	        return memoSiths.pop().unshift(new _constantsRecords.SithRecord());
+	      }, siths);
+	    });
 
-	        // Let's take the first N Siths which went out of the screen
-	        // and find out whether they are still loading.
-	        // This implementation should probably take List of Siths, not single Sith.
-	        var cancelableSith = mutableReduction.getIn(['appState', 'siths']).take(Configuration.PAGINATION_STEP).find(function (sith) {
-	          return sith.get('state') === SithStates.LOADING;
-	        });
+	    var firstLoadedSithIndex = mutableReduction.getIn(Queries.siths).findIndex(Predicates.loadedSith);
 
-	        // If there is still a Sith which is loading, cancel its request.
-	        if (cancelableSith) {
-	          mutableReduction.update('effects', function (effects) {
-	            return effects.push((0, _messageBuilder2['default'])(Effects.API_CANCEL_REQUEST, cancelableSith.get('correlationId')));
-	          });
-	        }
-
-	        // Move all the visible Siths up. We should skip those which got out of screen.
-	        mutableReduction.getIn(['appState', 'siths']).skip(Configuration.PAGINATION_STEP).forEach(function (sith, index) {
-	          return mutableReduction.setIn(['appState', 'siths', index], sith);
-	        });
-
-	        var lastSithOnScreenIndex = Configuration.SITH_SLOTS - Configuration.PAGINATION_STEP - 1;
-	        var nextSithToLoadIndex = lastSithOnScreenIndex + 1;
-
-	        // Let's get an apprentice of the last Sith on the screen (because we are scrolling down)
-	        var apprenticeId = mutableReduction.getIn(['appState', 'siths', lastSithOnScreenIndex, 'apprentice']);
-
-	        // Current Sith might not have next apprentice, therefore we are on the end of the list
-	        if (apprenticeId) {
-	          // The next Sith on screen should start loading (it's apprentice of the last Sith on screen)
-	          mutableReduction.setIn(['appState', 'siths', nextSithToLoadIndex], new _constantsRecords.SithRecord({
-	            id: apprenticeId,
-	            state: SithStates.LOADING
-	          })).update('effects', function (effects) {
-	            return effects.push((0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
-	              sithId: apprenticeId,
-	              scrollingDown: true
-	            }));
-	          });
-	        } else {
-	          mutableReduction.setIn(['appState', 'siths', nextSithToLoadIndex], new _constantsRecords.SithRecord());
-	        }
-
-	        // Let's just clean all the Siths bellow (pagination step)
-	        mutableReduction.updateIn(['appState', 'siths'], function (siths) {
-	          return siths.map(function (sith, index) {
-	            if (index > Configuration.SITH_SLOTS - Configuration.PAGINATION_STEP) {
-	              return new _constantsRecords.SithRecord();
-	            } else {
-	              return sith;
-	            }
-	          });
-	        });
-	      })();
-	    }
+	    mutableReduction.setIn(Queries.sithId(firstLoadedSithIndex - 1), mutableReduction.getIn(Queries.sithMaster(firstLoadedSithIndex)));
 	  });
 	};
-
-	exports.scrolledDown = scrolledDown;
-	var scrolledUp = function scrolledUp(reduction) {
-	  return reduction.withMutations(function (mutableReduction) {
-	    if (!mutableReduction.getIn(['appState', 'disabledUp']) && !mutableReduction.getIn(['appState', 'sithSpotted'])) {
-	      (function () {
-	        // Just a flag that we are scrolling up
-	        mutableReduction.setIn(['appState', 'scrollingDown'], false);
-
-	        // Let's take the last N Siths which went out of the screen
-	        // and find out whether they are still loading.
-	        // This implementation should probably take List of Siths, not single Sith.
-	        var cancelableSith = mutableReduction.getIn(['appState', 'siths']).takeLast(Configuration.PAGINATION_STEP).find(function (sith) {
-	          return sith.get('state') === SithStates.LOADING;
-	        });
-
-	        // If there is still a Sith which is loading, cancel its request.
-	        if (cancelableSith) {
-	          mutableReduction.update('effects', function (effects) {
-	            return effects.push((0, _messageBuilder2['default'])(Effects.API_CANCEL_REQUEST, cancelableSith.get('correlationId')));
-	          });
-	        }
-
-	        // Move all the visible Siths down. We should skip those which got out of screen.
-	        mutableReduction.getIn(['appState', 'siths']).reverse().skip(Configuration.PAGINATION_STEP).forEach(function (sith, index) {
-	          return mutableReduction.setIn(['appState', 'siths', Configuration.SITH_SLOTS - 1 - index], sith);
-	        });
-
-	        var firstSithOnScreenIndex = Configuration.PAGINATION_STEP;
-	        var prevSithToLoadIndex = firstSithOnScreenIndex - 1;
-
-	        // Let's get master of the first Sith on the screen (because we are scrolling up)
-	        var master = mutableReduction.getIn(['appState', 'siths', firstSithOnScreenIndex, 'master']);
-
-	        // Current Sith might not have previous master, therefore we are on the beginning of the list
-	        if (master) {
-	          // The prev Sith on screen should start loading (it's master of the last Sith on screen)
-	          mutableReduction.setIn(['appState', 'siths', prevSithToLoadIndex], new _constantsRecords.SithRecord({
-	            id: master,
-	            state: SithStates.LOADING
-	          })).update('effects', function (effects) {
-	            return effects.push((0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
-	              sithId: master,
-	              scrollingDown: false
-	            }));
-	          });
-	        } else {
-	          mutableReduction.setIn(['appState', 'siths', prevSithToLoadIndex], new _constantsRecords.SithRecord());
-	        }
-
-	        // Let's just clean all the Siths above (pagination step)
-	        mutableReduction.updateIn(['appState', 'siths'], function (siths) {
-	          return siths.map(function (sith, index) {
-	            if (index < Configuration.PAGINATION_STEP - 1) {
-	              return new _constantsRecords.SithRecord();
-	            } else {
-	              return sith;
-	            }
-	          });
-	        });
-	      })();
-	    }
-	  });
-	};
-	exports.scrolledUp = scrolledUp;
+	exports.scrollUp = scrollUp;
 
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "scrollingReducer.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
 /* 217 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	var API_LOAD_SITH = 'API_LOAD_SITH';
-	exports.API_LOAD_SITH = API_LOAD_SITH;
-	var API_CANCEL_REQUEST = 'API_CANCEL_REQUEST';
-	exports.API_CANCEL_REQUEST = API_CANCEL_REQUEST;
-	var API_CONNECT_WS = 'API_CONNECT_WS';
-	exports.API_CONNECT_WS = API_CONNECT_WS;
-
-	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "effects.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
-
-/***/ },
-/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
@@ -26870,6 +26780,37 @@
 	exports.PAGINATION_STEP = PAGINATION_STEP;
 
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "configuration.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+
+/***/ },
+/* 218 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	var _immutable = __webpack_require__(209);
+
+	var _sithStates = __webpack_require__(219);
+
+	var SithRecord = new _immutable.Record({
+	  id: null,
+	  name: null,
+	  apprentice: null,
+	  master: null,
+	  homeworldId: null,
+	  homeworldName: null,
+	  correlationId: null,
+	  spotted: false,
+	  state: _sithStates.NEW
+	});
+	exports.SithRecord = SithRecord;
+
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "records.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
 /* 219 */
@@ -26902,25 +26843,48 @@
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
+	var effects = ['effects'];
+	exports.effects = effects;
+	var disabledUp = ['appState', 'disabledUp'];
+	exports.disabledUp = disabledUp;
+	var disabledDown = ['appState', 'disabledDown'];
+	exports.disabledDown = disabledDown;
+	var siths = ['appState', 'siths'];
+	exports.siths = siths;
+	var scrollingDown = ['appState', 'scrollingDown'];
+	exports.scrollingDown = scrollingDown;
+	var sithSpotted = ['appState', 'sithSpotted'];
+	exports.sithSpotted = sithSpotted;
+	var planet = ['appState', 'planet'];
+	exports.planet = planet;
+	var planetId = ['appState', 'planet', 'id'];
+	exports.planetId = planetId;
+	var sithByIndex = function sithByIndex(index) {
+	  return ['appState', 'siths', index];
+	};
+	exports.sithByIndex = sithByIndex;
+	var sithId = function sithId(index) {
+	  return ['appState', 'siths', index, 'id'];
+	};
+	exports.sithId = sithId;
+	var sithApprentice = function sithApprentice(index) {
+	  return ['appState', 'siths', index, 'apprentice'];
+	};
+	exports.sithApprentice = sithApprentice;
+	var sithMaster = function sithMaster(index) {
+	  return ['appState', 'siths', index, 'master'];
+	};
+	exports.sithMaster = sithMaster;
+	var sithState = function sithState(index) {
+	  return ['appState', 'siths', index, 'state'];
+	};
+	exports.sithState = sithState;
+	var sithCorrelationId = function sithCorrelationId(index) {
+	  return ['appState', 'siths', index, 'correlationId'];
+	};
+	exports.sithCorrelationId = sithCorrelationId;
 
-	var _immutable = __webpack_require__(209);
-
-	var _sithStates = __webpack_require__(219);
-
-	var SithRecord = new _immutable.Record({
-	  id: null,
-	  name: null,
-	  apprentice: null,
-	  master: null,
-	  homeworldId: null,
-	  homeworldName: null,
-	  correlationId: null,
-	  spotted: false,
-	  state: _sithStates.NEW
-	});
-	exports.SithRecord = SithRecord;
-
-	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "records.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "queries.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
 /* 221 */
@@ -26930,97 +26894,44 @@
 
 	'use strict';
 
-	var _interopRequireDefault = __webpack_require__(2)['default'];
-
 	var _interopRequireWildcard = __webpack_require__(212)['default'];
 
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
 
-	var _immutable = __webpack_require__(209);
-
-	var _messageBuilder = __webpack_require__(213);
-
-	var _messageBuilder2 = _interopRequireDefault(_messageBuilder);
-
-	var _constantsEffects = __webpack_require__(217);
-
-	var Effects = _interopRequireWildcard(_constantsEffects);
-
 	var _constantsSithStates = __webpack_require__(219);
 
 	var SithStates = _interopRequireWildcard(_constantsSithStates);
 
-	var _constantsConfiguration = __webpack_require__(218);
-
-	var Configuration = _interopRequireWildcard(_constantsConfiguration);
-
-	var _constantsRecords = __webpack_require__(220);
-
-	// This simply initializes the application state and triggers loading of first Sith
-	var applicationMounting = function applicationMounting(reduction) {
-	  return reduction.withMutations(function (mutableReduction) {
-	    mutableReduction.setIn(['appState', 'disabledUp', true]).setIn(['appState', 'disabledDown', true]).setIn(['appState', 'scrollingDown'], true).setIn(['appState', 'sithsSpotted'], false).setIn(['appState', 'siths'], new _immutable.Range(0, Configuration.SITH_SLOTS).map(function () {
-	      return new _constantsRecords.SithRecord();
-	    }).toList()).setIn(['appState', 'siths', 0, 'id'], Configuration.INITIAL_SITH_TO_LOAD).setIn(['appState', 'siths', 0, 'state'], SithStates.LOADING).setIn(['appState', 'planet'], null).update('effects', function (effects) {
-	      return effects.push((0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
-	        sithId: Configuration.INITIAL_SITH_TO_LOAD,
-	        scrollingDown: true
-	      })).push((0, _messageBuilder2['default'])(Effects.API_CONNECT_WS));
-	    });
-	  });
+	var newSithWithId = function newSithWithId(sith) {
+	  return sith.get('state') === SithStates.NEW && sith.get('id');
 	};
-
-	exports.applicationMounting = applicationMounting;
-	var sithLoaded = function sithLoaded(reduction, payload) {
-	  var loadedSithIndex = reduction.getIn(['appState', 'siths']).findIndex(function (sith) {
-	    return sith.get('id') === payload.sith.id;
-	  });
-	  var scrollingDown = payload.scrollingDown;
-	  var apprentice = payload.sith.apprentice.id;
-	  var master = payload.sith.master.id;
-	  var sithName = payload.sith.name;
-
-	  return reduction.withMutations(function (mutableReduction) {
-	    // Let's store the newly loaded Sith
-	    mutableReduction.updateIn(['appState', 'siths', loadedSithIndex], function (sith) {
-	      return sith.set('state', SithStates.LOADED).set('correlationId', null).set('apprentice', apprentice).set('master', master).set('homeworldId', payload.sith.homeworld.id).set('homeworldName', payload.sith.homeworld.name).set('name', sithName);
-	    });
-
-	    if (scrollingDown && apprentice && loadedSithIndex < Configuration.SITH_SLOTS - 1) {
-	      var nextSithIndex = loadedSithIndex + 1;
-
-	      mutableReduction.setIn(['appState', 'siths', nextSithIndex, 'id'], apprentice).setIn(['appState', 'siths', nextSithIndex, 'state'], SithStates.LOADING).update('effects', function (effects) {
-	        return effects.push((0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
-	          sithId: apprentice,
-	          scrollingDown: true
-	        }));
-	      });
-	    } else if (!scrollingDown && master && loadedSithIndex > 0) {
-	      var prevSithIndex = loadedSithIndex - 1;
-
-	      mutableReduction.setIn(['appState', 'siths', prevSithIndex, 'id'], master).setIn(['appState', 'siths', prevSithIndex, 'state'], SithStates.LOADING).update('effects', function (effects) {
-	        return effects.push((0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
-	          sithId: master,
-	          scrollingDown: false
-	        }));
-	      });
-	    }
-	  });
+	exports.newSithWithId = newSithWithId;
+	var loadingSith = function loadingSith(sith) {
+	  return sith.get('state') === SithStates.LOADING;
 	};
-
-	exports.sithLoaded = sithLoaded;
-	// Let's store the correlation ID of the request so that we can cancel it later on if necessary
-	var sithLoadingStarted = function sithLoadingStarted(reduction, payload) {
-	  var sithIndex = reduction.getIn(['appState', 'siths']).findIndex(function (sith) {
-	    return sith.get('id') === payload.sithId;
-	  });
-	  return reduction.setIn(['appState', 'siths', sithIndex, 'correlationId'], payload.correlationId);
+	exports.loadingSith = loadingSith;
+	var newSith = function newSith(sith) {
+	  return sith.get('state') === SithStates.NEW;
 	};
-	exports.sithLoadingStarted = sithLoadingStarted;
+	exports.newSith = newSith;
+	var loadedSith = function loadedSith(sith) {
+	  return sith.get('state') === SithStates.LOADED;
+	};
+	exports.loadedSith = loadedSith;
+	var sithById = function sithById(id) {
+	  return function (sith) {
+	    return sith.get('id') === id;
+	  };
+	};
+	exports.sithById = sithById;
+	var sithSpotted = function sithSpotted(sith) {
+	  return sith.get('spotted');
+	};
+	exports.sithSpotted = sithSpotted;
 
-	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "sithLoadingReducer.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "predicates.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
 /* 222 */
@@ -27044,52 +26955,213 @@
 
 	var _messageBuilder2 = _interopRequireDefault(_messageBuilder);
 
+	var _constantsEffects = __webpack_require__(223);
+
+	var Effects = _interopRequireWildcard(_constantsEffects);
+
 	var _constantsSithStates = __webpack_require__(219);
 
 	var SithStates = _interopRequireWildcard(_constantsSithStates);
 
-	var _constantsEffects = __webpack_require__(217);
+	var _constantsConfiguration = __webpack_require__(217);
 
-	var Effects = _interopRequireWildcard(_constantsEffects);
+	var Configuration = _interopRequireWildcard(_constantsConfiguration);
+
+	var _constantsRecords = __webpack_require__(218);
+
+	var _queries = __webpack_require__(220);
+
+	var Queries = _interopRequireWildcard(_queries);
+
+	var _predicates = __webpack_require__(221);
+
+	var Predicates = _interopRequireWildcard(_predicates);
+
+	var emitCancelRequestsForSiths = function emitCancelRequestsForSiths(reduction, sithsToCancel) {
+	  return reduction.withMutations(function (mutableReduction) {
+	    mutableReduction.updateIn(Queries.siths, function (siths) {
+	      return siths.map(function (sith) {
+	        if (sithsToCancel.some(Predicates.sithById(sith.get('id')))) {
+	          return sith.set('state', SithStates.NEW);
+	        } else {
+	          return sith;
+	        }
+	      });
+	    });
+
+	    mutableReduction.updateIn(Queries.effects, function (effects) {
+	      return effects.concat(sithsToCancel.map(function (sith) {
+	        return (0, _messageBuilder2['default'])(Effects.API_CANCEL_REQUEST, sith.get('correlationId'));
+	      }));
+	    });
+	  });
+	};
+
+	// This simply initializes the application state and triggers loading of first Sith
+	var applicationMounting = function applicationMounting(reduction) {
+	  return reduction.withMutations(function (mutableReduction) {
+	    mutableReduction.setIn(Queries.disabledUp, true).setIn(Queries.disabledDown, true).setIn(Queries.scrollingDown, true).setIn(Queries.sithSpotted, false).setIn(Queries.planet, null).setIn(Queries.siths, new _immutable.Range(0, Configuration.SITH_SLOTS).map(function () {
+	      return new _constantsRecords.SithRecord();
+	    }).toList()).setIn(Queries.sithId(0), Configuration.INITIAL_SITH_TO_LOAD).setIn(Queries.sithState(0), SithStates.LOADING).updateIn(Queries.effects, function (effects) {
+	      return effects.push((0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
+	        sithId: Configuration.INITIAL_SITH_TO_LOAD,
+	        scrollingDown: true
+	      })).push((0, _messageBuilder2['default'])(Effects.API_CONNECT_WS));
+	    });
+	  });
+	};
+
+	exports.applicationMounting = applicationMounting;
+	// Let's store the correlation ID of the request so that we can cancel it later on if necessary
+	var sithLoadingStarted = function sithLoadingStarted(reduction, payload) {
+	  var sithIndex = reduction.getIn(Queries.siths).findIndex(Predicates.sithById(payload.sithId));
+
+	  return reduction.setIn(Queries.sithState(sithIndex), SithStates.LOADING).setIn(Queries.sithCorrelationId(sithIndex), payload.correlationId);
+	};
+
+	exports.sithLoadingStarted = sithLoadingStarted;
+	var sithLoaded = function sithLoaded(reduction, payload) {
+	  var scrollingDown = payload.scrollingDown;
+	  var _payload$sith = payload.sith;
+	  var homeworld = _payload$sith.homeworld;
+	  var name = _payload$sith.name;
+	  var master = _payload$sith.master;
+	  var apprentice = _payload$sith.apprentice;
+	  var id = _payload$sith.id;
+
+	  var loadedSithIndex = reduction.getIn(Queries.siths).findIndex(Predicates.sithById(id));
+
+	  return reduction.withMutations(function (mutableReduction) {
+	    // Let's store the newly loaded Sith
+	    mutableReduction.updateIn(Queries.sithByIndex(loadedSithIndex), function (sith) {
+	      return sith.set('id', id).set('state', SithStates.LOADED).set('correlationId', null).set('apprentice', apprentice.id).set('master', master.id).set('homeworldId', homeworld.id).set('homeworldName', homeworld.name).set('name', name);
+	    });
+
+	    if (scrollingDown && apprentice && loadedSithIndex < Configuration.SITH_SLOTS - 1) {
+	      mutableReduction.setIn(Queries.sithId(loadedSithIndex + 1), apprentice.id);
+	    } else if (!scrollingDown && master && loadedSithIndex > 0) {
+	      mutableReduction.setIn(Queries.sithId(loadedSithIndex - 1), master.id);
+	    }
+	  });
+	};
+
+	exports.sithLoaded = sithLoaded;
+	var cancelRequestsBeforeScrollUp = function cancelRequestsBeforeScrollUp(reduction) {
+	  var loadingSithPotentialyOffScreen = reduction.getIn(Queries.siths).takeLast(Configuration.PAGINATION_STEP).find(Predicates.loadingSith);
+
+	  if (loadingSithPotentialyOffScreen) {
+	    return emitCancelRequestsForSiths(reduction, _immutable.List.of(loadingSithPotentialyOffScreen));
+	  } else {
+	    return reduction;
+	  }
+	};
+
+	exports.cancelRequestsBeforeScrollUp = cancelRequestsBeforeScrollUp;
+	var cancelRequestsBeforeScrollDown = function cancelRequestsBeforeScrollDown(reduction) {
+	  var loadingSithPotentialyOffScreen = reduction.getIn(Queries.siths).take(Configuration.PAGINATION_STEP).find(Predicates.loadingSith);
+
+	  if (loadingSithPotentialyOffScreen) {
+	    return emitCancelRequestsForSiths(reduction, _immutable.List.of(loadingSithPotentialyOffScreen));
+	  } else {
+	    return reduction;
+	  }
+	};
+
+	exports.cancelRequestsBeforeScrollDown = cancelRequestsBeforeScrollDown;
+	var triggerSithLoading = function triggerSithLoading(reduction) {
+	  return reduction.withMutations(function (mutableReduction) {
+	    var loadNewSithsEffects = mutableReduction.getIn(Queries.siths).filter(Predicates.newSithWithId).filterNot(function () {
+	      return mutableReduction.getIn(Queries.sithSpotted);
+	    }) // Very important condition, there must be no visible Sith spotted by Obiwan
+	    .map(function (sith) {
+	      return (0, _messageBuilder2['default'])(Effects.API_LOAD_SITH, {
+	        sithId: sith.get('id'),
+	        scrollingDown: mutableReduction.getIn(Queries.scrollingDown)
+	      });
+	    }).toList();
+
+	    mutableReduction.updateIn(Queries.effects, function (effects) {
+	      return effects.concat(loadNewSithsEffects);
+	    });
+	  });
+	};
+
+	exports.triggerSithLoading = triggerSithLoading;
+	var cancelAnyRequestIfObiwanSpottedSith = function cancelAnyRequestIfObiwanSpottedSith(reduction) {
+	  var loadingSiths = reduction.getIn(Queries.siths).filter(Predicates.loadingSith);
+
+	  if (reduction.getIn(Queries.sithSpotted) && loadingSiths) {
+	    return emitCancelRequestsForSiths(reduction, loadingSiths);
+	  } else {
+	    return reduction;
+	  }
+	};
+	exports.cancelAnyRequestIfObiwanSpottedSith = cancelAnyRequestIfObiwanSpottedSith;
+
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "sithLoadingReducer.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+
+/***/ },
+/* 223 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	var API_LOAD_SITH = 'API_LOAD_SITH';
+	exports.API_LOAD_SITH = API_LOAD_SITH;
+	var API_CANCEL_REQUEST = 'API_CANCEL_REQUEST';
+	exports.API_CANCEL_REQUEST = API_CANCEL_REQUEST;
+	var API_CONNECT_WS = 'API_CONNECT_WS';
+	exports.API_CONNECT_WS = API_CONNECT_WS;
+
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "effects.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+
+/***/ },
+/* 224 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
+
+	'use strict';
+
+	var _interopRequireWildcard = __webpack_require__(212)['default'];
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	var _immutable = __webpack_require__(209);
+
+	var _queries = __webpack_require__(220);
+
+	var Queries = _interopRequireWildcard(_queries);
+
+	var _predicates = __webpack_require__(221);
+
+	var Predicates = _interopRequireWildcard(_predicates);
 
 	var planetChanged = function planetChanged(reduction, payload) {
-	  return reduction.setIn(['appState', 'planet'], (0, _immutable.fromJS)(payload));
+	  return reduction.setIn(Queries.planet, (0, _immutable.fromJS)(payload));
 	};
 
 	exports.planetChanged = planetChanged;
 	var checkObiwanSpottedSith = function checkObiwanSpottedSith(reduction) {
-	  var currentObiwanPlanet = reduction.getIn(['appState', 'planet', 'id']);
+	  var currentObiwanPlanet = reduction.getIn(Queries.planetId);
 
 	  return reduction.withMutations(function (mutableReduction) {
-	    mutableReduction.updateIn(['appState', 'siths'], function (siths) {
+	    mutableReduction.updateIn(Queries.siths, function (siths) {
 	      return siths.map(function (sith) {
 	        return sith.set('spotted', sith.get('homeworldId') === currentObiwanPlanet);
 	      });
 	    });
 
-	    var sithSpotted = mutableReduction.getIn(['appState', 'siths']).some(function (sith) {
-	      return sith.get('spotted');
-	    });
+	    var sithSpotted = mutableReduction.getIn(Queries.siths).some(Predicates.sithSpotted);
 
-	    mutableReduction.setIn(['appState', 'sithSpotted'], sithSpotted);
-
-	    // Cancel all requests (there is just one) if any Sith has been spotted
-	    if (sithSpotted) {
-	      (function () {
-	        var cancelableSith = mutableReduction.getIn(['appState', 'siths']).find(function (sith) {
-	          return sith.get('state') === SithStates.LOADING;
-	        });
-
-	        if (cancelableSith) {
-	          mutableReduction.update('effects', function (effects) {
-	            return effects.push((0, _messageBuilder2['default'])(Effects.API_CANCEL_REQUEST, cancelableSith.get('correlationId')));
-	          });
-	        }
-	      })();
-	    }
-
-	    // TODO: we should probably re-trigger Sith loading when screne is
-	    // clean again
+	    mutableReduction.setIn(Queries.sithSpotted, sithSpotted);
 	  });
 	};
 	exports.checkObiwanSpottedSith = checkObiwanSpottedSith;
@@ -27097,7 +27169,7 @@
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "planetReducer.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
-/* 223 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
@@ -27112,13 +27184,13 @@
 	  value: true
 	});
 
-	var _superagentBluebirdPromise = __webpack_require__(224);
+	var _superagentBluebirdPromise = __webpack_require__(226);
 
 	var _superagentBluebirdPromise2 = _interopRequireDefault(_superagentBluebirdPromise);
 
 	var _immutable = __webpack_require__(209);
 
-	var _nodeUuid = __webpack_require__(230);
+	var _nodeUuid = __webpack_require__(232);
 
 	var _nodeUuid2 = _interopRequireDefault(_nodeUuid);
 
@@ -27126,7 +27198,7 @@
 
 	var Actions = _interopRequireWildcard(_actionsActions);
 
-	var _constantsEffects = __webpack_require__(217);
+	var _constantsEffects = __webpack_require__(223);
 
 	var Effects = _interopRequireWildcard(_constantsEffects);
 
@@ -27176,15 +27248,15 @@
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "apiEffectsHandler.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
-/* 224 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// From https://gist.github.com/epeli/11209665
 
-	var Promise = __webpack_require__(225);
+	var Promise = __webpack_require__(227);
 
 	// So you can `var request = require("superagent-bluebird-promise")`
-	var superagent = module.exports = __webpack_require__(227);
+	var superagent = module.exports = __webpack_require__(229);
 	var Request = superagent.Request;
 
 	// Create custom error type.
@@ -27279,7 +27351,7 @@
 
 
 /***/ },
-/* 225 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, global, setImmediate) {/* @preserve
@@ -32169,10 +32241,10 @@
 
 	},{"./es5.js":14}]},{},[4])(4)
 	});                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), (function() { return this; }()), __webpack_require__(226).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), (function() { return this; }()), __webpack_require__(228).setImmediate))
 
 /***/ },
-/* 226 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(6).nextTick;
@@ -32251,18 +32323,18 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(226).setImmediate, __webpack_require__(226).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(228).setImmediate, __webpack_require__(228).clearImmediate))
 
 /***/ },
-/* 227 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module dependencies.
 	 */
 
-	var Emitter = __webpack_require__(228);
-	var reduce = __webpack_require__(229);
+	var Emitter = __webpack_require__(230);
+	var reduce = __webpack_require__(231);
 
 	/**
 	 * Root reference for iframes.
@@ -33417,7 +33489,7 @@
 
 
 /***/ },
-/* 228 */
+/* 230 */
 /***/ function(module, exports) {
 
 	
@@ -33587,7 +33659,7 @@
 
 
 /***/ },
-/* 229 */
+/* 231 */
 /***/ function(module, exports) {
 
 	
@@ -33616,7 +33688,7 @@
 	};
 
 /***/ },
-/* 230 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;//     uuid.js
@@ -33869,7 +33941,7 @@
 
 
 /***/ },
-/* 231 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
@@ -33894,9 +33966,13 @@
 
 	var SithStates = _interopRequireWildcard(_constantsSithStates);
 
+	var _reducersQueries = __webpack_require__(220);
+
+	var Queries = _interopRequireWildcard(_reducersQueries);
+
 	var mapStateToProps = function mapStateToProps(appState) {
 	  return {
-	    siths: appState.getIn(['appState', 'siths'])
+	    siths: appState.getIn(Queries.siths)
 	  };
 	};
 
@@ -33934,7 +34010,7 @@
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "Siths.jsx" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
-/* 232 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
@@ -33942,6 +34018,8 @@
 	'use strict';
 
 	var _interopRequireDefault = __webpack_require__(2)['default'];
+
+	var _interopRequireWildcard = __webpack_require__(212)['default'];
 
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
@@ -33953,17 +34031,20 @@
 
 	var _reactRedux = __webpack_require__(190);
 
-	var _classnames = __webpack_require__(233);
+	var _classnames = __webpack_require__(235);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
 	var _actionsActions = __webpack_require__(211);
 
+	var _reducersQueries = __webpack_require__(220);
+
+	var Queries = _interopRequireWildcard(_reducersQueries);
+
 	var mapStateToProps = function mapStateToProps(appState) {
 	  return {
-	    disabledUp: appState.getIn(['appState', 'disabledUp']),
-	    disabledDown: appState.getIn(['appState', 'disabledDown']),
-	    sithSpotted: appState.getIn(['appState', 'sithSpotted'])
+	    disabledUp: appState.getIn(Queries.disabledUp),
+	    disabledDown: appState.getIn(Queries.disabledDown)
 	  };
 	};
 
@@ -33971,10 +34052,10 @@
 	  return _react2['default'].createElement(
 	    'div',
 	    { className: 'css-scroll-buttons' },
-	    _react2['default'].createElement('button', { className: (0, _classnames2['default'])({ 'css-button-up': true, 'css-button-disabled': props.disabledUp || props.sithSpotted }), onClick: function () {
+	    _react2['default'].createElement('button', { className: (0, _classnames2['default'])({ 'css-button-up': true, 'css-button-disabled': props.disabledUp }), onClick: function () {
 	        return props.dispatch((0, _actionsActions.scrolledUp)());
 	      } }),
-	    _react2['default'].createElement('button', { className: (0, _classnames2['default'])({ 'css-button-down': true, 'css-button-disabled': props.disabledDown || props.sithSpotted }), onClick: function () {
+	    _react2['default'].createElement('button', { className: (0, _classnames2['default'])({ 'css-button-down': true, 'css-button-disabled': props.disabledDown }), onClick: function () {
 	        return props.dispatch((0, _actionsActions.scrolledDown)());
 	      } })
 	  );
@@ -33984,7 +34065,7 @@
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "ControlButtons.jsx" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ },
-/* 233 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -34038,7 +34119,7 @@
 
 
 /***/ },
-/* 234 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/node_modules/react-hot-api/modules/index.js"), RootInstanceProvider = require("/Users/tomasweiss/dev/flux-challenge/submissions/salsita/node_modules/react-hot-loader/RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
@@ -34046,6 +34127,8 @@
 	'use strict';
 
 	var _interopRequireDefault = __webpack_require__(2)['default'];
+
+	var _interopRequireWildcard = __webpack_require__(212)['default'];
 
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
@@ -34057,9 +34140,13 @@
 
 	var _reactRedux = __webpack_require__(190);
 
+	var _reducersQueries = __webpack_require__(220);
+
+	var Queries = _interopRequireWildcard(_reducersQueries);
+
 	var mapStateToProps = function mapStateToProps(appState) {
 	  return {
-	    planet: appState.getIn(['appState', 'planet'])
+	    planet: appState.getIn(Queries.planet)
 	  };
 	};
 
