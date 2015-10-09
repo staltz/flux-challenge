@@ -20,8 +20,8 @@ export default (reduction, action) => {
     case Actions.SITH_LOADED:
       return reduction.withMutations(mutableReduction => {
         mutableReduction.update(r => SithLoadingReducer.sithLoaded(r, payload));
-        mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
         mutableReduction.update(r => PlanetReducer.checkObiwanSpottedSith(r));
+        mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
         mutableReduction.update(r => SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r));
         mutableReduction.update(r => ScrollingReducer.enableOrDisableControlButtons(r));
       });
@@ -31,8 +31,8 @@ export default (reduction, action) => {
         if (!mutableReduction.getIn(Queries.disabledUp)) {
           mutableReduction.update(r => SithLoadingReducer.cancelRequestsBeforeScrollUp(r));
           mutableReduction.update(r => ScrollingReducer.scrollUp(r));
-          mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
           mutableReduction.update(r => PlanetReducer.checkObiwanSpottedSith(r));
+          mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
           mutableReduction.update(r => SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r));
           mutableReduction.update(r => ScrollingReducer.enableOrDisableControlButtons(r));
         }
@@ -43,8 +43,8 @@ export default (reduction, action) => {
         if (!mutableReduction.getIn(Queries.disabledDown)) {
           mutableReduction.update(r => SithLoadingReducer.cancelRequestsBeforeScrollDown(r));
           mutableReduction.update(r => ScrollingReducer.scrollDown(r));
-          mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
           mutableReduction.update(r => PlanetReducer.checkObiwanSpottedSith(r));
+          mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
           mutableReduction.update(r => SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r));
           mutableReduction.update(r => ScrollingReducer.enableOrDisableControlButtons(r));
         }
@@ -54,8 +54,8 @@ export default (reduction, action) => {
       return reduction.withMutations(mutableReduction => {
         mutableReduction.update(r => PlanetReducer.planetChanged(r, payload));
         mutableReduction.update(r => PlanetReducer.checkObiwanSpottedSith(r));
-        mutableReduction.update(r => SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r));
         mutableReduction.update(r => SithLoadingReducer.triggerSithLoading(r));
+        mutableReduction.update(r => SithLoadingReducer.cancelAnyRequestIfObiwanSpottedSith(r));
         mutableReduction.update(r => ScrollingReducer.enableOrDisableControlButtons(r));
       });
     break;
