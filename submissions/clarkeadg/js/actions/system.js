@@ -3,12 +3,8 @@
 
 	var actions = {
 
-		start: function () {
-			App.dispatcher.trigger('System:start');
-		},
-
-		worldChanged: function () {
-			App.dispatcher.trigger('System:worldChanged');	
+		worldChanged: function (data) {
+			App.dispatcher.trigger('System:worldChanged',data);	
 		}
 
 	};

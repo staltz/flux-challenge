@@ -26,6 +26,8 @@
 
 		take: blocks.observable(12),
 
+		planet: blocks.observable('Earth'),
+
 		init: function () {
 			var page = this.page;
 		},
