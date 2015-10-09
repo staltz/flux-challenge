@@ -168,18 +168,10 @@
 	function pressButtonUp() {
 		if(slots[0].above && !planetLock) {
 			for(var i = numSlots - numShift - 1; i >= 0; i--) {
-				slots[i + numShift].name.innerHTML = slots[i].name.innerHTML;
-				slots[i + numShift].location.innerHTML = slots[i].location.innerHTML;
-				slots[i + numShift].planet = slots[i].planet;
-				slots[i + numShift].above = slots[i].above;
-				slots[i + numShift].below = slots[i].below;
+				copySlot(slots[i + numShift], slots[i]);
 			}
 			for(var i = 0; i < numShift; i++) {
-				slots[i].above = null;
-				slots[i].below = null;
-				slots[i].planet = null;
-				slots[i].name.innerHTML = "";
-				slots[i].location.innerHTML = "";
+				emptySlot(slots[i]);
 				if(pendingSith[rowOffset + numSlots - 1 - i]) { //cancel requests that went offscreen
 					pendingSith[rowOffset + numSlots - 1 - i].abort();
 					pendingSith[rowOffset + numSlots - 1 - i] = null;
@@ -197,18 +189,10 @@
 	function pressButtonDown() {
 		if(slots[numSlots - 1].below && !planetLock) {
 			for(var i = numShift; i < numSlots; i++) {
-				slots[i - numShift].name.innerHTML = slots[i].name.innerHTML;
-				slots[i - numShift].location.innerHTML = slots[i].location.innerHTML;
-				slots[i - numShift].planet = slots[i].planet;
-				slots[i - numShift].above = slots[i].above;
-				slots[i - numShift].below = slots[i].below;			
+				copySlot(slots[i - numShift], slots[i]);
 			}
 			for(var i = 0; i < numShift; i++) {
-				slots[numSlots - 1 - i].above = null;
-				slots[numSlots - 1 - i].below = null;
-				slots[numSlots - 1 - i].planet = null;
-				slots[numSlots - 1 - i].name.innerHTML = "";
-				slots[numSlots - 1 - i].location.innerHTML = "";
+				emptySlot(slots[numSlots - 1 - i]);
 				if(pendingSith[rowOffset + i]) { //cancel requests that went offscreen
 					pendingSith[rowOffset + i].abort();
 					pendingSith[rowOffset + i] = null;
@@ -221,6 +205,22 @@
 			}
 			requestSith(numSlots - numShift, slots[numSlots - numShift - 1].below);
 		}	
+	}
+	
+	function copySlot(slotTo, slotFrom) {
+		slotTo.name.innerHTML = slotFrom.name.innerHTML;
+		slotTo.location.innerHTML = slotFrom.location.innerHTML;
+		slotTo.planet = slotFrom.planet;
+		slotTo.above = slotFrom.above;
+		slotTo.below = slotFrom.below;	
+	}
+	
+	function emptySlot(slot) {
+		slot.above = null;
+		slot.below = null;
+		slot.planet = null;
+		slot.name.innerHTML = "";
+		slot.location.innerHTML = "";
 	}
   </script>
   
