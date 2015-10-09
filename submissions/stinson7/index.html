@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../../styles.css" type="text/css">
   <script type="text/javascript">
 	var numSlots = 5;
+	var numShift = 2;
 	var slots = [];
 	var buttonUp;
 	var buttonDown;
@@ -25,7 +26,6 @@
 		buttonUp = document.getElementById("button-up");
 		buttonDown = document.getElementById("button-down");
 		planetMonitor = document.getElementById("planet-monitor");
-		
 		for(var i = 0; i < numSlots; i++) {
 			slots[i] = document.createElement("li");
 			slots[i].className = "css-slot";
@@ -35,7 +35,6 @@
 			slots[i].appendChild(slots[i].location);
 			slotHolder.appendChild(slots[i]);
 		}
-		
 		buttonUp.onclick = pressButtonUp;
 		buttonDown.onclick = pressButtonDown;
 		planetSocket = new WebSocket("ws://localhost:4000");
@@ -76,26 +75,20 @@
 	}
 	
 	function restartRequests() {
-		if(!slots[0].planet) {
-			if(slots[1].above) {
-				requestSith(0, slots[1].above);
-			}
+		if(!slots[0].planet && slots[1].above) {
+			requestSith(0, slots[1].above);
 		}
 		
 		for(var i = 1; i < numSlots - 1; i++) {
-			if(!slots[i].planet) {
-				if(slots[i + 1].above) {
-					requestSith(i, slots[i + 1].above);
-				}
-				else if(slots[i - 1].below) {
-					requestSith(i, slots[i - 1].below);
-				}
+			if(!slots[i].planet && slots[i + 1].above) {
+				requestSith(i, slots[i + 1].above);
+			}
+			else if(!slots[i].planet && slots[i - 1].below) {
+				requestSith(i, slots[i - 1].below);
 			}
 		}
-		if(!slots[numSlots - 1].planet) {
-			if(slots[numSlots - 2].below) {
-				requestSith(numSlots - 1, slots[numSlots - 2].below);
-			}
+		if(!slots[numSlots - 1].planet && slots[numSlots - 2].below) {
+			requestSith(numSlots - 1, slots[numSlots - 2].below);
 		}
 	}
 	
@@ -163,8 +156,6 @@
 			buttonDown.className = "css-button-down css-button-disabled";
 		}
 		
-
-		
 		if(slots[i].planet == planetMonitor.planet) {
 			slots[i].style = "color:#ff0000"; //turn red
 			planetLock = true;
@@ -176,73 +167,59 @@
 	
 	function pressButtonUp() {
 		if(slots[0].above && !planetLock) {
-			for(var i = numSlots - 3; i >= 0; i--) {
-				slots[i + 2].name.innerHTML = slots[i].name.innerHTML;
-				slots[i + 2].location.innerHTML = slots[i].location.innerHTML;
-				slots[i + 2].planet = slots[i].planet;
-				slots[i + 2].above = slots[i].above;
-				slots[i + 2].below = slots[i].below;
-			}	
-			slots[0].above = null;
-			slots[0].below = null;
-			slots[0].planet = null;
-			slots[0].name.innerHTML = "";
-			slots[0].location.innerHTML = "";
-			buttonUp.className = "css-button-up css-button-disabled";
-			slots[1].above = null;
-			slots[1].below = null;
-			slots[1].planet = null;
-			slots[1].name.innerHTML = "";
-			slots[1].location.innerHTML = "";
-			if(pendingSith[rowOffset + numSlots - 2]) { //cancel requests that went offscreen
-				pendingSith[rowOffset + numSlots - 2].abort();
-				pendingSith[rowOffset + numSlots - 2] = null;
-			}		
-			if(pendingSith[rowOffset + numSlots - 1]) {
-				pendingSith[rowOffset + numSlots - 1].abort();
-				pendingSith[rowOffset + numSlots - 1] = null;
+			for(var i = numSlots - numShift - 1; i >= 0; i--) {
+				slots[i + numShift].name.innerHTML = slots[i].name.innerHTML;
+				slots[i + numShift].location.innerHTML = slots[i].location.innerHTML;
+				slots[i + numShift].planet = slots[i].planet;
+				slots[i + numShift].above = slots[i].above;
+				slots[i + numShift].below = slots[i].below;
 			}
-			rowOffset -= 2;
+			for(var i = 0; i < numShift; i++) {
+				slots[i].above = null;
+				slots[i].below = null;
+				slots[i].planet = null;
+				slots[i].name.innerHTML = "";
+				slots[i].location.innerHTML = "";
+				if(pendingSith[rowOffset + numSlots - 1 - i]) { //cancel requests that went offscreen
+					pendingSith[rowOffset + numSlots - 1 - i].abort();
+					pendingSith[rowOffset + numSlots - 1 - i] = null;
+				}					
+			}
+			buttonUp.className = "css-button-up css-button-disabled";
+			rowOffset -= numShift;
 			if(slots[numSlots - 1].below) {
 				buttonDown.className = "css-button-down";
 			}
-			requestSith(1, slots[2].above);
+			requestSith(numShift - 1, slots[numShift].above);
 		}
 	}
 	
 	function pressButtonDown() {
 		if(slots[numSlots - 1].below && !planetLock) {
-			for(var i = 2; i < numSlots; i++) {
-				slots[i - 2].name.innerHTML = slots[i].name.innerHTML;
-				slots[i - 2].location.innerHTML = slots[i].location.innerHTML;
-				slots[i - 2].planet = slots[i].planet;
-				slots[i - 2].above = slots[i].above;
-				slots[i - 2].below = slots[i].below;
+			for(var i = numShift; i < numSlots; i++) {
+				slots[i - numShift].name.innerHTML = slots[i].name.innerHTML;
+				slots[i - numShift].location.innerHTML = slots[i].location.innerHTML;
+				slots[i - numShift].planet = slots[i].planet;
+				slots[i - numShift].above = slots[i].above;
+				slots[i - numShift].below = slots[i].below;			
 			}
-			slots[numSlots - 1].above = null;
-			slots[numSlots - 1].below = null;
-			slots[numSlots - 1].planet = null;
-			slots[numSlots - 1].name.innerHTML = "";
-			slots[numSlots - 1].location.innerHTML = "";
+			for(var i = 0; i < numShift; i++) {
+				slots[numSlots - 1 - i].above = null;
+				slots[numSlots - 1 - i].below = null;
+				slots[numSlots - 1 - i].planet = null;
+				slots[numSlots - 1 - i].name.innerHTML = "";
+				slots[numSlots - 1 - i].location.innerHTML = "";
+				if(pendingSith[rowOffset + i]) { //cancel requests that went offscreen
+					pendingSith[rowOffset + i].abort();
+					pendingSith[rowOffset + i] = null;
+				}				
+			}
 			buttonDown.className = "css-button-down css-button-disabled";
-			slots[numSlots - 2].above = null;
-			slots[numSlots - 2].below = null;
-			slots[numSlots - 2].planet = null;
-			slots[numSlots - 2].name.innerHTML = "";
-			slots[numSlots - 2].location.innerHTML = "";
-			if(pendingSith[rowOffset + 1]) { //cancel requests that went offscreen
-				pendingSith[rowOffset + 1].abort();
-				pendingSith[rowOffset + 1] = null;
-			}		
-			if(pendingSith[rowOffset]) {
-				pendingSith[rowOffset].abort();
-				pendingSith[rowOffset] = null;
-			}
-			rowOffset += 2;
+			rowOffset += numShift;
 			if(slots[0].above) {
 				buttonUp.className = "css-button-up";
 			}
-			requestSith(numSlots - 2, slots[numSlots - 3].below);
+			requestSith(numSlots - numShift, slots[numSlots - numShift - 1].below);
 		}	
 	}
   </script>
