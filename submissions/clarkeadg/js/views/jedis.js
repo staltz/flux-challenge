@@ -7,7 +7,7 @@
 			url: 'templates/jedis.html'
 		},
 
-		jedis: Jedis().extend('filter', function (achievement) {
+		jedis: Jedis().extend('filter', function (jedi) {
 			var include = true;
 			return include;
 		}).extend('step', function () {
@@ -24,7 +24,7 @@
 
 		page: blocks.observable(1),
 
-		take: blocks.observable(12),
+		take: blocks.observable(5),
 
 		world: blocks.observable('Unknown'),
 
@@ -37,12 +37,14 @@
 		},
 
 		pagePlus: function () {
+			//console.log('pagePlus');
 			if (this.page() < this.pages().length) {
 				this.page(this.page() + 1);
 			}
 		},
 
 		pageMinus: function () {
+			//console.log('pageMinus');
 			if (this.page() > 1) {
 				this.page(this.page() - 1);
 			}

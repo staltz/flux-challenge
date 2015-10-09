@@ -11,8 +11,8 @@
 			App.dispatcher.trigger('Jedi:getMaster',data);
 		},
 
-		getAprentice: function(data) {
-			App.dispatcher.trigger('Jedi:getAprentice',data);
+		getApprentice: function(data) {
+			App.dispatcher.trigger('Jedi:getApprentice',data);
 		}
 
 	};
