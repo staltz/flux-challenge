@@ -40,7 +40,7 @@ port currentWorld : Signal (Maybe World)
 
 type alias Model =
   { world:Maybe World
-  , jedis:Array (Maybe Jedi)
+  , jediSlots:Array (Maybe Jedi)
   , scrollPos:Int
   }
 
@@ -71,7 +71,7 @@ darthSidious =
 init : JediUrl -> (Model, Effects Action)
 init jediUrl =
   ( { world = Nothing
-    , jedis = Array.repeat 5 Nothing
+    , jediSlots = Array.repeat 5 Nothing
     , scrollPos = 0
     }
   , fetchJedi 0 0 jediUrl
@@ -100,13 +100,13 @@ update action model =
       let offset = oldScrollPos - model.scrollPos
           adjustedPos = pos + offset
       in
-        ( if inBounds adjustedPos model.jedis
-            then { model | jedis <- Array.set adjustedPos newJedi model.jedis }
+        ( if inBounds adjustedPos model.jediSlots
+            then { model | jediSlots <- Array.set adjustedPos newJedi model.jediSlots }
             else model
           -- fill the next/previous slot if it's empty
         , Effects.batch
-            [ maybeFetchNextJedi adjustedPos newJedi model.jedis model.scrollPos
-            , maybeFetchPrevJedi adjustedPos newJedi model.jedis model.scrollPos
+            [ maybeFetchNextJedi adjustedPos newJedi model.jediSlots model.scrollPos
+            , maybeFetchPrevJedi adjustedPos newJedi model.jediSlots model.scrollPos
             ]
         )
 
@@ -116,11 +116,11 @@ update action model =
       )
 
     ScrollUp ->
-      let newJedis = Array.slice 0 (Array.length model.jedis - 2) model.jedis
-          firstJedi = Array.get 0 model.jedis
+      let newJedis = Array.slice 0 (Array.length model.jediSlots - 2) model.jediSlots
+          firstJedi = Array.get 0 model.jediSlots
           newScrollPos = model.scrollPos - 2
       in
-        ( { model | jedis <- Array.append (Array.repeat 2 Nothing) newJedis
+        ( { model | jediSlots <- Array.append (Array.repeat 2 Nothing) newJedis
                   , scrollPos <- newScrollPos }
         , case firstJedi `andThen` flip andThen .master of
             Nothing ->
@@ -130,17 +130,17 @@ update action model =
         )
 
     ScrollDown ->
-      let newJedis = Array.slice 2 (Array.length model.jedis) model.jedis
-          lastJedi = Array.get (Array.length model.jedis - 1) model.jedis
+      let newJedis = Array.slice 2 (Array.length model.jediSlots) model.jediSlots
+          lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
           newScrollPos = model.scrollPos + 2
       in
-        ( { model | jedis <- Array.append newJedis (Array.repeat 2 Nothing)
+        ( { model | jediSlots <- Array.append newJedis (Array.repeat 2 Nothing)
                   , scrollPos <- newScrollPos }
         , case lastJedi `andThen` flip andThen .apprentice of
             Nothing ->
               Effects.none
             Just apprentice ->
-              fetchJedi (Array.length model.jedis - 2)
+              fetchJedi (Array.length model.jediSlots - 2)
                         newScrollPos
                         apprentice
         )
@@ -158,14 +158,14 @@ fetchJedi pos currentScrollPos {url} =
     |> Effects.task
 
 inBounds : Int -> Array (Maybe Jedi) -> Bool
-inBounds pos jedis =
-  pos >= 0 && pos < Array.length jedis
+inBounds pos slots =
+  pos >= 0 && pos < Array.length slots
 
 maybeFetchJedi : Int -> (Jedi -> Maybe JediUrl) -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
-maybeFetchJedi pos apprenticeOrMaster currentMJedi jedis currentScrollPos =
-  if | not (inBounds pos jedis) ->
+maybeFetchJedi pos apprenticeOrMaster currentMJedi jediSlots currentScrollPos =
+  if | not (inBounds pos jediSlots) ->
          Effects.none
-     | Array.get pos jedis /= Just Nothing ->
+     | Array.get pos jediSlots /= Just Nothing ->
          -- already have a jedi in that position
          Effects.none
      | otherwise ->
@@ -191,16 +191,16 @@ notNothing maybe =
 
 -- Does the first Jedi have an apprentice?
 canScrollUp : Array (Maybe Jedi) -> Bool
-canScrollUp jedis =
-  let loadedJedis = List.filter notNothing (Array.toList jedis)
+canScrollUp jediSlots =
+  let loadedJedis = List.filter notNothing (Array.toList jediSlots)
       firstJedi = List.head loadedJedis
       master = firstJedi `andThen` (flip andThen .master)
   in notNothing master
 
 -- Does the last Jedi have an apprentice?
 canScrollDown : Array (Maybe Jedi) -> Bool
-canScrollDown jedis =
-  let loadedJedis = List.filter notNothing (Array.toList jedis)
+canScrollDown jediSlots =
+  let loadedJedis = List.filter notNothing (Array.toList jediSlots)
       lastJedi = Array.get (List.length loadedJedis - 1) (Array.fromList loadedJedis)
       apprentice = lastJedi `andThen` (flip andThen .apprentice)
   in notNothing apprentice
@@ -224,10 +224,10 @@ onWorld mJedi mWorld =
 --
 
 view : Signal.Address Action -> Model -> Html
-view address {world, jedis} =
+view address {world, jediSlots} =
   div [class "css-root"]
       [ viewPlanetMonitor world
-      , viewJediList address jedis world
+      , viewJediList address jediSlots world
       ]
 
 viewPlanetMonitor : Maybe World -> Html
@@ -242,18 +242,18 @@ viewPlanetMonitor mWorld =
         ]
 
 viewJediList : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
-viewJediList address jedis mWorld =
-  let scrollDisabled = List.any (flip onWorld mWorld) (Array.toList jedis)
+viewJediList address jediSlots mWorld =
+  let scrollDisabled = List.any (flip onWorld mWorld) (Array.toList jediSlots)
   in
     div
       [ class "css-scrollable-list" ]
       [ ul
           [class "css-slots"]
-          (List.map (viewJedi mWorld) (Array.toList jedis))
+          (List.map (viewJedi mWorld) (Array.toList jediSlots))
       , viewScrollButtons
           address
-          (not scrollDisabled && canScrollUp jedis)
-          (not scrollDisabled && canScrollDown jedis)
+          (not scrollDisabled && canScrollUp jediSlots)
+          (not scrollDisabled && canScrollDown jediSlots)
       ]
 
 viewJedi : Maybe World -> Maybe Jedi -> Html

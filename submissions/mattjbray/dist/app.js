@@ -4692,11 +4692,11 @@ Elm.Main.make = function (_elm) {
          "between lines 188 and 190");
       }();
    };
-   var canScrollUp = function (jedis) {
+   var canScrollUp = function (jediSlots) {
       return function () {
          var loadedJedis = A2($List.filter,
          notNothing,
-         $Array.toList(jedis));
+         $Array.toList(jediSlots));
          var firstJedi = $List.head(loadedJedis);
          var master = A2($Maybe.andThen,
          firstJedi,
@@ -4708,11 +4708,11 @@ Elm.Main.make = function (_elm) {
          return notNothing(master);
       }();
    };
-   var canScrollDown = function (jedis) {
+   var canScrollDown = function (jediSlots) {
       return function () {
          var loadedJedis = A2($List.filter,
          notNothing,
-         $Array.toList(jedis));
+         $Array.toList(jediSlots));
          var lastJedi = A2($Array.get,
          $List.length(loadedJedis) - 1,
          $Array.fromList(loadedJedis));
@@ -4727,10 +4727,10 @@ Elm.Main.make = function (_elm) {
       }();
    };
    var inBounds = F2(function (pos,
-   jedis) {
+   slots) {
       return _U.cmp(pos,
       0) > -1 && _U.cmp(pos,
-      $Array.length(jedis)) < 0;
+      $Array.length(slots)) < 0;
    });
    var ScrollDown = {ctor: "ScrollDown"};
    var ScrollUp = {ctor: "ScrollUp"};
@@ -4765,23 +4765,23 @@ Elm.Main.make = function (_elm) {
                    _L.fromArray([]))]));
    });
    var viewJediList = F3(function (address,
-   jedis,
+   jediSlots,
    mWorld) {
       return function () {
          var scrollDisabled = A2($List.any,
          A2($Basics.flip,onWorld,mWorld),
-         $Array.toList(jedis));
+         $Array.toList(jediSlots));
          return A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("css-scrollable-list")]),
          _L.fromArray([A2($Html.ul,
                       _L.fromArray([$Html$Attributes.$class("css-slots")]),
                       A2($List.map,
                       viewJedi(mWorld),
-                      $Array.toList(jedis)))
+                      $Array.toList(jediSlots)))
                       ,A3(viewScrollButtons,
                       address,
-                      $Basics.not(scrollDisabled) && canScrollUp(jedis),
-                      $Basics.not(scrollDisabled) && canScrollDown(jedis))]));
+                      $Basics.not(scrollDisabled) && canScrollUp(jediSlots),
+                      $Basics.not(scrollDisabled) && canScrollDown(jediSlots))]));
       }();
    });
    var view = F2(function (address,
@@ -4792,7 +4792,7 @@ Elm.Main.make = function (_elm) {
          _L.fromArray([viewPlanetMonitor(_v15.world)
                       ,A3(viewJediList,
                       address,
-                      _v15.jedis,
+                      _v15.jediSlots,
                       _v15.world)]));
       }();
    });
@@ -4895,7 +4895,7 @@ Elm.Main.make = function (_elm) {
    var init = function (jediUrl) {
       return {ctor: "_Tuple2"
              ,_0: {_: {}
-                  ,jedis: A2($Array.repeat,
+                  ,jediSlots: A2($Array.repeat,
                   5,
                   $Maybe.Nothing)
                   ,scrollPos: 0
@@ -4905,13 +4905,13 @@ Elm.Main.make = function (_elm) {
    var maybeFetchJedi = F5(function (pos,
    apprenticeOrMaster,
    currentMJedi,
-   jedis,
+   jediSlots,
    currentScrollPos) {
       return $Basics.not(A2(inBounds,
       pos,
-      jedis)) ? $Effects.none : !_U.eq(A2($Array.get,
+      jediSlots)) ? $Effects.none : !_U.eq(A2($Array.get,
       pos,
-      jedis),
+      jediSlots),
       $Maybe.Just($Maybe.Nothing)) ? $Effects.none : function () {
          var _v21 = A2($Maybe.andThen,
          currentMJedi,
@@ -4950,14 +4950,14 @@ Elm.Main.make = function (_elm) {
             return function () {
                  var newScrollPos = model.scrollPos + 2;
                  var lastJedi = A2($Array.get,
-                 $Array.length(model.jedis) - 1,
-                 model.jedis);
+                 $Array.length(model.jediSlots) - 1,
+                 model.jediSlots);
                  var newJedis = A3($Array.slice,
                  2,
-                 $Array.length(model.jedis),
-                 model.jedis);
+                 $Array.length(model.jediSlots),
+                 model.jediSlots);
                  return {ctor: "_Tuple2"
-                        ,_0: _U.replace([["jedis"
+                        ,_0: _U.replace([["jediSlots"
                                          ,A2($Array.append,
                                          newJedis,
                                          A2($Array.repeat,
@@ -4976,7 +4976,7 @@ Elm.Main.make = function (_elm) {
                            switch (_v28.ctor)
                            {case "Just":
                               return A3(fetchJedi,
-                                $Array.length(model.jedis) - 2,
+                                $Array.length(model.jediSlots) - 2,
                                 newScrollPos,
                                 _v28._0);
                               case "Nothing":
@@ -4990,13 +4990,13 @@ Elm.Main.make = function (_elm) {
                  var newScrollPos = model.scrollPos - 2;
                  var firstJedi = A2($Array.get,
                  0,
-                 model.jedis);
+                 model.jediSlots);
                  var newJedis = A3($Array.slice,
                  0,
-                 $Array.length(model.jedis) - 2,
-                 model.jedis);
+                 $Array.length(model.jediSlots) - 2,
+                 model.jediSlots);
                  return {ctor: "_Tuple2"
-                        ,_0: _U.replace([["jedis"
+                        ,_0: _U.replace([["jediSlots"
                                          ,A2($Array.append,
                                          A2($Array.repeat,
                                          2,
@@ -5031,21 +5031,21 @@ Elm.Main.make = function (_elm) {
                  return {ctor: "_Tuple2"
                         ,_0: A2(inBounds,
                         adjustedPos,
-                        model.jedis) ? _U.replace([["jedis"
-                                                   ,A3($Array.set,
-                                                   adjustedPos,
-                                                   action._2,
-                                                   model.jedis)]],
+                        model.jediSlots) ? _U.replace([["jediSlots"
+                                                       ,A3($Array.set,
+                                                       adjustedPos,
+                                                       action._2,
+                                                       model.jediSlots)]],
                         model) : model
                         ,_1: $Effects.batch(_L.fromArray([A4(maybeFetchNextJedi,
                                                          adjustedPos,
                                                          action._2,
-                                                         model.jedis,
+                                                         model.jediSlots,
                                                          model.scrollPos)
                                                          ,A4(maybeFetchPrevJedi,
                                                          adjustedPos,
                                                          action._2,
-                                                         model.jedis,
+                                                         model.jediSlots,
                                                          model.scrollPos)]))};
               }();
             case "SetWorld":
@@ -5062,7 +5062,7 @@ Elm.Main.make = function (_elm) {
    b,
    c) {
       return {_: {}
-             ,jedis: b
+             ,jediSlots: b
              ,scrollPos: c
              ,world: a};
    });
