@@ -1,5 +1,5 @@
 
-var Req = (function () {
+var Request = (function () {
 	
 	var post = function(call,params,cb) {
 		var opts = {

@@ -13,7 +13,7 @@
 		var params = {
 		};
 
-		App.req.get(call,params,function(data){
+		App.request.get(call,params,function(data){
 			//console.log('gotDarthSidious',data);
 			jedis = App._views.Jedis.jedis;
 			addDarthSidious(data);
@@ -27,7 +27,7 @@
 		var params = {
 		};
 
-		App.req.get(call,params,function(data){
+		App.request.get(call,params,function(data){
 			//console.log('gotMaster',data);
 			addJedi(data,true);		
 		});
@@ -40,7 +40,7 @@
 		var params = {
 		};
 
-		App.req.get(call,params,function(data){
+		App.request.get(call,params,function(data){
 			//console.log('gotAprentice',data);
 			addJedi(data);
 		});

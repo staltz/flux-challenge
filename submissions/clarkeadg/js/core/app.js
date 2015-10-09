@@ -1,12 +1,12 @@
 
-var App = (function (Config, Req, Dispatcher, Store) {
+var App = (function (Config, Request, Dispatcher, Store) {
 	
 	var App = blocks.Application({
 		history: 'pushState'
 	});
 
 	App.config = Config;
-	App.req = Req;
+	App.request = Request;
 	App.dispatcher = Dispatcher;
 	App.store = Store;
 	App.stores = {};
@@ -14,4 +14,4 @@ var App = (function (Config, Req, Dispatcher, Store) {
 
 	return App;	
 
-})(Config, Req, Dispatcher, Store);
+})(Config, Request, Dispatcher, Store);
