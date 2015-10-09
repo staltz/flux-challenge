@@ -225,35 +225,34 @@ onWorld mJedi mWorld =
 
 view : Signal.Address Action -> Model -> Html
 view address {world, jediSlots} =
-  div [class "css-root"]
-      [ viewPlanetMonitor world
-      , viewJediList address jediSlots world
-      ]
+  div [ class "css-root" ]
+    [ viewPlanetMonitor world
+    , viewJediList address jediSlots world
+    ]
 
 viewPlanetMonitor : Maybe World -> Html
 viewPlanetMonitor mWorld =
-  h1
-    [class "css-planet-monitor"]
-        [ text ("Obi-Wan currently "
-                ++
-                (case mWorld of
-                   Just {name} -> "on " ++ name
-                   Nothing -> "in transit"))
-        ]
+  h1 [ class "css-planet-monitor" ]
+    [ text ("Obi-Wan currently "
+            ++
+            (case mWorld of
+               Just {name} -> "on " ++ name
+               Nothing -> "in transit"))
+    ]
 
 viewJediList : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
 viewJediList address jediSlots mWorld =
-  let scrollDisabled = List.any (flip onWorld mWorld) (Array.toList jediSlots)
+  let scrollDisabled    = List.any (flip onWorld mWorld) (Array.toList jediSlots)
+      scrollUpEnabled   = not scrollDisabled && canScrollUp jediSlots
+      scrollDownEnabled = not scrollDisabled && canScrollDown jediSlots
   in
-    div
-      [ class "css-scrollable-list" ]
-      [ ul
-          [class "css-slots"]
-          (List.map (viewJedi mWorld) (Array.toList jediSlots))
-      , viewScrollButtons
-          address
-          (not scrollDisabled && canScrollUp jediSlots)
-          (not scrollDisabled && canScrollDown jediSlots)
+    div [ class "css-scrollable-list" ]
+      [ ul [ class "css-slots" ]
+          (List.map (viewJedi mWorld)
+                    (Array.toList jediSlots))
+      , viewScrollButtons address
+                          scrollUpEnabled
+                          scrollDownEnabled
       ]
 
 viewJedi : Maybe World -> Maybe Jedi -> Html
@@ -274,25 +273,23 @@ viewJedi mWorld mJedi =
 
 viewScrollButtons : Signal.Address Action -> Bool -> Bool -> Html
 viewScrollButtons address upEnabled downEnabled =
-  div
-    [ class "css-scroll-buttons" ]
-    [ button
-        (classList [ ("css-button-up", True)
-                   , ("css-button-disabled", not upEnabled)
-                   ]
-        :: if upEnabled
-             then [onClick address ScrollUp]
-             else [])
-        []
-    , button
-        (classList [ ("css-button-down", True)
-                   , ("css-button-disabled", not downEnabled)
-                   ]
-         :: if downEnabled
-              then [onClick address ScrollDown]
-              else [])
-        []
-    ]
+  div [ class "css-scroll-buttons" ]
+    (List.map (viewScrollButton address)
+              [ (ScrollUp, "css-button-up", upEnabled)
+              , (ScrollDown, "css-button-down", downEnabled)
+              ])
+
+viewScrollButton : Signal.Address Action -> (Action, String, Bool) -> Html
+viewScrollButton address (action, className, enabled) =
+  button
+    (classList [ (className, True)
+               , ("css-button-disabled", not enabled)
+               ]
+    :: if enabled
+       then [onClick address action]
+       else [])
+    []
+
 
 --
 -- Decoders
