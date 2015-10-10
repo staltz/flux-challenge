@@ -1,13 +1,11 @@
 
 (function (App) {
 
-	var ws = new WebSocket(App.config.api.websocket);
-	ws.onmessage = function (event) {
-		if (typeof event != 'undefined' && event.data) {
-			App.actions.world.changed(JSON.parse(event.data));
-		}
+	var init = function() {
+		App.views.world.init();
+		App.views.jedis.init();
 	};
 
-	App.actions.jedi.getDarthSidious();
+	init();	
 
 })(App);

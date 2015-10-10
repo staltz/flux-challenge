@@ -1,15 +1,13 @@
 
-var App = (function (Config, Request, Dispatcher, Store) {
+var App = (function (Config) {
 	
 	var App = {};
 
 	App.config = Config;
-	App.request = Request;
-	App.dispatcher = Dispatcher;
-	App.store = Store;
 	App.stores = {};
 	App.actions = {};
+	App.views = {};
 
 	return App;	
 
-})(Config, Request, Dispatcher, Store);
+})(Config);

@@ -3,9 +3,8 @@
 
 	var limit = 5;
 	var increment = 2;
-	var total;
-	var jedis = [];
-	var $cont = $('.css-slots');
+	var total = 0;
+	var jedis = [];	
 
 	App.dispatcher.on('Jedi:getDarthSidious',function(){
 		//console.log('Jedi:getDarthSidious');
@@ -56,7 +55,7 @@
 			jedis.pop();
 			jedis.unshift({});
 		}
-		renderJedis($cont,jedis);
+		dataChanged();
 	});
 
 	App.dispatcher.on('Jedi:scrollDown',function(){
@@ -67,8 +66,20 @@
 			jedis.shift({});
 			jedis.push({});
 		}
-		renderJedis($cont,jedis);
+		dataChanged();
 	});
+
+	function dataChanged() {		
+		if (!jedis.length) {
+			App.views.jedis.disableScrollUp();
+			App.views.jedis.disableScrollDown();
+			return;
+		}
+
+		App.views.jedis.render(jedis);
+		checkTop() ? App.views.jedis.enableScrollUp() : App.views.jedis.disableScrollUp();
+		checkBottom() ? App.views.jedis.enableScrollDown() : App.views.jedis.disableScrollDown();
+	}
 
 	function getMaster(data) {
 		if (data.master && data.master.url) {
@@ -96,6 +107,18 @@
 				total++;
 			}
 		}
+	}
+
+	function checkTop() {
+		if (!jedis.length) return false;
+		if (jedis[0].name && jedis[0].master && jedis[0].master.url) return true;
+		return false;
+	}
+
+	function checkBottom() {
+		if (!jedis.length) return false;
+		if (jedis[jedis.length-1].name && jedis[jedis.length-1].apprentice && jedis[jedis.length-1].apprentice.url) return true;
+		return false;
 	}
 
 	function addJedi(data,master) {
@@ -142,20 +165,7 @@
 			getApprentice(data);
 		}
 		//console.log(jedis);
-		renderJedis($cont,jedis)		
-	}
-
-	function renderJedis($el,jedis) {
-		var htmlString = '';
-		$.each(jedis,function(i,jedi){
-			htmlString+= [
-				'<li class="css-slot">',
-					jedi.name ? '<h3>'+jedi.name+'</h3>' : '',
-                	jedi.homeworld && jedi.homeworld.name ? '<h6>Homeworld: '+jedi.homeworld.name+'</h6>' : '',
-                '</li>'
-			].join('\n');
-		});
-		$el.html(htmlString);
-	}
+		dataChanged();	
+	}	
 
 })(App);

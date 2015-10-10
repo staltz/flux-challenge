@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta name="description" content="clarkeadg's solution for the Flux challenge"/>
   <title>clarkeadg's solution for the Flux challenge</title>
-  <link rel="stylesheet" href="css/styles.css" type="text/css">
+  <link rel="stylesheet" href="css/styles.css" type="text/css">  
 </head>
 <body>
-    
     <div class="app-container">
       <div class="css-root">
           <h1 class="css-planet-monitor"></h1>
@@ -23,17 +22,16 @@
       </div>
     </div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Lib -->
+    <script src="lib/jquery.min.js"></script>
 
     <!-- Config -->
     <script src="js/config.js"></script>    
 
-    <!-- Core -->    
+    <!-- Core -->
+    <script src="js/core/app.js"></script>     
     <script src="js/core/request.js"></script>
-    <script src="js/core/event.js"></script>
-    <script src="js/core/dispatcher.js"></script>
-    <script src="js/core/store.js"></script>
-    <script src="js/core/app.js"></script>    
+    <script src="js/core/dispatcher.js"></script>      
 
     <!-- Actions -->
     <script src="js/actions/world.js"></script>
@@ -44,9 +42,11 @@
     <script src="js/stores/jedi.js"></script>
 
     <!-- Views -->
+    <script src="js/views/world.js"></script>
     <script src="js/views/jedis.js"></script>
 
     <!-- Main -->
     <script src="js/main.js"></script>
+
 </body>
 </html>

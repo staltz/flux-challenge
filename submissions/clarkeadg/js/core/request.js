@@ -1,5 +1,5 @@
 
-var Request = (function () {
+(function (App) {
 	
 	var post = function(call,params,cb) {
 		var opts = {
@@ -64,9 +64,9 @@ var Request = (function () {
 		return xhr;
 	}
 
-	return {
+	App.request = {
 		post: post,
 		get: get
 	};
 
-})();
+})(App);
