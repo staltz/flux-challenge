@@ -96,13 +96,16 @@ init jediUrl =
 -- Actions
 --
 
+type ScrollDir
+  = Up
+  | Down
+
 type Action
   = SetWorld (Maybe World)
   | SetJedi Int -- the index of the slot to put the Jedi in
             Int -- the scrollPosition when the request was initiated
             (Maybe Jedi)
-  | ScrollUp
-  | ScrollDown
+  | Scroll ScrollDir
 
 --
 -- Update
@@ -133,41 +136,39 @@ update action model =
       , Effects.none
       )
 
-    ScrollUp ->
-      if not (canScroll ScrollUp model.jediSlots)
+    Scroll dir ->
+      if not (canScroll dir model.jediSlots)
         then (model, Effects.none)
         else
-          let newJedis = Array.slice 0 (Array.length model.jediSlots - scrollSpeed) model.jediSlots
-              firstJedi = Array.get 0 model.jediSlots
-              newScrollPos = model.scrollPos - scrollSpeed
-          in
-            ( { model | jediSlots <- Array.append (Array.repeat scrollSpeed Nothing) newJedis
-                      , scrollPos <- newScrollPos }
-            , case firstJedi `andThen` flip andThen .master of
-                Nothing ->
-                  Effects.none
-                Just master ->
-                  fetchJedi (scrollSpeed - 1) newScrollPos master
-            )
-
-    ScrollDown ->
-      if not (canScroll ScrollDown model.jediSlots)
-        then (model, Effects.none)
-        else
-          let newJedis = Array.slice scrollSpeed (Array.length model.jediSlots) model.jediSlots
-              lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
-              newScrollPos = model.scrollPos + scrollSpeed
-          in
-            ( { model | jediSlots <- Array.append newJedis (Array.repeat scrollSpeed Nothing)
-                      , scrollPos <- newScrollPos }
-            , case lastJedi `andThen` flip andThen .apprentice of
-                Nothing ->
-                  Effects.none
-                Just apprentice ->
-                  fetchJedi (Array.length model.jediSlots - scrollSpeed)
-                            newScrollPos
-                            apprentice
-            )
+          case dir of
+            Up ->
+              let newJedis = Array.slice 0 (Array.length model.jediSlots - scrollSpeed) model.jediSlots
+                  firstJedi = Array.get 0 model.jediSlots
+                  newScrollPos = model.scrollPos - scrollSpeed
+              in
+                ( { model | jediSlots <- Array.append (Array.repeat scrollSpeed Nothing) newJedis
+                        , scrollPos <- newScrollPos }
+                , case firstJedi `andThen` flip andThen .master of
+                    Nothing ->
+                    Effects.none
+                    Just master ->
+                    fetchJedi (scrollSpeed - 1) newScrollPos master
+                )
+            Down ->
+              let newJedis = Array.slice scrollSpeed (Array.length model.jediSlots) model.jediSlots
+                  lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
+                  newScrollPos = model.scrollPos + scrollSpeed
+              in
+                ( { model | jediSlots <- Array.append newJedis (Array.repeat scrollSpeed Nothing)
+                          , scrollPos <- newScrollPos }
+                , case lastJedi `andThen` flip andThen .apprentice of
+                    Nothing ->
+                      Effects.none
+                    Just apprentice ->
+                      fetchJedi (Array.length model.jediSlots - scrollSpeed)
+                                newScrollPos
+                                apprentice
+                )
 
 --
 -- Lib
@@ -237,14 +238,14 @@ maybeFetchPrevJedi currentPos =
 
 -- Return True if the first (last) jedi in the list has an apprentice (master)
 -- AND we would have at least one jedi in view after the scroll
-canScroll : Action -> Array (Maybe Jedi) -> Bool
+canScroll : ScrollDir -> Array (Maybe Jedi) -> Bool
 canScroll upOrDown jediSlots =
   let (firstOrLast, apprenticeOrMaster) =
         case upOrDown of
-          ScrollUp ->
+          Up ->
             ( Array.get 0
             , .apprentice)
-          ScrollDown ->
+          Down ->
             ( (\jedis -> Array.get (Array.length jedis - 1) jedis)
             , .master)
       loadedJedis = Array.filter notNothing jediSlots
@@ -252,8 +253,8 @@ canScroll upOrDown jediSlots =
       next = jedi `andThen` (flip andThen apprenticeOrMaster)
       jediInView = jediSlots
                      |> (case upOrDown of
-                           ScrollUp -> Array.slice 0 -scrollSpeed
-                           ScrollDown -> Array.slice scrollSpeed (Array.length jediSlots))
+                           Up -> Array.slice 0 -scrollSpeed
+                           Down -> Array.slice scrollSpeed (Array.length jediSlots))
                      |> any notNothing
   in notNothing next && jediInView
 
@@ -316,18 +317,18 @@ viewScrollButtons address jediSlots mWorld =
   in
     div [ class "css-scroll-buttons" ]
       (List.map (viewScrollButton address)
-                [ (ScrollUp, "css-button-up", not scrollDisabled && canScroll ScrollUp jediSlots)
-                , (ScrollDown, "css-button-down", not scrollDisabled && canScroll ScrollDown jediSlots)
+                [ (Up, "css-button-up", not scrollDisabled && canScroll Up jediSlots)
+                , (Down, "css-button-down", not scrollDisabled && canScroll Down jediSlots)
                 ])
 
-viewScrollButton : Signal.Address Action -> (Action, String, Bool) -> Html
-viewScrollButton address (action, className, enabled) =
+viewScrollButton : Signal.Address Action -> (ScrollDir, String, Bool) -> Html
+viewScrollButton address (dir, className, enabled) =
   button
     (classList [ (className, True)
                , ("css-button-disabled", not enabled)
                ]
     :: if enabled
-       then [onClick address action]
+       then [onClick address (Scroll dir)]
        else [])
     []
 
