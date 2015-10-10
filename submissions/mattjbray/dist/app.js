@@ -4612,7 +4612,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 284 and 286");
+         "between lines 285 and 287");
       }()))]));
    };
    var mMap2 = F3(function (func,
@@ -4656,7 +4656,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 263 and 266");
+         "between lines 264 and 267");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4680,7 +4680,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 306 and 312");
+         "between lines 307 and 313");
       }());
    });
    var any = F2(function (pred,
@@ -4696,7 +4696,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 183 and 185");
+         "between lines 184 and 186");
       }();
    };
    var isNothing = function ($) {
@@ -4730,7 +4730,7 @@ Elm.Main.make = function (_elm) {
               Scroll(_v15._0))]) : _L.fromArray([])),
               _L.fromArray([]));}
          _U.badCase($moduleName,
-         "between lines 326 and 333");
+         "between lines 327 and 334");
       }();
    });
    var SetJedi = F3(function (a,
@@ -4777,7 +4777,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 363 and 369");
+         "between lines 364 and 370");
       }();
    });
    var Jedi = F5(function (a,
@@ -4854,7 +4854,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Effects.none;}
          _U.badCase($moduleName,
-         "between lines 221 and 225");
+         "between lines 222 and 226");
       }();
    });
    var maybeFetchNextJedi = function (currentPos) {
@@ -4915,7 +4915,7 @@ Elm.Main.make = function (_elm) {
                  0,
                  0 - scrollSpeed);}
             _U.badCase($moduleName,
-            "between lines 255 and 257");
+            "between lines 256 and 258");
          }()(jediSlots));
          var loadedJedis = A2($Array.filter,
          notNothing,
@@ -4930,22 +4930,22 @@ Elm.Main.make = function (_elm) {
                          jedis);
                       }
                       ,_1: function (_) {
-                         return _.master;
+                         return _.apprentice;
                       }};
                case "Up":
                return {ctor: "_Tuple2"
                       ,_0: $Array.get(0)
                       ,_1: function (_) {
-                         return _.apprentice;
+                         return _.master;
                       }};}
             _U.badCase($moduleName,
-            "between lines 244 and 251");
+            "between lines 245 and 252");
          }(),
          firstOrLast = $._0,
          apprenticeOrMaster = $._1;
-         var jedi = firstOrLast(loadedJedis);
+         var mJedi = firstOrLast(loadedJedis);
          var next = A2($Maybe.andThen,
-         jedi,
+         mJedi,
          A2($Basics.flip,
          $Maybe.andThen,
          apprenticeOrMaster));
@@ -4999,7 +4999,7 @@ Elm.Main.make = function (_elm) {
                                       case "Nothing":
                                       return $Effects.none;}
                                    _U.badCase($moduleName,
-                                   "between lines 164 and 171");
+                                   "between lines 165 and 172");
                                 }()};
                       }();
                     case "Up": return function () {
@@ -5037,11 +5037,11 @@ Elm.Main.make = function (_elm) {
                                       case "Nothing":
                                       return $Effects.none;}
                                    _U.badCase($moduleName,
-                                   "between lines 151 and 156");
+                                   "between lines 152 and 157");
                                 }()};
                       }();}
                  _U.badCase($moduleName,
-                 "between lines 143 and 171");
+                 "between lines 144 and 172");
               }();
             case "SetJedi":
             return function () {
@@ -5074,7 +5074,7 @@ Elm.Main.make = function (_elm) {
                    model)
                    ,_1: $Effects.none};}
          _U.badCase($moduleName,
-         "between lines 116 and 171");
+         "between lines 117 and 172");
       }();
    });
    var viewScrollButtons = F3(function (address,

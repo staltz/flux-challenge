@@ -11,7 +11,6 @@ import Maybe exposing (andThen)
 import StartApp
 import Task
 
-
 --
 -- Config
 --
@@ -244,13 +243,13 @@ canScroll upOrDown jediSlots =
         case upOrDown of
           Up ->
             ( Array.get 0
-            , .apprentice)
+            , .master)
           Down ->
             ( (\jedis -> Array.get (Array.length jedis - 1) jedis)
-            , .master)
+            , .apprentice)
       loadedJedis = Array.filter notNothing jediSlots
-      jedi = firstOrLast loadedJedis
-      next = jedi `andThen` (flip andThen apprenticeOrMaster)
+      mJedi = firstOrLast loadedJedis
+      next = mJedi `andThen` (flip andThen apprenticeOrMaster)
       jediInView = jediSlots
                      |> (case upOrDown of
                            Up -> Array.slice 0 -scrollSpeed
