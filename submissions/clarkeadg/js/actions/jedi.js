@@ -3,8 +3,8 @@
 
 	var actions = {
 
-		getDarthSidious: function() {
-			App.dispatcher.trigger('Jedi:getDarthSidious');
+		getFirstJedi: function() {
+			App.dispatcher.trigger('Jedi:getFirstJedi');
 		},
 
 		getMaster: function(data) {

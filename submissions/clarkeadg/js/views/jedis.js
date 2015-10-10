@@ -21,7 +21,7 @@
 		init: function() {
 			this.disableScrollUp();
 			this.disableScrollDown();
-			App.actions.jedi.getDarthSidious();
+			App.actions.jedi.getFirstJedi();
 		},
 		render: function(data) {
 			var htmlString = '';

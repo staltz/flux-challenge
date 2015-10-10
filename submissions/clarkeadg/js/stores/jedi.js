@@ -6,50 +6,35 @@
 	var total = 0;
 	var jedis = [];	
 
-	App.dispatcher.on('Jedi:getDarthSidious',function(){
-		//console.log('Jedi:getDarthSidious');
-		total = 1;
-		
-		var call = App.config.api.host + App.config.api.get.jedis + App.config.jedis.darthSidious.id;
+	App.dispatcher.on('Jedi:getFirstJedi',function(){
+		var call = App.config.api.host + App.config.api.get.jedis + App.config.api.get.firstJedi;
 		var params = {
 		};
-
 		App.request.get(call,params,function(data){
-			//console.log('gotDarthSidious',data);
-			//jedis = App._views.Jedis.jedis;
-			addDarthSidious(data);
+			addFirstJedi(data);
 		});
 	});
 
-	App.dispatcher.on('Jedi:getMaster',function(data){
-		//console.log('Jedi:getMaster',data);
-		
+	App.dispatcher.on('Jedi:getMaster',function(data){	
 		var call = data.url;
 		var params = {
 		};
-
 		App.request.get(call,params,function(data){
-			//console.log('gotMaster',data);
 			addJedi(data,true);		
 		});
 	});
 
 	App.dispatcher.on('Jedi:getApprentice',function(data){
-		//console.log('Jedi:getAprentice',data);
-		
 		var call =  data.url;
 		var params = {
 		};
-
 		App.request.get(call,params,function(data){
-			//console.log('gotAprentice',data);
 			addJedi(data);
 		});
 	});	
 
 	App.dispatcher.on('Jedi:scrollUp',function(){
 		if (!jedis[0].name) return false;
-		//console.log('Jedi:scrollUp');	
 		getMaster(jedis[0]);			
 		for(var i=0;i<increment;i++) {
 			jedis.pop();
@@ -60,7 +45,6 @@
 
 	App.dispatcher.on('Jedi:scrollDown',function(){
 		if (!jedis[jedis.length-1].name) return false;
-		//console.log('Jedi:scrollDown',jedis[jedis.length-1]);
 		getApprentice(jedis[jedis.length-1]);
 		for(var i=0;i<increment;i++) {
 			jedis.shift({});
@@ -93,7 +77,7 @@
 		}
 	}
 
-	function addDarthSidious(data) {
+	function addFirstJedi(data) {
 		total++;
 		jedis.push(data);
 		getMaster(data);
@@ -135,7 +119,6 @@
 			for(var c=-1,i=jedis.length-1;i>c;i--) {
 				if (!jedis[i].name) {
 					check = true;
-					//console.log(i,data)
 					jedis[i] = data;
 					break;
 				}
@@ -152,7 +135,6 @@
 			for(var i=0,c=jedis.length;i<c;i++) {
 				if (!jedis[i].name) {
 					check = true;
-					//console.log(i,data)
 					jedis[i] = data;
 					break;
 				}
