@@ -98,11 +98,11 @@
 		var count = 0;
 		for(var i = 0; i < numSlots; i++) {
 			if(slots[i].planet == planet) {
-				slots[i].style = "color:#ff0000"; //turn red
+				slots[i].style.color = "red";
 				count++;
 			}
 			else {
-				slots[i].style = "";
+				slots[i].style.color = "";
 			}
 		}
 		if(count > 0) {
@@ -157,7 +157,7 @@
 		}
 		
 		if(slots[i].planet == planetMonitor.planet) {
-			slots[i].style = "color:#ff0000"; //turn red
+			slots[i].style.color = "red";
 			planetLock = true;
 			buttonUp.className = "css-button-up css-button-disabled";
 			buttonDown.className = "css-button-down css-button-disabled";
