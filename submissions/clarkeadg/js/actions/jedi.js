@@ -1,4 +1,8 @@
 
+/**
+ * Jedi Actions
+ */
+
 (function (App) {
 
 	var actions = {

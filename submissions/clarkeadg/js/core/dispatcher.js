@@ -1,4 +1,8 @@
 
+/**
+ * Dispatcher
+ */
+
 (function (App) {
 
     var _evts = {};

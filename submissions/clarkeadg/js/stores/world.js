@@ -1,4 +1,8 @@
 
+/**
+ * World Store
+ */
+
 (function (App) {
 
 	var store = {

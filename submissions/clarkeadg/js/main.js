@@ -1,4 +1,8 @@
 
+/**
+ * Main
+ */
+
 (function (App) {
 
 	App.views.world.init();

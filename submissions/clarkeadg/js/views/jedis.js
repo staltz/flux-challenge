@@ -1,4 +1,8 @@
 
+/**
+ * Jedis View
+ */
+
 (function (App, $) {
 
 	var $cont = $('.css-slots');
@@ -56,10 +60,17 @@
 		disableScrollDown: function() {
 			$buttonDown.addClass(disabledButtonClass);
 		},
+		enableScroll: function() {
+			if (!App.stores.jedis.length) return false;
+			this.enableScrollUp();
+			this.enableScrollDown();
+		},
 		enableScrollUp: function() {
+			if (!App.stores.jedis.length) return false;
 			$buttonUp.removeClass(disabledButtonClass);
 		},
 		enableScrollDown: function() {
+			if (!App.stores.jedis.length) return false;
 			$buttonDown.removeClass(disabledButtonClass);
 		}
 	};

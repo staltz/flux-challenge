@@ -1,4 +1,8 @@
 
+/**
+ * World View
+ */
+
 (function (App, $) {
 
 	var $el = $('.css-planet-monitor');

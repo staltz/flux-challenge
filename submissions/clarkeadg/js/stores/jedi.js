@@ -1,4 +1,8 @@
 
+/**
+ * Jedi Store
+ */
+
 (function (App) {
 
 	var limit = 5;

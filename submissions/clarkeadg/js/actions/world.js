@@ -1,4 +1,8 @@
 
+/**
+ * World Actions
+ */
+
 (function (App) {
 
 	var actions = {

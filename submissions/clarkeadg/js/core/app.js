@@ -1,4 +1,8 @@
 
+/**
+ * App
+ */
+
 var App = (function (Config) {
 	
 	var App = {};
