@@ -8,10 +8,22 @@
   <link rel="stylesheet" href="css/styles.css" type="text/css">
 </head>
 <body>
-    <div class="app-container" data-query="view(Jedis)"></div>
+    
+    <div class="app-container">
+      <div class="css-root">
+          <h1 class="css-planet-monitor"></h1>
+          <section class="css-scrollable-list">
+            <ul class="css-slots">
+            </ul>
+            <div class="css-scroll-buttons">
+              <button class="css-button-up"></button>
+              <button class="css-button-down"></button>
+            </div>
+          </section>
+      </div>
+    </div>
 
-    <!-- JS Blocks Framework -->
-    <script src="lib/blocks/dist/blocks.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
     <!-- Config -->
     <script src="js/config.js"></script>    
@@ -26,12 +38,6 @@
     <!-- Actions -->
     <script src="js/actions/world.js"></script>
     <script src="js/actions/jedi.js"></script> 
-
-    <!-- Models -->
-    <script src="js/models/jedi.js"></script>
-
-    <!-- Collections -->
-    <script src="js/collections/jedis.js"></script>
 
     <!-- Stores -->
     <script src="js/stores/world.js"></script>

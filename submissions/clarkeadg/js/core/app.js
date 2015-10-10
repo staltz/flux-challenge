@@ -1,9 +1,7 @@
 
 var App = (function (Config, Request, Dispatcher, Store) {
 	
-	var App = blocks.Application({
-		history: 'pushState'
-	});
+	var App = {};
 
 	App.config = Config;
 	App.request = Request;
