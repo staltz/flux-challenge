@@ -13,7 +13,7 @@
 			};
 		},
 		render: function(data) {
-			$el.text('Obi-Wan currently on '+data);
+			$el.text('Obi-Wan currently on '+App.stores.world.name);
 		}
 	};
 

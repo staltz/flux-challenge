@@ -54,6 +54,10 @@ body {
   height: 1.7em;
 }
 
+.css-slot-disabled {
+  color: #f00
+}
+
 .css-slot h3, .css-slot h4, .css-slot h5, .css-slot h6 {
   margin: 0;
 }

@@ -148,6 +148,8 @@
 		}
 		//console.log(jedis);
 		dataChanged();	
-	}	
+	}
+
+	App.stores.jedis = jedis;	
 
 })(App);
