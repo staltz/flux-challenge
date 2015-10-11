@@ -22,13 +22,13 @@ function getNextSithId(state, direction) {
   const bottomSith = R.last(state.siths);
 
   return (
-    direction == SCROLL_UP &&
+    direction == SCROLL_DOWN &&
     getEmptyApprenticeSpots(state) > 0 &&
     R.isNil(state.onGoingApprenticeRequest) &&
     bottomSith.apprentice &&
     bottomSith.apprentice.id
   ) || (
-    direction == SCROLL_DOWN &&
+    direction == SCROLL_UP &&
     getEmptyMasterSpots(state) > 0 &&
     R.isNil(state.onGoingMasterRequest) &&
     topSith.master &&
@@ -59,17 +59,19 @@ function cancelRequestIfNeeded(direction) {
   return (dispatch, getState) => {
     const state = getState();
     const requestToCancel = (
-      direction == SCROLL_UP &&
+      direction == SCROLL_DOWN &&
       getEmptyMasterSpots(state) === 0 &&
       state.onGoingMasterRequest
     ) || (
-      direction == SCROLL_DOWN &&
+      direction == SCROLL_UP &&
       getEmptyApprenticeSpots(state) === 0 &&
       state.onGoingApprenticeRequest
     );
 
     if(requestToCancel) {
       requestToCancel.rawRequest.abort();
+      const oppositeDirection = direction == SCROLL_UP ?
+        SCROLL_DOWN : SCROLL_UP;
       dispatch( {type: ABORT_REQUEST, direction: oppositeDirection });
     }
   }
@@ -92,7 +94,7 @@ function loadSithIfNeeded(direction) {
 export function initialRequest() {
   return (dispatch) => {
     getRequest(INITIAL_SITH_ID).promiseRequest.then((sith) => {
-      dispatch({ type: SITH_LOADED, direction : SCROLL_UP, sith });
+      dispatch({ type: SITH_LOADED, direction : SCROLL_DOWN, sith });
       dispatch(loadSithIfNeeded(SCROLL_UP));
       dispatch(loadSithIfNeeded(SCROLL_DOWN));
     });

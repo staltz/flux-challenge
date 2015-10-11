@@ -84,12 +84,12 @@ function mapStateToProps(state) {
   const isScrollUpDisabled =
     homeworldFound ||
     paddingTop === MAX_VISIBLE_SITHS - 1 ||
-    (firstSith && R.isNil(firstSith.master));
+    (firstSith && R.isNil(firstSith.master.id));
 
   const isScrollDownDisabled =
     homeworldFound ||
     paddingBottom === MAX_VISIBLE_SITHS - 1 ||
-    (lastSith && R.isNil(lastSith.apprentice));
+    (lastSith && R.isNil(lastSith.apprentice.id));
 
   return {
     currentPlanet,

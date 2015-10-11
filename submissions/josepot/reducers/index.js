@@ -17,7 +17,7 @@ const initialState = {
   paddingTop : Math.trunc(MAX_VISIBLE_SITHS / 2),
   siths : [],
   onGoingMasterRequest : null,
-  onGoingApprenticeRequest: {
+  onGoingApprenticeRequest : {
     id: INITIAL_SITH_ID,
     rawRequest: null,
     promiseRequest: null
@@ -25,7 +25,7 @@ const initialState = {
 }
 
 function getOnGoingPropertyFromDirection(direction) {
-  return direction == SCROLL_UP ?
+  return direction == SCROLL_DOWN ?
     'onGoingApprenticeRequest' :
     'onGoingMasterRequest';
 }
@@ -48,12 +48,12 @@ export default function rootReducer(state = initialState, action) {
       if(state[requestProperty].id !== action.sith.id) return state;
 
       const siths = (action.direction == SCROLL_UP) ?
-        [...state.siths, action.sith] :
-        [action.sith, ...state.siths]
+        [action.sith, ...state.siths] :
+        [...state.siths, action.sith];
 
       const paddingTop = (action.direction == SCROLL_UP) ?
-        state.paddingTop :
-        state.paddingTop - 1;
+        state.paddingTop - 1:
+        state.paddingTop;
 
       return Object.assign({}, state, {
         [requestProperty]: null,
