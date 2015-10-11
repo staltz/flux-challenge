@@ -1,6 +1,7 @@
 
 /**
  * Dispatcher
+ * @author Brian Clarke <https://github.com/clarkeadg>
  */
 
 (function (App) {

@@ -1,6 +1,7 @@
 
 /**
  * App
+ * @author Brian Clarke <https://github.com/clarkeadg>
  */
 
 var App = (function (Config) {

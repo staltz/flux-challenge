@@ -1,6 +1,7 @@
 
 /**
  * Jedis View
+ * @author Brian Clarke <https://github.com/clarkeadg>
  */
 
 (function (App, $) {
@@ -63,22 +64,16 @@
 					z.foundJedi = true;
 					foundJedi = true;
 					z.disableScroll();
-					//stop = true;
 					console.log('FOUND JEDI',App.stores.world.name,jedi.name)
 				}
 				htmlString+= [
 					'<li class="css-slot '+(foundJedi ? z.disabledSlotClass : '')+'">',
 						jedi.name ? '<h3>'+jedi.name+'</h3>' : '',
-						//jedi.name ? '<h3>'+jedi.name+' '+jedi.id+'</h3>' : '',
-						//jedi.master && jedi.master.id ? '<span>Master: '+jedi.master.id+'</span>' : '',
-						//jedi.apprentice && jedi.apprentice.id ? '<span>Apprentice: '+jedi.apprentice.id+'</span>' : '',
-	                	jedi.homeworld && jedi.homeworld.name ? '<h6>Homeworld: '+jedi.homeworld.name+'</h6>' : '',
-	                	
+						jedi.homeworld && jedi.homeworld.name ? '<h6>Homeworld: '+jedi.homeworld.name+'</h6>' : '',
 	                '</li>'
 				].join('\n');
 			});
 			z.$slots.html(htmlString);
-			//console.log('RENDER JEDIS')
 			if (!z.foundJedi) {
 				z.enableScroll();
 			}

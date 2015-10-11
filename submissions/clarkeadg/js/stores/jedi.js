@@ -1,6 +1,7 @@
 
 /**
  * Jedi Store
+ * @author Brian Clarke <https://github.com/clarkeadg>
  */
 
 (function (App) {
@@ -153,7 +154,6 @@
 
 	function addMaster(data) {
 		var slot = getTopSlot();
-		//console.log('SLOT',slot)
 		if (slot === false) {
 			jedis.unshift(data);
 		}
