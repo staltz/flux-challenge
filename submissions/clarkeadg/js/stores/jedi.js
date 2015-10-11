@@ -86,16 +86,7 @@
 		jedis.push(data);
 		getMaster(data);
 		getApprentice(data);
-	}
-
-	function checkJedis(jedis) {
-		total = 1;
-		for(var i=0,c=jedis.length;i<c;i++) {
-			if (jedis[i].name) {
-				total++;
-			}
-		}
-	}
+	}	
 
 	function checkTop() {
 		if (!jedis.length) return false;
@@ -109,8 +100,17 @@
 		return false;
 	}
 
+	function countJedis(jedis) {
+		total = 1;
+		for(var i=0,c=jedis.length;i<c;i++) {
+			if (jedis[i].name) {
+				total++;
+			}
+		}
+	}
+
 	function addJedi(data,master) {
-		checkJedis(jedis);
+		countJedis(jedis);
 		if (total > limit) return false;
 
 		//console.log('addJedi',total,data,master);
