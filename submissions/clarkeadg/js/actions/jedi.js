@@ -4,32 +4,32 @@
  * @author Brian Clarke <https://github.com/clarkeadg>
  */
 
-(function (App) {
+(function(App) {
 
-	var actions = {
+  var actions = {
 
-		getFirstJedi: function() {
-			App.dispatcher.trigger('Jedi:getFirstJedi');
-		},
+    getFirstJedi: function() {
+      App.dispatcher.trigger('Jedi:getFirstJedi');
+    },
 
-		getMaster: function(data) {
-			App.dispatcher.trigger('Jedi:getMaster',data);
-		},
+    getMaster: function(data) {
+      App.dispatcher.trigger('Jedi:getMaster', data);
+    },
 
-		getApprentice: function(data) {
-			App.dispatcher.trigger('Jedi:getApprentice',data);
-		},
+    getApprentice: function(data) {
+      App.dispatcher.trigger('Jedi:getApprentice', data);
+    },
 
-		scrollUp: function(data) {
-			App.dispatcher.trigger('Jedi:scrollUp',data);
-		},
+    scrollUp: function(data) {
+      App.dispatcher.trigger('Jedi:scrollUp', data);
+    },
 
-		scrollDown: function(data) {
-			App.dispatcher.trigger('Jedi:scrollDown',data);
-		}
+    scrollDown: function(data) {
+      App.dispatcher.trigger('Jedi:scrollDown', data);
+    }
 
-	};	
+  };
 
-	App.actions.jedi = actions;
+  App.actions.jedi = actions;
 
 })(App);

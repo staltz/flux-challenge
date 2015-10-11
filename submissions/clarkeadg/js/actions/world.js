@@ -4,16 +4,16 @@
  * @author Brian Clarke <https://github.com/clarkeadg>
  */
 
-(function (App) {
+(function(App) {
 
-	var actions = {
+  var actions = {
 
-		changed: function (data) {
-			App.dispatcher.trigger('World:changed',data);
-		}
+    changed: function(data) {
+      App.dispatcher.trigger('World:changed', data);
+    }
 
-	};
+  };
 
-	App.actions.world = actions;
+  App.actions.world = actions;
 
 })(App);
