@@ -1,3 +1,4 @@
+import R from 'ramda';
 import { combineReducers } from 'redux';
 import {
   OBI_WAN_MOVED, SCROLL_UP, SCROLL_DOWN,
@@ -9,7 +10,10 @@ import {
 } from '../config';
 
 const initialState = {
-  currentPlanet : {},
+  currentPlanet : {
+    id: -1,
+    name: ''
+  },
   paddingTop : Math.trunc(MAX_VISIBLE_SITHS / 2),
   siths : [],
   onGoingMasterRequest : null,
@@ -60,7 +64,7 @@ export default function rootReducer(state = initialState, action) {
 
     case SCROLL_DOWN: {
       let paddingTop = state.paddingTop - N_SITHS_TO_SCROLL;
-      let siths = states.siths.slice(0);
+      let siths = state.siths.slice(0);
 
       if (paddingTop < 0) {
         siths = state.siths.slice(

@@ -3,7 +3,8 @@ var webpackDevMiddleware = require('webpack-dev-middleware');
 var webpackHotMiddleware = require('webpack-hot-middleware');
 var config = require('./webpack.config');
 
-var app = new require('express')();
+var express = require("express"),
+    app = express();
 var port = 3001;
 
 var compiler = webpack(config);
@@ -13,6 +14,8 @@ app.use(webpackHotMiddleware(compiler));
 app.get("/", function(req, res) {
   res.sendFile(__dirname + '/index.html');
 });
+
+app.use("/styles", express.static(__dirname + '/../..'));
 
 app.listen(port, function(error) {
   if (error) {

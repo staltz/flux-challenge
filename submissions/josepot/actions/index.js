@@ -101,7 +101,7 @@ export function initialRequest() {
 
 export function scroll(direction) {
   return (dispatch) => {
-    dispatch(direction);
+    dispatch({type: direction});
     dispatch(cancelRequestIfNeeded(direction));
     dispatch(loadSithIfNeeded(direction));
   }

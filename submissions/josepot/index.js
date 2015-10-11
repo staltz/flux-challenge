@@ -1,19 +1,14 @@
 import 'babel-core/polyfill';
+import React from 'react';
+import { Provider } from 'react-redux';
+import App from './containers/App';
 import configureStore from './store/configureStore';
 
 const store = configureStore();
 
-import {
-  SCROLL_UP, SCROLL_DOWN,
-  initialRequest, scroll, obiWanMoved
-} from './actions';
-
-console.log(store.getState());
-
-let unsubscribe = store.subscribe( () =>
-  console.log(store.getState())
+React.render(
+  <Provider store={store}>
+    {() => <App />}
+  </Provider>,
+  document.getElementById('root')
 );
-
-store.dispatch(obiWanMoved({name: 'Mars', id: 1}));
-
-store.dispatch(initialRequest());
