@@ -1,0 +1,20 @@
+{
+  "name": "flux-challenge",
+  "version": "0.0.1",
+  "dependencies": {
+    "react": "0.14.0",
+    "react-dom": "0.14.0"
+  },
+  "devDependencies": {
+    "express": "4.13.3",
+    "proxy-middleware": "0.14.0",
+    "typescript": "1.6.2",
+    "ts-loader": "0.5.6",
+    "webpack": "1.10.1",
+    "webpack-dev-server": "1.10.1"
+  },
+  "scripts": {
+      "start": "node ./server.js"
+  },
+  "author": "Reto Schläpfer"
+}

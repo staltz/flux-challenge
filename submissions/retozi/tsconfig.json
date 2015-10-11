@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"module": "commonjs",
+        "jsx": "react",
+		"sourceMap": true,
+		"noImplicitAny": true
+	},
+    "files": [
+        "typings/references.d.ts"
+    ]
+}
