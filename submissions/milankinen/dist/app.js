@@ -1,6 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -85,14 +87,22 @@ var sithsP = _baconjs2["default"].update(initialSiths, [sithLoadedS], function (
 });
 
 // load apprentice and master if there is an empty slots around the loaded sith
-loadSith.$.plug(sithsP.sampledBy(sithLoadedS, loadMasterAndApprenticeIfPossible).flatMap(_baconjs2["default"].fromArray));
+loadSith.$.plug(_baconjs2["default"].combineAsArray([sithsP, planetChangedS.toProperty({ id: "<none>" })]).sampledBy(sithLoadedS, function (_ref3, sith) {
+  var _ref32 = _slicedToArray(_ref3, 2);
+
+  var siths = _ref32[0];
+  var planet = _ref32[1];
+
+  if (isPlanetHomeWorldForListedSiths(planet, siths)) {
+    return createCancelRequests(siths);
+  } else {
+    return loadMasterAndApprenticeIfPossible(siths, sith);
+  }
+}).flatMap(_baconjs2["default"].fromArray));
 
 // reset previous requests and make new requests to empty slot after scroll
 loadSith.$.plug(sithsP.sampledBy(sithsScrolledS, function (siths) {
-  var cancels = siths.map(function (_ref3) {
-    var idx = _ref3.idx;
-    return { idx: idx };
-  });
+  var cancels = createCancelRequests(siths);
   var reloads = (0, _lodash.flatten)(siths.map(function (s) {
     return loadMasterAndApprenticeIfPossible(siths, s);
   }));
@@ -102,17 +112,21 @@ loadSith.$.plug(sithsP.sampledBy(sithsScrolledS, function (siths) {
 // reset all requests if the current planet is home world for any of the listed siths,
 // otherwise re-send the cancelled requests
 loadSith.$.plug(sithsP.sampledBy(planetChangedS, function (siths, planet) {
-  if (isCurrentPlanetHomeWorldForListedSiths(planet, siths)) {
-    return siths.map(function (_ref4) {
-      var idx = _ref4.idx;
-      return { idx: idx };
-    });
+  if (isPlanetHomeWorldForListedSiths(planet, siths)) {
+    return createCancelRequests(siths);
   } else {
     return (0, _lodash.flatten)(siths.map(function (s) {
       return loadMasterAndApprenticeIfPossible(siths, s);
     }));
   }
 }).flatMap(_baconjs2["default"].fromArray));
+
+function createCancelRequests(siths) {
+  return siths.map(function (_ref4) {
+    var idx = _ref4.idx;
+    return { idx: idx };
+  });
+}
 
 // just check that slots are empty and create an array of load events for master/apprentice
 function loadMasterAndApprenticeIfPossible(siths, sith) {
@@ -129,14 +143,14 @@ function loadMasterAndApprenticeIfPossible(siths, sith) {
   }
 }
 
-function isCurrentPlanetHomeWorldForListedSiths(planet, siths) {
+function isPlanetHomeWorldForListedSiths(planet, siths) {
   return !!(0, _lodash.find)(siths, function (s) {
     return s.homeworld && s.homeworld.id === planet.id;
   });
 }
 
 function updateScrolls(state) {
-  var allDisabled = isCurrentPlanetHomeWorldForListedSiths(state.planet, state.siths);
+  var allDisabled = isPlanetHomeWorldForListedSiths(state.planet, state.siths);
   return {
     upDisabled: allDisabled || !!(0, _lodash.find)(state.siths, function (s) {
       return s.master && !s.master.url;
