@@ -5,6 +5,8 @@
 
 (function (App, $) {
 
+	var stop = false;
+
 	var view = {
 		$el: {},
 		$buttonUp: {},
@@ -12,9 +14,11 @@
 		$slots: {},
 		disabledButtonClass: '',
 		disabledSlotClass: '',
+		foundJedi: false,
 		init: function($cont) {			
 			this.disabledButtonClass = 'css-button-disabled';
 			this.disabledSlotClass = 'css-slot-disabled';
+			this.foundJedi = false;
 			this.$el = $([
 				'<section class="css-scrollable-list">',
 					'<ul class="css-slots">',
@@ -34,38 +38,50 @@
 			this.bindClicks();
 		},
 		bindClicks: function() {
+			var z = this;
+
 			this.$buttonUp.bind('click',function(e){
 				e.preventDefault();
-				if ($(this).hasClass(this.disabledButtonClass)) return false;
+				if ($(this).hasClass(z.disabledButtonClass)) return false;
 				App.actions.jedi.scrollUp();
 			});
 
 			this.$buttonDown.bind('click',function(e){
 				e.preventDefault();
-				if ($(this).hasClass(this.disabledButtonClass)) return false;
+				if ($(this).hasClass(z.disabledButtonClass)) return false;
 				App.actions.jedi.scrollDown();
 			});
 		},
 		render: function() {
+			if (stop) return false;
+			var z = this;
 			var htmlString = '';
-			var foundJedi = false;
+			z.foundJedi = false;
 			$.each(App.stores.jedis,function(i,jedi){
 				foundJedi = false;
 				if (jedi.homeworld && jedi.homeworld.name && jedi.homeworld.name == App.stores.world.name) {
+					z.foundJedi = true;
 					foundJedi = true;
+					z.disableScroll();
+					//stop = true;
+					console.log('FOUND JEDI',App.stores.world.name,jedi.name)
 				}
 				htmlString+= [
-					'<li class="css-slot '+(foundJedi ? this.disabledSlotClass : '')+'">',
+					'<li class="css-slot '+(foundJedi ? z.disabledSlotClass : '')+'">',
 						jedi.name ? '<h3>'+jedi.name+'</h3>' : '',
+						//jedi.name ? '<h3>'+jedi.name+' '+jedi.id+'</h3>' : '',
+						//jedi.master && jedi.master.id ? '<span>Master: '+jedi.master.id+'</span>' : '',
+						//jedi.apprentice && jedi.apprentice.id ? '<span>Apprentice: '+jedi.apprentice.id+'</span>' : '',
 	                	jedi.homeworld && jedi.homeworld.name ? '<h6>Homeworld: '+jedi.homeworld.name+'</h6>' : '',
+	                	
 	                '</li>'
 				].join('\n');
 			});
-			this.$slots.html(htmlString);
-			if (foundJedi) {
-				this.disableScroll();
+			z.$slots.html(htmlString);
+			//console.log('RENDER JEDIS')
+			if (!z.foundJedi) {
+				z.enableScroll();
 			}
-			console.log('RENDER JEDIS')		
 		},
 		disableScroll: function() {
 			this.disableScrollUp();
@@ -78,16 +94,16 @@
 			this.$buttonDown.addClass(this.disabledButtonClass);
 		},
 		enableScroll: function() {
-			if (!App.stores.jedis.length) return false;
+			if (!App.stores.jedis.length || !App.stores.jedis[0].id || !App.stores.jedis[App.stores.jedis.length-1].id) return false;
 			this.enableScrollUp();
 			this.enableScrollDown();
 		},
 		enableScrollUp: function() {
-			if (!App.stores.jedis.length) return false;
+			if (!App.stores.jedis.length || this.foundJedi || !App.stores.jedis[0].master || !App.stores.jedis[0].master.url) return false;
 			this.$buttonUp.removeClass(this.disabledButtonClass);
 		},
 		enableScrollDown: function() {
-			if (!App.stores.jedis.length) return false;
+			if (!App.stores.jedis.length || this.foundJedi || !App.stores.jedis[App.stores.jedis.length-1].apprentice || !App.stores.jedis[App.stores.jedis.length-1].apprentice.url) return false;
 			this.$buttonDown.removeClass(this.disabledButtonClass);
 		}
 	};

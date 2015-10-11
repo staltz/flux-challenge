@@ -5,8 +5,8 @@
 
 (function (App) {
 
-	var limit = 5;
-	var increment = 2;
+	var limit = App.config.limit;
+	var increment = App.config.increment;
 	var total = 0;
 	var jedis = [];
 
@@ -19,12 +19,12 @@
 		});
 	});
 
-	App.dispatcher.on('Jedi:getMaster',function(data){	
+	App.dispatcher.on('Jedi:getMaster',function(data){
 		var call = data.url;
 		var params = {
 		};
 		App.request.get(call,params,function(data){
-			addJedi(data,true);		
+			addJedi(data,true);	
 		});
 	});
 
@@ -59,12 +59,17 @@
 
 	function dataChanged() {		
 		if (!jedis.length) {
-			App.views.jedis.disableScrollUp();
-			App.views.jedis.disableScrollDown();
+			App.views.jedis.disableScroll();
 			return;
 		}
 
 		App.views.jedis.render(jedis);
+
+		if (App.views.jedis.foundJedi) {
+			App.views.jedis.disableScroll();
+			return;
+		}
+		
 		checkTop() ? App.views.jedis.enableScrollUp() : App.views.jedis.disableScrollUp();
 		checkBottom() ? App.views.jedis.enableScrollDown() : App.views.jedis.disableScrollDown();
 	}
@@ -79,13 +84,6 @@
 		if (data.apprentice && data.apprentice.url) {
 			App.actions.jedi.getApprentice(data.apprentice);
 		}
-	}
-
-	function addFirstJedi(data) {
-		total++;
-		jedis.push(data);
-		getMaster(data);
-		getApprentice(data);
 	}	
 
 	function checkTop() {
@@ -100,58 +98,84 @@
 		return false;
 	}
 
-	function countJedis(jedis) {
-		total = 1;
+	function checkForJedi(jedi) {
+		for(var i=0,c=jedis.length;i<c;i++) {
+			if (jedis[i].name == jedi.name) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function getTopSlot() {
+		// iterate backwards			
+		for(var c=-1,i=jedis.length-1;i>c;i--) {
+			if (!jedis[i].name) {
+				return i;
+			}
+		}
+		return false;
+	}
+
+	function getBottomSlot() {
+		for(var i=0,c=jedis.length;i<c;i++) {
+			if (!jedis[i].name) {
+				return i;
+			}
+		}
+		return false;
+	}
+
+	function countJedis() {
+		var total = 0;
 		for(var i=0,c=jedis.length;i<c;i++) {
 			if (jedis[i].name) {
 				total++;
 			}
 		}
+		return total;
+	}
+
+	function addFirstJedi(data) {		
+		jedis.push(data);
+		dataChanged();
+		getMaster(data);
+		getApprentice(data);
 	}
 
 	function addJedi(data,master) {
-		countJedis(jedis);
-		if (total > limit) return false;
+		if (checkForJedi(data)) return false;
+		total = countJedis();
+		if (total > limit-1) return false;
+		master ? addMaster(data) : addApprentice(data);	
+		dataChanged();
+	}
 
-		//console.log('addJedi',total,data,master);
-
-		var check = false;
-
-		if(master) {
-
-			// iterate backwards			
-			for(var c=-1,i=jedis.length-1;i>c;i--) {
-				if (!jedis[i].name) {
-					check = true;
-					jedis[i] = data;
-					break;
-				}
-			}
-
-			if (!check) {
-				jedis.unshift(data);
-			}			
-
-			getMaster(data);
-
-		} else {
-			
-			for(var i=0,c=jedis.length;i<c;i++) {
-				if (!jedis[i].name) {
-					check = true;
-					jedis[i] = data;
-					break;
-				}
-			}
-
-			if (!check) {
-				jedis.push(data);
-			}
-
-			getApprentice(data);
+	function addMaster(data) {
+		var slot = getTopSlot();
+		//console.log('SLOT',slot)
+		if (slot === false) {
+			jedis.unshift(data);
 		}
-		//console.log(jedis);
-		dataChanged();	
+		if (slot || slot === 0) {
+			if (typeof jedis[slot+1] != 'undefined' && jedis[slot+1].master && jedis[slot+1].master.id == data.id ) {
+				jedis[slot] = data;
+			}			
+		}
+		getMaster(data);
+	}
+
+	function addApprentice(data) {
+		var slot = getBottomSlot();
+		if (slot === false) {
+			jedis.push(data);
+		}
+		if (slot || slot === 0) {
+			if (typeof jedis[slot-1] != 'undefined' && jedis[slot-1].apprentice && jedis[slot-1].apprentice.id == data.id ) {
+				jedis[slot] = data;
+			}
+		}
+		getApprentice(data);
 	}
 
 	App.stores.jedis = jedis;	
