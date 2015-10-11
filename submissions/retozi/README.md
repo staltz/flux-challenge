@@ -12,7 +12,7 @@ Everything must be strictly typed (even immutable data structures). Reasoning he
 ### Flux
 
 The example comes with an own """Flux""" implementation. (I believe it's not worth to use an external dependency. A decent, modern implementation
-is roughly 200-300 straightforward LOC and should be tailored to the project.)
+is roughly 200-300 straightforward LOC and should be tailored to the needs of a project.)
 
 It is comparable to redux:
 
@@ -25,22 +25,21 @@ However, there are a couple of differences.
 
 * Actions are implemented as classes. The action implements the reducer function as its own method. The reasoning here: http://www.code-experience.com/problems-with-flux/ .
 * The async flow is strictly isolated inside the RequestAction and translated into two, synchronous state updates.
-* There is only one place where queries for state from the server are triggered: Inside the selector of a StateSlice.
+* There is only one place where queries for state from the server are triggered: Inside the selector of a state slice.
 * A typed solution for immutability.
 
 
 ##### Async flow
 
 Async code is evil. It is notoriously hard to reason about, and if you are not careful, it leaks all over your flux architecture, making things very complex.
-This example has a very strict solution to this.
+
+There are no promises or other async helpers in this example. All async behavior is wrapped inside the RequestAction class and does not leak outside.
 
 If you need to talk to the server, you must dispatch a RequestAction.
 
 The Store will call the writer of this action twice: Once when the request is sent (i.e. pending), once when the request returns.
-This means that both the "request sent" write and "response received" write are being multiplexed into the same write method. Because the action is a class, you will have access
-to the request object and it's current state.
+Both the "request sent" write and "response received" write are being multiplexed into the write method of the RequestAction.
 
-There are no promises or other async helpers, and all async behavior is wrapped inside the RequestAction class and does not leak outside.
 
 
 #### Bootstrapping and updating server state
