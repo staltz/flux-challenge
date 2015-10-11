@@ -5,10 +5,11 @@
 
 (function (App, $) {
 
-	var $el = $('.css-planet-monitor');
-
 	var view = {
-		init: function() {
+		$el: {},
+		init: function($cont) {
+			this.$el = $('<h1 class="css-planet-monitor"></h1>');
+			$cont.append(this.$el);
 			var ws = new WebSocket(App.config.api.websocket);
 			ws.onmessage = function (event) {
 				if (typeof event != 'undefined' && event.data) {
@@ -17,7 +18,7 @@
 			};
 		},
 		render: function(data) {
-			$el.text('Obi-Wan currently on '+App.stores.world.name);
+			this.$el.text('Obi-Wan currently on '+App.stores.world.name);
 		}
 	};
 

@@ -8,7 +8,7 @@
 	var limit = 5;
 	var increment = 2;
 	var total = 0;
-	var jedis = [];	
+	var jedis = [];
 
 	App.dispatcher.on('Jedi:getFirstJedi',function(){
 		var call = App.config.api.host + App.config.api.get.jedis + App.config.api.get.firstJedi;

@@ -5,29 +5,46 @@
 
 (function (App, $) {
 
-	var $cont = $('.css-slots');
-	var $buttonUp = $('.css-button-up');
-	var $buttonDown = $('.css-button-down');
-
-	var disabledButtonClass = 'css-button-disabled';
-	var disabledSlotClass = 'css-slot-disabled';
-
-	$buttonUp.bind('click',function(e){
-		e.preventDefault();
-		if ($(this).hasClass(disabledButtonClass)) return false;
-		App.actions.jedi.scrollUp();
-	});
-
-	$buttonDown.bind('click',function(e){
-		e.preventDefault();
-		if ($(this).hasClass(disabledButtonClass)) return false;
-		App.actions.jedi.scrollDown();
-	});
-
 	var view = {
-		init: function() {
+		$el: {},
+		$buttonUp: {},
+		$buttonDown: {},
+		$slots: {},
+		disabledButtonClass: '',
+		disabledSlotClass: '',
+		init: function($cont) {			
+			this.disabledButtonClass = 'css-button-disabled';
+			this.disabledSlotClass = 'css-slot-disabled';
+			this.$el = $([
+				'<section class="css-scrollable-list">',
+					'<ul class="css-slots">',
+					'</ul>',
+					'<div class="css-scroll-buttons">',
+						'<button class="css-button-up"></button>',
+						'<button class="css-button-down"></button>',
+					'</div>',
+				'</section>'
+			].join('\n'));
+			this.$buttonUp = this.$el.find('.css-button-up');
+			this.$buttonDown = this.$el.find('.css-button-down');
+			this.$slots = this.$el.find('.css-slots');
+			$cont.append(this.$el)
 			this.disableScroll();
 			App.actions.jedi.getFirstJedi();
+			this.bindClicks();
+		},
+		bindClicks: function() {
+			this.$buttonUp.bind('click',function(e){
+				e.preventDefault();
+				if ($(this).hasClass(this.disabledButtonClass)) return false;
+				App.actions.jedi.scrollUp();
+			});
+
+			this.$buttonDown.bind('click',function(e){
+				e.preventDefault();
+				if ($(this).hasClass(this.disabledButtonClass)) return false;
+				App.actions.jedi.scrollDown();
+			});
 		},
 		render: function() {
 			var htmlString = '';
@@ -38,13 +55,13 @@
 					foundJedi = true;
 				}
 				htmlString+= [
-					'<li class="css-slot '+(foundJedi ? disabledSlotClass : '')+'">',
+					'<li class="css-slot '+(foundJedi ? this.disabledSlotClass : '')+'">',
 						jedi.name ? '<h3>'+jedi.name+'</h3>' : '',
 	                	jedi.homeworld && jedi.homeworld.name ? '<h6>Homeworld: '+jedi.homeworld.name+'</h6>' : '',
 	                '</li>'
 				].join('\n');
 			});
-			$cont.html(htmlString);
+			this.$slots.html(htmlString);
 			if (foundJedi) {
 				this.disableScroll();
 			}
@@ -55,10 +72,10 @@
 			this.disableScrollDown();
 		},
 		disableScrollUp: function() {
-			$buttonUp.addClass(disabledButtonClass);
+			this.$buttonUp.addClass(this.disabledButtonClass);
 		},
 		disableScrollDown: function() {
-			$buttonDown.addClass(disabledButtonClass);
+			this.$buttonDown.addClass(this.disabledButtonClass);
 		},
 		enableScroll: function() {
 			if (!App.stores.jedis.length) return false;
@@ -67,11 +84,11 @@
 		},
 		enableScrollUp: function() {
 			if (!App.stores.jedis.length) return false;
-			$buttonUp.removeClass(disabledButtonClass);
+			this.$buttonUp.removeClass(this.disabledButtonClass);
 		},
 		enableScrollDown: function() {
 			if (!App.stores.jedis.length) return false;
-			$buttonDown.removeClass(disabledButtonClass);
+			this.$buttonDown.removeClass(this.disabledButtonClass);
 		}
 	};
 

@@ -14,7 +14,7 @@
 		if (typeof data != 'undefined' && data.name) {
 			store.name = data.name;
 			App.views.world.render();
-			App.views.jedis.render();
+			if (App.stores.jedis.length) App.views.jedis.render();
 		}
 	});
 

@@ -5,7 +5,6 @@
 
 (function (App) {
 
-	App.views.world.init();
-	App.views.jedis.init();
+	App.views.dashboard.init($('.app-container'));	
 
 })(App);
