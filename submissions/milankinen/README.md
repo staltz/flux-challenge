@@ -21,3 +21,7 @@ For more info, see:
 
     npm i && npm run dist && open index.html 
     
+    
+### License
+
+The contents of this folder are licensed under MIT.
