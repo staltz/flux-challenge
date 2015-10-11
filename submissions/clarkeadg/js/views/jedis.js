@@ -59,7 +59,7 @@
       var htmlString = '';
       z.foundJedi = false;
       $.each(App.stores.jedis, function(i, jedi) {
-        foundJedi = false;
+        var foundJedi = false;
         if (jedi.homeworld && jedi.homeworld.name && jedi.homeworld.name == App.stores.world.name) {
           z.foundJedi = true;
           foundJedi = true;
