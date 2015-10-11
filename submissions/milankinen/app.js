@@ -60,8 +60,15 @@ const sithsP =
 
 // load apprentice and master if there is an empty slots around the loaded sith
 loadSith.$.plug(
-  sithsP
-    .sampledBy(sithLoadedS, loadMasterAndApprenticeIfPossible)
+  Bacon
+    .combineAsArray([sithsP, planetChangedS.toProperty({id: "<none>"})])
+    .sampledBy(sithLoadedS, ([siths, planet], sith) => {
+      if (isPlanetHomeWorldForListedSiths(planet, siths)) {
+        return createCancelRequests(siths)
+      } else {
+        return loadMasterAndApprenticeIfPossible(siths, sith)
+      }
+    })
     .flatMap(Bacon.fromArray)
 )
 
@@ -69,7 +76,7 @@ loadSith.$.plug(
 loadSith.$.plug(
   sithsP
     .sampledBy(sithsScrolledS, siths => {
-      const cancels = siths.map(({idx}) => ({idx}))
+      const cancels = createCancelRequests(siths)
       const reloads = flatten(siths.map(s => loadMasterAndApprenticeIfPossible(siths, s)))
       return [...cancels, ...reloads]
     })
@@ -81,14 +88,18 @@ loadSith.$.plug(
 loadSith.$.plug(
   sithsP
     .sampledBy(planetChangedS, (siths, planet) => {
-      if (isCurrentPlanetHomeWorldForListedSiths(planet, siths)) {
-        return siths.map(({idx}) => ({idx}))
+      if (isPlanetHomeWorldForListedSiths(planet, siths)) {
+        return createCancelRequests(siths)
       } else {
         return flatten(siths.map(s => loadMasterAndApprenticeIfPossible(siths, s)))
       }
     })
     .flatMap(Bacon.fromArray)
 )
+
+function createCancelRequests(siths) {
+  return siths.map(({idx}) => ({idx}))
+}
 
 // just check that slots are empty and create an array of load events for master/apprentice
 function loadMasterAndApprenticeIfPossible(siths, sith) {
@@ -105,12 +116,12 @@ function loadMasterAndApprenticeIfPossible(siths, sith) {
   }
 }
 
-function isCurrentPlanetHomeWorldForListedSiths(planet, siths) {
+function isPlanetHomeWorldForListedSiths(planet, siths) {
   return !!find(siths, s => s.homeworld && s.homeworld.id === planet.id)
 }
 
 function updateScrolls(state) {
-  const allDisabled = isCurrentPlanetHomeWorldForListedSiths(state.planet, state.siths)
+  const allDisabled = isPlanetHomeWorldForListedSiths(state.planet, state.siths)
   return {
     upDisabled: allDisabled || !!find(state.siths, s => s.master && !s.master.url),
     downDisabled: allDisabled || !!find(state.siths, s => s.apprentice && !s.apprentice.url)
