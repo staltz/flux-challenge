@@ -4,9 +4,11 @@
     "repository": "https://github.com/USER/PROJECT.git",
     "license": "BSD3",
     "source-directories": [
-        "."
+        "src",
+        "./elm-http/src"
     ],
     "exposed-modules": [],
+    "native-modules": true,
     "dependencies": {
         "elm-lang/core": "2.1.0 <= v < 3.0.0",
         "evancz/elm-effects": "2.0.0 <= v < 3.0.0",

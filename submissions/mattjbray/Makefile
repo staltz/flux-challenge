@@ -1,4 +1,4 @@
 all: dist/app.js
 
 dist/app.js: src/*.elm
-	elm make $? --output dist/app.js
+	elm make src/Main.elm --output dist/app.js
