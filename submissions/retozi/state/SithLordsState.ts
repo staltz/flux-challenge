@@ -59,6 +59,9 @@ export function cancel(...lords: SithLord[]): void {
     for (const l of lords) {
         if (l.status === SithLordStatus.PENDING) {
             l.request.abort();
+            // mutate here, it will not matter but help recoverability
+            l.status = SithLordStatus.ABSENT;
+            l.request = null;
         }
     }
 }

@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "1a6365c41eb4175ab783"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "d66d911b3f94d1e6fbfd"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -701,6 +701,9 @@
 	        var l = lords[_a];
 	        if (l.status === SithLordStatus.PENDING) {
 	            l.request.abort();
+	            // mutate here, it will not matter but help recoverability
+	            l.status = SithLordStatus.ABSENT;
+	            l.request = null;
 	        }
 	    }
 	}
