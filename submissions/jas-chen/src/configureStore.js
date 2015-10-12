@@ -13,10 +13,11 @@ export default function configureStore(initialState) {
   const store = createStore(rootReducer, initialState);
 
   const state$ = Observable.create(observer => {
+    observer.onNext(store.getState());
     store.subscribe(() => observer.onNext(store.getState()));
   });
 
-  store.state$ = state$.startWith(store.getState());
+  store.state$ = state$;
 
   return store;
 }

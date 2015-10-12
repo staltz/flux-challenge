@@ -30,6 +30,10 @@ function fetchDarkJedi(url) {
     xhr.onloadend = () => observer.onCompleted();
     xhr.open("GET", url, true);
     xhr.send();
+
+    return function dispose() {
+      xhr.abort();
+    };
   });
 
   return { xhr, darkJedi$: darkJedi$.share() };

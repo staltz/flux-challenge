@@ -54,8 +54,7 @@ function timetravel(states) {
                min="0"
                max={max$}
                value={value$}
-               onInput={sliderOnNext}
-               onChange={sliderOnNext} />
+               onInput={sliderOnNext} />
       </Div>
       <div className="col tm-btn-wrapper">
         <Button className="tm-btn" onClick={btnOnClick}>{btnText$}</Button>

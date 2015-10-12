@@ -8,20 +8,17 @@ import DarkJediFetcher from './DarkJediFetcher.js';
 
 const timeTravelNode = document.getElementById("time-travel");
 const dashboardNode = document.getElementById('app-container');
-const states = [];
 
-const changePlanetAction$ = DOM.fromWebSocket('ws://localhost:4000').map(data => {
-  return {
-    type: 'NEXT_PLANET',
-    payload: JSON.parse(event.data)
-  };
-});
+const states = [];
+const obiWanLocation$ = DOM.fromWebSocket('ws://localhost:4000');
 
 let app;
+let timeTraveled = false;
 
-function setupApp(state) {
-  const store = configureStore(state);
+function setupApp(initState) {
+  const store = configureStore(initState);
 
+  // init states
   if(!states.length) {
     states.push(store.getState());
   }
@@ -36,24 +33,30 @@ function setupApp(state) {
   } = dashboard(store.state$);
 
   const darkJediFetcher = new DarkJediFetcher();
-
-  const sithLordAction$ = store.state$
-    .flatMap(darkJediFetcher.handle)
-    .map(sithLord => {
-      return {
-        type: 'NEXT_SITH_LORD',
-        payload: sithLord
-      };
-    });
+  const darkJedi$ = store.state$.flatMap(darkJediFetcher.handle);
 
   const action$ = Observable.merge(
-    changePlanetAction$,
-    sithLordAction$,
+    obiWanLocation$.map(data => {
+      return {
+        type: 'NEXT_PLANET',
+        payload: JSON.parse(event.data)
+      };
+    }),
+    darkJedi$.map(darkJedi => {
+      return {
+        type: 'NEXT_SITH_LORD',
+        payload: darkJedi
+      };
+    }),
     upClick$.map(() => {
-      return { type: 'SCROLL_UP'};
+      return {
+        type: 'SCROLL_UP'
+      };
     }),
     downClick$.map(() => {
-      return { type: 'SCROLL_DOWN'};
+      return {
+        type: 'SCROLL_DOWN'
+      };
     })
   );
 
@@ -61,21 +64,28 @@ function setupApp(state) {
   ReactDOM.unmountComponentAtNode(dashboardNode);
   ReactDOM.render(Dashboard, dashboardNode);
 
-  let subscription;
+  let subscription = null;
 
   function start() {
-    while (state !== states[states.length - 1]) {
-      states.pop();
+    if (timeTraveled) {
+      // pop states after doing time travel
+      while (initState !== states[states.length - 1]) {
+        if (states.length === 0) {
+          throw new Error('cannot pop anymore');
+        }
+
+        states.pop();
+      }
+
+      timeTraveled = false;
     }
 
     subscription = action$.subscribe(store.dispatch);
   };
 
   function pause() {
-    if (subscription) {
-      subscription.dispose();
-      subscription = null;
-    }
+    subscription.dispose();
+    subscription = null;
   }
 
   function isRunning() {
@@ -106,6 +116,7 @@ tmClick$.subscribe((e) => {
 });
 
 sliderEv$.subscribe((e) => {
+  timeTraveled = true;
   const index = e.target.value;
   app = setupApp(states[index]);
 });
