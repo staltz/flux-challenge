@@ -1,0 +1,56 @@
+import R from 'ramda';
+import {
+  SITH_LOADED, UP, DOWN
+} from '../actions';
+import {
+  MAX_VISIBLE_SITHS, N_SITHS_TO_SCROLL
+} from '../config';
+
+const initialState = {
+  siths: [],
+  paddingTop : Math.trunc(MAX_VISIBLE_SITHS / 2)
+};
+
+export default function list(state = initialState, action) {
+  const direction = action.direction;
+
+  switch (action.type) {
+
+    case SITH_LOADED: {
+      const siths = direction === UP ?
+        [action.sith, ...state.siths] :
+        [...state.siths, action.sith];
+      const paddingTop = direction == UP ?
+        state.paddingTop - 1:
+        state.paddingTop;
+
+      return { siths, paddingTop };
+    }
+
+    case UP: {
+      const paddingTop =
+        R.min(state.paddingTop + N_SITHS_TO_SCROLL, MAX_VISIBLE_SITHS - 1);
+      const nSiths = R.min(state.siths.length, MAX_VISIBLE_SITHS - paddingTop);
+      const siths = state.siths.slice(0, nSiths);
+
+      return { siths, paddingTop };
+    }
+
+    case DOWN: {
+      let paddingTop = state.paddingTop - N_SITHS_TO_SCROLL;
+      let siths = state.siths.slice(0);
+
+      if (paddingTop < 0) {
+        siths = state.siths.slice(
+          R.min(Math.abs(paddingTop), state.siths.length - 1)
+        );
+        paddingTop = 0;
+      }
+
+      return { siths, paddingTop };
+    }
+
+    default:
+      return state;
+  }
+}
