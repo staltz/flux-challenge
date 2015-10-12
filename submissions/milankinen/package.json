@@ -1,0 +1,18 @@
+{
+  "name": "flux-challenge-megablob",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dist": "mkdir -p dist && browserify app.js -t babelify > dist/app.js"
+  },
+  "dependencies": {
+    "babelify": "6.3.0",
+    "baconjs": "0.7.75",
+    "browserify": "11.2.0",
+    "lodash": "3.10.1",
+    "megablob": "0.2.0",
+    "react": "0.14.0",
+    "react-dom": "0.14.0",
+    "reqwest": "2.0.4"
+  }
+}
