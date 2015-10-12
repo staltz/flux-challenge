@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "d66d911b3f94d1e6fbfd"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "bef20644634343a8e6ea"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -568,7 +568,7 @@
 	var SithLordsState = __webpack_require__(3);
 	var ObiWanWorldState = __webpack_require__(163);
 	var AppBlock_1 = __webpack_require__(164);
-	function onlyOneSithLoaded(lords) {
+	function lessThanThreeSithLoaded(lords) {
 	    var count = 0;
 	    for (var _i = 0; _i < lords.length; _i++) {
 	        var l = lords[_i];
@@ -576,7 +576,7 @@
 	            count += 1;
 	        }
 	    }
-	    return count < 2;
+	    return count < 3;
 	}
 	function obiWanIsOnSamePlanetAsSith(state) {
 	    var obiPlanetId = state.obiWanWorld.v.id;
@@ -599,17 +599,29 @@
 	        };
 	    });
 	}
+	function lastLordHasNoApprentice(lords) {
+	    for (var _i = 0, _a = lords.reverse(); _i < _a.length; _i++) {
+	        var l = _a[_i];
+	        if (l.status === SithLordsState.SithLordStatus.PRESENT) {
+	            return !l.apprenticeUrl;
+	        }
+	    }
+	}
 	function scrollUpDisabled(state, obiWanSamePlanet) {
 	    var lords = state.sithLords.v;
-	    var lastLordHasNoApprentice = (lords[4].status === SithLordsState.SithLordStatus.PRESENT &&
-	        !lords[4].apprenticeUrl);
-	    return obiWanSamePlanet || onlyOneSithLoaded(lords) || lastLordHasNoApprentice;
+	    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || lastLordHasNoApprentice(lords);
+	}
+	function firstLordHasNoMaster(lords) {
+	    for (var _i = 0; _i < lords.length; _i++) {
+	        var l = lords[_i];
+	        if (l.status === SithLordsState.SithLordStatus.PRESENT) {
+	            return !l.masterUrl;
+	        }
+	    }
 	}
 	function scrollDownDisabled(state, obiWanSamePlanet) {
 	    var lords = state.sithLords.v;
-	    var firstLordHasNoMaster = (lords[0].status === SithLordsState.SithLordStatus.PRESENT &&
-	        !lords[0].masterUrl);
-	    return obiWanSamePlanet || onlyOneSithLoaded(lords) || firstLordHasNoMaster;
+	    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || firstLordHasNoMaster(lords);
 	}
 	var App = (function (_super) {
 	    __extends(App, _super);
