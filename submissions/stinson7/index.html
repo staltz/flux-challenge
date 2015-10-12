@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="description" content="stinson7's solution for the Flux challenge"/>
+  <title>stinson7's solution for the Flux challenge</title>
+  <link rel="stylesheet" href="../../styles.css" type="text/css">
+  <script type="text/javascript">
+	var numSlots = 5;
+	var numShift = 2;
+	var slots = [];
+	var buttonUp;
+	var buttonDown;
+	var planetMonitor;
+	var planetSocket;
+	var planetLock = false;
+	var initSith = "http://localhost:3000/dark-jedis/3616";
+	var initSlot = 3;
+	var rowOffset = 100; // currentSlot + rowOffset = absoluteRow
+	//set initial value high enough to avoid negative index
+	var pendingSith = [];
+	
+	window.onload = function () {
+		var slotHolder = document.getElementById("slot-machine");
+		buttonUp = document.getElementById("button-up");
+		buttonDown = document.getElementById("button-down");
+		planetMonitor = document.getElementById("planet-monitor");
+		for(var i = 0; i < numSlots; i++) {
+			slots[i] = document.createElement("li");
+			slots[i].className = "css-slot";
+			slots[i].name = document.createElement("h3");
+			slots[i].location = document.createElement("h6");
+			slots[i].appendChild(slots[i].name);
+			slots[i].appendChild(slots[i].location);
+			slotHolder.appendChild(slots[i]);
+		}
+		buttonUp.onclick = pressButtonUp;
+		buttonDown.onclick = pressButtonDown;
+		planetSocket = new WebSocket("ws://localhost:4000");
+		planetSocket.onopen = function() {
+			planetSocket.send("hello!");
+			planetSocket.onmessage = function(event) {
+				data = JSON.parse(event.data);
+				updatePlanetMonitor(data.name);
+			}
+		}
+		requestSith(initSlot, initSith);
+	}
+
+	function requestSith(i, url) {
+		var absRow = i + rowOffset;
+		pendingSith[absRow] = new XMLHttpRequest();
+		pendingSith[absRow].open("GET", url, true);
+		pendingSith[absRow].onreadystatechange = function () {
+			if(pendingSith[absRow].readyState == 4) {
+				var slot = absRow - rowOffset;
+				if(slot >= 0 && slot < numSlots && pendingSith[absRow].status == 200) {
+					var data = JSON.parse(pendingSith[absRow].responseText);
+					updateSlotData(slot, data.name, data.homeworld.name, data.master.url, data.apprentice.url);
+				}
+				pendingSith[absRow] = null;
+			}
+		}
+		pendingSith[absRow].send();
+	}
+	
+	function cancelAllRequests() {
+		for(var i in pendingSith) {
+			if(pendingSith[i]) {
+				pendingSith[i].abort();
+				pendingSith[i] = null;
+			}
+		}
+	}
+	
+	function restartRequests() {
+		if(!slots[0].planet && slots[1].above) {
+			requestSith(0, slots[1].above);
+		}
+		
+		for(var i = 1; i < numSlots - 1; i++) {
+			if(!slots[i].planet && slots[i + 1].above) {
+				requestSith(i, slots[i + 1].above);
+			}
+			else if(!slots[i].planet && slots[i - 1].below) {
+				requestSith(i, slots[i - 1].below);
+			}
+		}
+		if(!slots[numSlots - 1].planet && slots[numSlots - 2].below) {
+			requestSith(numSlots - 1, slots[numSlots - 2].below);
+		}
+	}
+	
+	function updatePlanetMonitor(planet) {
+		planetMonitor.planet = planet;
+		planetMonitor.innerHTML = "Obi-Wan currently on " + planet;
+		var count = 0;
+		for(var i = 0; i < numSlots; i++) {
+			if(slots[i].planet == planet) {
+				slots[i].style.color = "red";
+				count++;
+			}
+			else {
+				slots[i].style.color = "";
+			}
+		}
+		if(count > 0) {
+			if(!planetLock) {
+				planetLock = true;
+				buttonUp.className = "css-button-up css-button-disabled";
+				buttonDown.className = "css-button-down css-button-disabled";
+				cancelAllRequests();
+			}
+		}
+		else if(planetLock) {
+			planetLock = false;
+			if(slots[0].above) {
+				buttonUp.className = "css-button-up";
+			}
+			if(slots[numSlots - 1].below) {
+				buttonDown.className = "css-button-down";
+			}
+			restartRequests();
+		}
+	}
+	
+	function updateSlotData(i, name, planet, above, below) {
+		slots[i].name.innerHTML = name;
+		slots[i].planet = planet;
+		slots[i].location.innerHTML = "Homeworld: " + planet;
+		slots[i].above = above;
+		slots[i].below = below;
+		
+		if(slots[i].above) {
+			if(i == 0) {
+				buttonUp.className = "css-button-up";
+			}
+			else if(!slots[i - 1].planet) { //check if slot above is empty
+				requestSith(i - 1, slots[i].above);
+			}
+		}
+		else {
+			buttonUp.className = "css-button-up css-button-disabled";
+		}
+
+		if(slots[i].below) {
+			if(i == numSlots - 1) {
+				buttonDown.className = "css-button-down";
+			}
+			else if(!slots[i + 1].planet) { //check if slot below is empty
+				requestSith(i + 1, slots[i].below);
+			}
+		}
+		else {
+			buttonDown.className = "css-button-down css-button-disabled";
+		}
+		
+		if(slots[i].planet == planetMonitor.planet) {
+			slots[i].style.color = "red";
+			planetLock = true;
+			buttonUp.className = "css-button-up css-button-disabled";
+			buttonDown.className = "css-button-down css-button-disabled";
+			cancelAllRequests();
+		}
+	}
+	
+	function pressButtonUp() {
+		if(slots[0].above && !planetLock) {
+			for(var i = numSlots - numShift - 1; i >= 0; i--) {
+				copySlot(slots[i + numShift], slots[i]);
+			}
+			for(var i = 0; i < numShift; i++) {
+				emptySlot(slots[i]);
+				if(pendingSith[rowOffset + numSlots - 1 - i]) { //cancel requests that went offscreen
+					pendingSith[rowOffset + numSlots - 1 - i].abort();
+					pendingSith[rowOffset + numSlots - 1 - i] = null;
+				}					
+			}
+			buttonUp.className = "css-button-up css-button-disabled";
+			rowOffset -= numShift;
+			if(slots[numSlots - 1].below) {
+				buttonDown.className = "css-button-down";
+			}
+			requestSith(numShift - 1, slots[numShift].above);
+		}
+	}
+	
+	function pressButtonDown() {
+		if(slots[numSlots - 1].below && !planetLock) {
+			for(var i = numShift; i < numSlots; i++) {
+				copySlot(slots[i - numShift], slots[i]);
+			}
+			for(var i = 0; i < numShift; i++) {
+				emptySlot(slots[numSlots - 1 - i]);
+				if(pendingSith[rowOffset + i]) { //cancel requests that went offscreen
+					pendingSith[rowOffset + i].abort();
+					pendingSith[rowOffset + i] = null;
+				}				
+			}
+			buttonDown.className = "css-button-down css-button-disabled";
+			rowOffset += numShift;
+			if(slots[0].above) {
+				buttonUp.className = "css-button-up";
+			}
+			requestSith(numSlots - numShift, slots[numSlots - numShift - 1].below);
+		}	
+	}
+	
+	function copySlot(slotTo, slotFrom) {
+		slotTo.name.innerHTML = slotFrom.name.innerHTML;
+		slotTo.location.innerHTML = slotFrom.location.innerHTML;
+		slotTo.planet = slotFrom.planet;
+		slotTo.above = slotFrom.above;
+		slotTo.below = slotFrom.below;	
+	}
+	
+	function emptySlot(slot) {
+		slot.above = null;
+		slot.below = null;
+		slot.planet = null;
+		slot.name.innerHTML = "";
+		slot.location.innerHTML = "";
+	}
+  </script>
+  
+</head>
+<body>
+    <div class="app-container">
+	  <div class="css-root">
+		<h1 id="planet-monitor" class="css-planet-monitor">Obi-Wan currently on</h1>
+		
+		<section class="css-scrollable-list">
+		  <ul id="slot-machine" class="css-slots">
+		  </ul>
+		  <div class="css-scroll-buttons">
+			<button id="button-up" class="css-button-up css-button-disabled"></button>
+			<button id="button-down" class="css-button-down css-button-disabled"></button>
+		  </div>
+		</section>
+	  </div>
+	</div>
+</body>
+</html>
