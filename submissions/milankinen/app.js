@@ -6,6 +6,7 @@ import {range, partialRight, values, sortBy, flatten, compact, find, isEqual} fr
 import {createAction} from "megablob"
 
 const MAX_SITHS = 5
+const SCROLL = 2
 
 function httpGet(url) {
   const abortOnUnsubscribe = true
@@ -26,7 +27,7 @@ const planetChangedS =
 
 // this stream represents the scrolling amount of the list
 const sithsScrolledS =
-  scrollUp.$.map(2).merge(scrollDown.$.map(-2))
+  scrollUp.$.map(SCROLL).merge(scrollDown.$.map(-SCROLL))
 
 // this stream receives the values each time when new sith is loaded from
 // the server to specific index. New siths can be loaded by calling
@@ -50,11 +51,15 @@ const sithsP =
   Bacon
     .update(initialSiths,
       [sithLoadedS], (siths, s) => ({...siths, [s.idx]: s}),
-      [sithsScrolledS], (siths, idxDelta) => values(siths).reduce((acc, sith) => {
-        const newIdx = sith.idx + idxDelta
-        const inList = newIdx >= 0 && newIdx < MAX_SITHS
-        return inList ? {...acc, [newIdx]: {...sith, idx: newIdx}} : acc
-      }, initialSiths)
+      [sithsScrolledS], (siths, idxDelta) => (
+        isScrollPossible(siths, idxDelta) ?
+          values(siths).reduce((acc, sith) => {
+            const newIdx = sith.idx + idxDelta
+            const inList = newIdx >= 0 && newIdx < MAX_SITHS
+            return inList ? {...acc, [newIdx]: {...sith, idx: newIdx}} : acc
+          }, initialSiths)
+          : siths
+      )
     )
     .map(hash => sortBy(values(hash), "idx"))
 
@@ -66,8 +71,8 @@ const appStateP =
     })
     .map(state => ({...state, danger: isPlanetHomeWorldForListedSiths(state.planet, state.siths)}))
     .map(state => ({...state, scrolls: {
-      upOk: !state.danger && !find(state.siths, s => s.master && !s.master.url),
-      downOk: !state.danger && !find(state.siths, s => s.apprentice && !s.apprentice.url)
+      upOk: !state.danger && isScrollPossible(state.siths, SCROLL) && !find(state.siths, s => s.master && !s.master.url),
+      downOk: !state.danger && isScrollPossible(state.siths, -SCROLL) && !find(state.siths, s => s.apprentice && !s.apprentice.url)
     }}))
 
 // when scrolling happens, cancel all obsolete sith load request
@@ -75,7 +80,6 @@ loadSith.$.plug(
   sithsScrolledS
     .map(() => createCancelEvents())
     .flatMap(Bacon.fromArray)
-    .doAction(console.log.bind(console))
 )
 
 // send load/cancel events based on current planet & siths
@@ -106,6 +110,10 @@ function isPlanetHomeWorldForListedSiths(planet, siths) {
 
 function createCancelEvents() {
   return range(MAX_SITHS).map(idx => ({idx}))
+}
+
+function isScrollPossible(siths, idxDelta) {
+  return !!find(siths, s => s.id && s.idx + idxDelta >= 0 && s.idx + idxDelta < MAX_SITHS)
 }
 
 // if surrounding slots are empty then create master/apprentice events
