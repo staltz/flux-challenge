@@ -42,7 +42,7 @@ function setupApp(initState) {
 
   function start() {
     // pop states after doing time travel
-    while (initState && initState !== states[states.length - 1]) {
+    while (initState && states.length && initState !== states[states.length - 1]) {
       states.pop();
     }
 
