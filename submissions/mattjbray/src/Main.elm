@@ -56,6 +56,8 @@ type alias Model =
     -- index is adjusted for any scrolling which happened since the request
     -- started.
   , scrollPos:Int
+  , jediRequests:List JediRequest
+  , nextRequestId:Int
   }
 
 type alias World =
@@ -76,6 +78,12 @@ type alias JediUrl =
   , url:String
   }
 
+type alias JediRequest =
+  { id:Int
+  , insertPos:Int
+  , scrollPos:Int
+  , abort:Effects Action}
+
 darthSidious : JediUrl
 darthSidious =
   { id=3616
@@ -84,12 +92,16 @@ darthSidious =
 
 init : JediUrl -> (Model, Effects Action)
 init jediUrl =
-  ( { world = Nothing
-    , jediSlots = Array.repeat nbSlots Nothing
-    , scrollPos = 0
-    }
-  , fetchJedi 0 0 jediUrl
-  )
+  fetchJedi initModel (nbSlots // 2) jediUrl
+
+initModel : Model
+initModel =
+  { world = Nothing
+  , jediSlots = Array.repeat nbSlots Nothing
+  , scrollPos = 0
+  , jediRequests = []
+  , nextRequestId = 0
+  }
 
 --
 -- Actions
@@ -101,34 +113,42 @@ type ScrollDir
 
 type Action
   = SetWorld (Maybe World)
-  | SetJedi Int -- the index of the slot to put the Jedi in
-            Int -- the scrollPosition when the request was initiated
+  | SetJedi JediRequest
             (Maybe Jedi)
   | Scroll ScrollDir
+  | NoAction
 
 --
 -- Update
 --
 
+adjustPos : Int -> Int -> Int -> Int
+adjustPos pos oldScrollPos newScrollPos =
+  let offset = oldScrollPos - newScrollPos
+  in pos + offset
+
+removeRequest : JediRequest -> List JediRequest -> List JediRequest
+removeRequest request requests =
+  List.filter (\ r -> r /= request) requests
+
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
-    SetJedi pos oldScrollPos newJedi ->
+    SetJedi request newJedi ->
       -- We adjust the position in which to inject the new jedi to account for
       -- any scrolling that's been done since the jedi was requested.
-      let offset = oldScrollPos - model.scrollPos
-          adjustedPos = pos + offset
-      in
-        ( if inBounds adjustedPos model.jediSlots
-            then { model | jediSlots <- Array.set adjustedPos newJedi model.jediSlots }
-            -- Don't update the model if this jedi has been scrolled off-screen.
-            else model
-        , -- Fetch jedis to fill the next/previous slot if it's empty
-          Effects.batch
-            [ maybeFetchNextJedi adjustedPos newJedi model.jediSlots model.scrollPos
-            , maybeFetchPrevJedi adjustedPos newJedi model.jediSlots model.scrollPos
-            ]
-        )
+      let adjustedPos =
+            adjustPos request.insertPos
+                      request.scrollPos
+                      model.scrollPos
+          newJediSlots =
+            if inBounds adjustedPos model.jediSlots
+              then Array.set adjustedPos newJedi model.jediSlots
+              -- Don't update the model if this jedi has been scrolled off-screen.
+              else model.jediSlots
+          model' = { model | jediRequests <- removeRequest request model.jediRequests
+                           , jediSlots <- newJediSlots }
+      in maybeFetchJedisAround model' adjustedPos
 
     SetWorld mWorld ->
       ( { model | world <- mWorld }
@@ -139,35 +159,59 @@ update action model =
       if not (canScroll dir model.jediSlots)
         then (model, Effects.none)
         else
-          case dir of
-            Up ->
-              let newJedis = Array.slice 0 (Array.length model.jediSlots - scrollSpeed) model.jediSlots
-                  firstJedi = Array.get 0 model.jediSlots
-                  newScrollPos = model.scrollPos - scrollSpeed
-              in
-                ( { model | jediSlots <- Array.append (Array.repeat scrollSpeed Nothing) newJedis
-                        , scrollPos <- newScrollPos }
-                , case firstJedi `andThen` flip andThen .master of
-                    Nothing ->
-                    Effects.none
-                    Just master ->
-                    fetchJedi (scrollSpeed - 1) newScrollPos master
-                )
-            Down ->
-              let newJedis = Array.slice scrollSpeed (Array.length model.jediSlots) model.jediSlots
-                  lastJedi = Array.get (Array.length model.jediSlots - 1) model.jediSlots
-                  newScrollPos = model.scrollPos + scrollSpeed
-              in
-                ( { model | jediSlots <- Array.append newJedis (Array.repeat scrollSpeed Nothing)
-                          , scrollPos <- newScrollPos }
-                , case lastJedi `andThen` flip andThen .apprentice of
-                    Nothing ->
-                      Effects.none
-                    Just apprentice ->
-                      fetchJedi (Array.length model.jediSlots - scrollSpeed)
-                                newScrollPos
-                                apprentice
-                )
+          let slotsLength = Array.length model.jediSlots
+              emptySlots = Array.repeat scrollSpeed Nothing
+              getRequestsToAbort newScrollPos =
+                  List.partition (\ request ->
+                                      (inBounds (adjustPos request.insertPos
+                                                           request.scrollPos
+                                                           newScrollPos)
+                                                model.jediSlots))
+                                 model.jediRequests
+          in
+            case dir of
+              Up ->
+                let newJedis = Array.slice 0 (slotsLength - scrollSpeed) model.jediSlots
+                    firstJedi = Array.get 0 model.jediSlots
+                    newScrollPos = model.scrollPos - scrollSpeed
+                    (newRequests, requestsToAbort) = getRequestsToAbort newScrollPos
+                    aborts = List.map .abort requestsToAbort
+                    model' = { model | jediSlots <- Array.append emptySlots newJedis
+                                       , scrollPos <- newScrollPos }
+                in
+                  case firstJedi `andThen` flip andThen .master of
+                      Nothing ->
+                        (model', Effects.none)
+                      Just master ->
+                        let (model'', send) =
+                              fetchJedi model'
+                                        (scrollSpeed - 1)
+                                        master
+                        in
+                          ( model''
+                          , Effects.batch (List.append aborts [send])
+                          )
+              Down ->
+                let newJedis = Array.slice scrollSpeed slotsLength model.jediSlots
+                    lastJedi = Array.get (slotsLength - 1) model.jediSlots
+                    newScrollPos = model.scrollPos + scrollSpeed
+                    (newRequests, requestsToAbort) = getRequestsToAbort newScrollPos
+                    aborts = List.map .abort requestsToAbort
+                    model' = { model | jediSlots <- Array.append newJedis emptySlots
+                                     , scrollPos <- newScrollPos }
+                in
+                  case lastJedi `andThen` flip andThen .apprentice of
+                      Nothing ->
+                        (model', Effects.none)
+                      Just apprentice ->
+                        let (model'', send) = fetchJedi model'
+                                              (slotsLength - scrollSpeed)
+                                              apprentice
+                        in
+                          ( model''
+                          , Effects.batch (List.append aborts [send])
+                          )
+    NoAction -> (model, Effects.none)
 
 --
 -- Lib
@@ -202,44 +246,69 @@ mMap2 func ma mb =
 -- Helpers
 --
 
-fetchJedi : Int -> Int -> JediUrl -> Effects Action
-fetchJedi pos currentScrollPos {url} =
-  Http.get decodeJedi url
-    |> Task.toMaybe
-    |> Task.map (SetJedi pos currentScrollPos)
-    |> Effects.task
+fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
+fetchJedi model insertPos {url} =
+  let (sendTask, abortTask) =
+        Http.getWithAbort decodeJedi url
 
-maybeFetchJedi : Int -> (Jedi -> Maybe JediUrl) -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
-maybeFetchJedi pos apprenticeOrMaster currentMJedi jediSlots currentScrollPos =
-  if | not (inBounds pos jediSlots) ->
-         Effects.none
-     | Array.get pos jediSlots /= Just Nothing ->
-         -- already have a jedi in that position
-         Effects.none
-     | otherwise ->
-         case currentMJedi `andThen` apprenticeOrMaster of
-           Nothing ->
-             Effects.none
-           Just jediUrl ->
-             fetchJedi pos currentScrollPos jediUrl
+      abortEffect =
+        abortTask
+          |> Task.toMaybe
+          |> Task.map (\_ -> NoAction)
+          |> Effects.task
 
--- Fetch the Jedi apprentice in the next slot, unless we already have it or we
--- are already at the last slot
-maybeFetchNextJedi : Int -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
-maybeFetchNextJedi currentPos =
-  maybeFetchJedi (currentPos + 1) .apprentice
+      request =
+        { id = model.nextRequestId
+        , insertPos = insertPos
+        , scrollPos = model.scrollPos
+        , abort = abortEffect }
 
--- Fetch the Jedi master in the previous slot, unless we already have it or we
--- are already at the first slot
-maybeFetchPrevJedi : Int -> Maybe Jedi -> Array (Maybe Jedi) -> Int -> Effects Action
-maybeFetchPrevJedi currentPos =
-  maybeFetchJedi (currentPos - 1) .master
+      sendEffect =
+        sendTask
+          |> Task.toMaybe
+          |> Task.map (SetJedi request)
+          |> Effects.task
+
+  in
+    ( { model | jediRequests <- request :: model.jediRequests
+              , nextRequestId <- model.nextRequestId + 1 }
+    , sendEffect )
+
+haveJediAt : Int -> Model -> Bool
+haveJediAt pos {jediSlots} = Array.get pos jediSlots /= Just Nothing
+
+needJediAt : Int -> Model -> Bool
+needJediAt pos model =
+  inBounds pos model.jediSlots && not (haveJediAt pos model)
+
+-- Check whether we have jedis around the jedi at `pos`, and fetch them if we
+-- don't
+maybeFetchJedisAround : Model -> Int -> (Model, Effects Action)
+maybeFetchJedisAround model pos =
+  let (model' , effects)  = maybeFetchJedi model  pos (pos - 1) .master
+      (model'', effects') = maybeFetchJedi model' pos (pos + 1) .apprentice
+  in (model'', Effects.batch [effects, effects'])
+
+maybeFetchJedi : Model -> Int -> Int -> (Jedi -> Maybe JediUrl) -> (Model, Effects Action)
+maybeFetchJedi model pos nextPos getNextUrl =
+  let
+    mNext =
+      if needJediAt nextPos model
+        then Array.get pos model.jediSlots `andThen` flip andThen getNextUrl
+        else Nothing
+  in
+    case mNext of
+      Just nextUrl ->
+        fetchJedi model nextPos nextUrl
+      Nothing ->
+        (model, Effects.none)
 
 -- Return True if the first (last) jedi in the list has an apprentice (master)
 -- AND we would have at least one jedi in view after the scroll
 canScroll : ScrollDir -> Array (Maybe Jedi) -> Bool
 canScroll upOrDown jediSlots =
-  let (firstOrLast, apprenticeOrMaster) =
+  let loadedJedis = Array.filter notNothing jediSlots
+      (firstOrLast, apprenticeOrMaster) =
         case upOrDown of
           Up ->
             ( Array.get 0
@@ -247,7 +316,6 @@ canScroll upOrDown jediSlots =
           Down ->
             ( (\jedis -> Array.get (Array.length jedis - 1) jedis)
             , .apprentice)
-      loadedJedis = Array.filter notNothing jediSlots
       mJedi = firstOrLast loadedJedis
       next = mJedi `andThen` (flip andThen apprenticeOrMaster)
       jediInView = jediSlots
