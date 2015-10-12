@@ -1,13 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
-
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -30,6 +26,7 @@ var _lodash = require("lodash");
 var _megablob = require("megablob");
 
 var MAX_SITHS = 5;
+var SCROLL = 2;
 
 function httpGet(url) {
   var abortOnUnsubscribe = true;
@@ -47,7 +44,7 @@ var planetChangedS = _baconjs2["default"].fromBinder(function (sink) {
 }).map(".data").map(JSON.parse);
 
 // this stream represents the scrolling amount of the list
-var sithsScrolledS = scrollUp.$.map(2).merge(scrollDown.$.map(-2));
+var sithsScrolledS = scrollUp.$.map(SCROLL).merge(scrollDown.$.map(-SCROLL));
 
 // this stream receives the values each time when new sith is loaded from
 // the server to specific index. New siths can be loaded by calling
@@ -77,71 +74,52 @@ var initialSiths = (0, _lodash.range)(MAX_SITHS).reduce(function (acc, idx) {
 var sithsP = _baconjs2["default"].update(initialSiths, [sithLoadedS], function (siths, s) {
   return _extends({}, siths, _defineProperty({}, s.idx, s));
 }, [sithsScrolledS], function (siths, idxDelta) {
-  return (0, _lodash.values)(siths).reduce(function (acc, sith) {
+  return isScrollPossible(siths, idxDelta) ? (0, _lodash.values)(siths).reduce(function (acc, sith) {
     var newIdx = sith.idx + idxDelta;
     var inList = newIdx >= 0 && newIdx < MAX_SITHS;
     return inList ? _extends({}, acc, _defineProperty({}, newIdx, _extends({}, sith, { idx: newIdx }))) : acc;
-  }, initialSiths);
+  }, initialSiths) : siths;
 }).map(function (hash) {
   return (0, _lodash.sortBy)((0, _lodash.values)(hash), "idx");
 });
 
-// load apprentice and master if there is an empty slots around the loaded sith
-loadSith.$.plug(_baconjs2["default"].combineAsArray([sithsP, planetChangedS.toProperty({ id: "<none>" })]).sampledBy(sithLoadedS, function (_ref3, sith) {
-  var _ref32 = _slicedToArray(_ref3, 2);
+var appStateP = _baconjs2["default"].combineTemplate({
+  planet: planetChangedS,
+  siths: sithsP
+}).map(function (state) {
+  return _extends({}, state, { danger: isPlanetHomeWorldForListedSiths(state.planet, state.siths) });
+}).map(function (state) {
+  return _extends({}, state, { scrolls: {
+      upOk: !state.danger && isScrollPossible(state.siths, SCROLL) && !(0, _lodash.find)(state.siths, function (s) {
+        return s.master && !s.master.url;
+      }),
+      downOk: !state.danger && isScrollPossible(state.siths, -SCROLL) && !(0, _lodash.find)(state.siths, function (s) {
+        return s.apprentice && !s.apprentice.url;
+      })
+    } });
+});
 
-  var siths = _ref32[0];
-  var planet = _ref32[1];
+// when scrolling happens, cancel all obsolete sith load request
+loadSith.$.plug(sithsScrolledS.map(function () {
+  return createCancelEvents();
+}).flatMap(_baconjs2["default"].fromArray).doAction(console.log.bind(console)));
+
+// send load/cancel events based on current planet & siths
+loadSith.$.plug(appStateP.changes().map(function (_ref3) {
+  var siths = _ref3.siths;
+  var planet = _ref3.planet;
 
   if (isPlanetHomeWorldForListedSiths(planet, siths)) {
-    return createCancelRequests(siths);
+    return createCancelEvents();
   } else {
-    return loadMasterAndApprenticeIfPossible(siths, sith);
+    return createLoadMasterApprenticeEvents(siths);
   }
 }).flatMap(_baconjs2["default"].fromArray));
 
-// reset previous requests and make new requests to empty slot after scroll
-loadSith.$.plug(sithsP.sampledBy(sithsScrolledS, function (siths) {
-  var cancels = createCancelRequests(siths);
-  var reloads = (0, _lodash.flatten)(siths.map(function (s) {
-    return loadMasterAndApprenticeIfPossible(siths, s);
-  }));
-  return [].concat(_toConsumableArray(cancels), _toConsumableArray(reloads));
-}).flatMap(_baconjs2["default"].fromArray));
+// start the app and load Darth Sidious
+appStateP.map(App).onValue((0, _lodash.partialRight)(_reactDom.render, document.getElementById("app")));
 
-// reset all requests if the current planet is home world for any of the listed siths,
-// otherwise re-send the cancelled requests
-loadSith.$.plug(sithsP.sampledBy(planetChangedS, function (siths, planet) {
-  if (isPlanetHomeWorldForListedSiths(planet, siths)) {
-    return createCancelRequests(siths);
-  } else {
-    return (0, _lodash.flatten)(siths.map(function (s) {
-      return loadMasterAndApprenticeIfPossible(siths, s);
-    }));
-  }
-}).flatMap(_baconjs2["default"].fromArray));
-
-function createCancelRequests(siths) {
-  return siths.map(function (_ref4) {
-    var idx = _ref4.idx;
-    return { idx: idx };
-  });
-}
-
-// just check that slots are empty and create an array of load events for master/apprentice
-function loadMasterAndApprenticeIfPossible(siths, sith) {
-  var idx = sith.idx;
-  var master = sith.master;
-  var apprentice = sith.apprentice;
-
-  if (sith.id) {
-    var loadMaster = master.url && siths[idx - 1] && !siths[idx - 1].id;
-    var loadApprentice = apprentice.url && siths[idx + 1] && !siths[idx + 1].id;
-    return (0, _lodash.compact)([loadMaster ? { idx: idx - 1, url: master.url } : null, loadApprentice ? { idx: idx + 1, url: apprentice.url } : null]);
-  } else {
-    return [];
-  }
-}
+loadSith({ idx: 0, url: "http://localhost:3000/dark-jedis/3616" });
 
 function isPlanetHomeWorldForListedSiths(planet, siths) {
   return !!(0, _lodash.find)(siths, function (s) {
@@ -149,34 +127,40 @@ function isPlanetHomeWorldForListedSiths(planet, siths) {
   });
 }
 
-function updateScrolls(state) {
-  var allDisabled = isPlanetHomeWorldForListedSiths(state.planet, state.siths);
-  return {
-    upDisabled: allDisabled || !!(0, _lodash.find)(state.siths, function (s) {
-      return s.master && !s.master.url;
-    }),
-    downDisabled: allDisabled || !!(0, _lodash.find)(state.siths, function (s) {
-      return s.apprentice && !s.apprentice.url;
-    })
-  };
+function createCancelEvents() {
+  return (0, _lodash.range)(MAX_SITHS).map(function (idx) {
+    return { idx: idx };
+  });
 }
 
-// start the app and load Darth Sidious
-_baconjs2["default"].combineTemplate({
-  planet: planetChangedS,
-  siths: sithsP
-}).map(function (state) {
-  return _extends({}, state, { scrolls: updateScrolls(state) });
-}).map(App).onValue((0, _lodash.partialRight)(_reactDom.render, document.getElementById("app")));
+function isScrollPossible(siths, idxDelta) {
+  return !!(0, _lodash.find)(siths, function (s) {
+    return s.id && s.idx + idxDelta >= 0 && s.idx + idxDelta < MAX_SITHS;
+  });
+}
 
-loadSith({ idx: 0, url: "http://localhost:3000/dark-jedis/3616" });
+// if surrounding slots are empty then create master/apprentice events
+function createLoadMasterApprenticeEvents(siths) {
+  var nestedEvents = siths.filter(function (sith) {
+    return sith.id;
+  }).map(function (sith) {
+    var idx = sith.idx;
+    var master = sith.master;
+    var apprentice = sith.apprentice;
+
+    var loadMaster = master.url && siths[idx - 1] && !siths[idx - 1].id;
+    var loadApprentice = apprentice.url && siths[idx + 1] && !siths[idx + 1].id;
+    return (0, _lodash.compact)([loadMaster ? { idx: idx - 1, url: master.url } : null, loadApprentice ? { idx: idx + 1, url: apprentice.url } : null]);
+  });
+  return (0, _lodash.flatten)(nestedEvents);
+}
 
 function App(props) {
   var planet = props.planet;
   var siths = props.siths;
   var _props$scrolls = props.scrolls;
-  var upDisabled = _props$scrolls.upDisabled;
-  var downDisabled = _props$scrolls.downDisabled;
+  var upOk = _props$scrolls.upOk;
+  var downOk = _props$scrolls.downOk;
 
   return _react2["default"].createElement(
     "div",
@@ -196,10 +180,10 @@ function App(props) {
         _react2["default"].createElement(
           "ul",
           { className: "css-slots" },
-          siths.map(function (_ref5) {
-            var idx = _ref5.idx;
-            var name = _ref5.name;
-            var homeworld = _ref5.homeworld;
+          siths.map(function (_ref4) {
+            var idx = _ref4.idx;
+            var name = _ref4.name;
+            var homeworld = _ref4.homeworld;
             return _react2["default"].createElement(
               "li",
               { key: idx, className: "css-slot" + (homeworld && homeworld.id === planet.id ? " red" : "") },
@@ -219,11 +203,11 @@ function App(props) {
         _react2["default"].createElement(
           "div",
           { className: "css-scroll-buttons" },
-          _react2["default"].createElement("button", { className: "css-button-up" + (upDisabled ? " css-button-disabled" : ""),
-            disabled: upDisabled,
+          _react2["default"].createElement("button", { className: "css-button-up" + (!upOk ? " css-button-disabled" : ""),
+            disabled: !upOk,
             onClick: scrollUp }),
-          _react2["default"].createElement("button", { className: "css-button-down" + (downDisabled ? " css-button-disabled" : ""),
-            disabled: downDisabled,
+          _react2["default"].createElement("button", { className: "css-button-down" + (!downOk ? " css-button-disabled" : ""),
+            disabled: !downOk,
             onClick: scrollDown })
         )
       )
