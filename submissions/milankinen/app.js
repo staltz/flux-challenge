@@ -58,91 +58,75 @@ const sithsP =
     )
     .map(hash => sortBy(values(hash), "idx"))
 
-// load apprentice and master if there is an empty slots around the loaded sith
-loadSith.$.plug(
+const appStateP =
   Bacon
-    .combineAsArray([sithsP, planetChangedS.toProperty({id: "<none>"})])
-    .sampledBy(sithLoadedS, ([siths, planet], sith) => {
+    .combineTemplate({
+      planet: planetChangedS,
+      siths: sithsP
+    })
+    .map(state => ({...state, danger: isPlanetHomeWorldForListedSiths(state.planet, state.siths)}))
+    .map(state => ({...state, scrolls: {
+      upOk: !state.danger && !find(state.siths, s => s.master && !s.master.url),
+      downOk: !state.danger && !find(state.siths, s => s.apprentice && !s.apprentice.url)
+    }}))
+
+// when scrolling happens, cancel all obsolete sith load request
+loadSith.$.plug(
+  sithsScrolledS
+    .map(() => createCancelEvents())
+    .flatMap(Bacon.fromArray)
+    .doAction(console.log.bind(console))
+)
+
+// send load/cancel events based on current planet & siths
+loadSith.$.plug(
+  appStateP
+    .changes()
+    .map(({siths, planet}) => {
       if (isPlanetHomeWorldForListedSiths(planet, siths)) {
-        return createCancelRequests(siths)
+        return createCancelEvents()
       } else {
-        return loadMasterAndApprenticeIfPossible(siths, sith)
+        return createLoadMasterApprenticeEvents(siths)
       }
     })
     .flatMap(Bacon.fromArray)
 )
-
-// reset previous requests and make new requests to empty slot after scroll
-loadSith.$.plug(
-  sithsP
-    .sampledBy(sithsScrolledS, siths => {
-      const cancels = createCancelRequests(siths)
-      const reloads = flatten(siths.map(s => loadMasterAndApprenticeIfPossible(siths, s)))
-      return [...cancels, ...reloads]
-    })
-    .flatMap(Bacon.fromArray)
-)
-
-// reset all requests if the current planet is home world for any of the listed siths,
-// otherwise re-send the cancelled requests
-loadSith.$.plug(
-  sithsP
-    .sampledBy(planetChangedS, (siths, planet) => {
-      if (isPlanetHomeWorldForListedSiths(planet, siths)) {
-        return createCancelRequests(siths)
-      } else {
-        return flatten(siths.map(s => loadMasterAndApprenticeIfPossible(siths, s)))
-      }
-    })
-    .flatMap(Bacon.fromArray)
-)
-
-function createCancelRequests(siths) {
-  return siths.map(({idx}) => ({idx}))
-}
-
-// just check that slots are empty and create an array of load events for master/apprentice
-function loadMasterAndApprenticeIfPossible(siths, sith) {
-  const {idx, master, apprentice} = sith
-  if (sith.id) {
-    const loadMaster = master.url && siths[idx - 1] && !siths[idx - 1].id
-    const loadApprentice = apprentice.url && siths[idx + 1] && !siths[idx + 1].id
-    return compact([
-      loadMaster ? {idx: idx - 1, url: master.url} : null,
-      loadApprentice ? {idx: idx + 1, url: apprentice.url} : null
-    ])
-  } else {
-    return []
-  }
-}
-
-function isPlanetHomeWorldForListedSiths(planet, siths) {
-  return !!find(siths, s => s.homeworld && s.homeworld.id === planet.id)
-}
-
-function updateScrolls(state) {
-  const allDisabled = isPlanetHomeWorldForListedSiths(state.planet, state.siths)
-  return {
-    upDisabled: allDisabled || !!find(state.siths, s => s.master && !s.master.url),
-    downDisabled: allDisabled || !!find(state.siths, s => s.apprentice && !s.apprentice.url)
-  }
-}
 
 // start the app and load Darth Sidious
-Bacon
-  .combineTemplate({
-    planet: planetChangedS,
-    siths: sithsP
-  })
-  .map(state => ({...state, scrolls: updateScrolls(state)}))
+appStateP
   .map(App)
   .onValue(partialRight(render, document.getElementById("app")))
 
 loadSith({idx: 0, url: "http://localhost:3000/dark-jedis/3616"})
 
 
+function isPlanetHomeWorldForListedSiths(planet, siths) {
+  return !!find(siths, s => s.homeworld && s.homeworld.id === planet.id)
+}
+
+function createCancelEvents() {
+  return range(MAX_SITHS).map(idx => ({idx}))
+}
+
+// if surrounding slots are empty then create master/apprentice events
+function createLoadMasterApprenticeEvents(siths) {
+  const nestedEvents =
+    siths
+      .filter(sith => sith.id)
+      .map(sith => {
+        const {idx, master, apprentice} = sith
+        const loadMaster = master.url && siths[idx - 1] && !siths[idx - 1].id
+        const loadApprentice = apprentice.url && siths[idx + 1] && !siths[idx + 1].id
+        return compact([
+          loadMaster ? {idx: idx - 1, url: master.url} : null,
+          loadApprentice ? {idx: idx + 1, url: apprentice.url} : null
+        ])
+      })
+  return flatten(nestedEvents)
+}
+
 function App(props) {
-  const {planet, siths, scrolls: {upDisabled, downDisabled}} = props
+  const {planet, siths, scrolls: {upOk, downOk}} = props
   return (
     <div className="app-container">
       <div className="css-root">
@@ -158,11 +142,11 @@ function App(props) {
             ))}
           </ul>
           <div className="css-scroll-buttons">
-            <button className={"css-button-up" + (upDisabled ? " css-button-disabled" : "")}
-                    disabled={upDisabled}
+            <button className={"css-button-up" + (!upOk ? " css-button-disabled" : "")}
+                    disabled={!upOk}
                     onClick={scrollUp} />
-            <button className={"css-button-down" + (downDisabled ? " css-button-disabled" : "")}
-                    disabled={downDisabled}
+            <button className={"css-button-down" + (!downOk ? " css-button-disabled" : "")}
+                    disabled={!downOk}
                     onClick={scrollDown} />
           </div>
         </section>
