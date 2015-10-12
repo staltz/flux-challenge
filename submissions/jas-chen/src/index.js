@@ -1,4 +1,5 @@
 import { Observable, DOM } from 'rx-dom';
+import React from 'react';
 import ReactDOM from 'react-dom';
 
 import configureStore from './configureStore.js';
@@ -60,7 +61,16 @@ function setupApp(initState) {
     })
   );
 
-  ReactDOM.render(Dashboard, dashboardNode);
+  // if we write ReactDOM.render(Dashboard, dashboardNode);
+  // click events will not work after doing time travel.
+  // so we need to wrap Dashboard to a React component.
+  class App extends React.Component {
+    render() {
+      return Dashboard;
+    }
+  }
+
+  ReactDOM.render(<App />, dashboardNode);
 
   let subscription = null;
 
@@ -112,7 +122,5 @@ tmClick$.subscribe((e) => {
 sliderEv$.subscribe((e) => {
   timeTraveled = true;
   const index = e.target.value;
-  // re-render entire app to get upClick$ and downClick$ work after time travel.
-  ReactDOM.unmountComponentAtNode(dashboardNode);
   app = setupApp(states[index]);
 });

@@ -37,14 +37,12 @@ export default function(state = defaultSlots, action) {
     const sliced = state
       .slice(0, TOTAL_SLOT_COUNT - MOVE_SLOT_COUNT);
     const nextState = emptySlots.concat(sliced);
-    // ckeck if slots are empty
-    return allEmpty(nextState) ? state : nextState;
+    return nextState;
   }
   case 'SCROLL_DOWN': {
     const sliced = state.slice(MOVE_SLOT_COUNT);
     const nextState = sliced.concat(emptySlots);
-    // ckeck if slots are empty
-    return allEmpty(nextState) ? state : nextState;
+    return nextState;
   }
   default:
     return state;
