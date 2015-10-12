@@ -120,7 +120,7 @@ class DarkJediFetcher {
       }
     }
 
-    return Observable.from(darkJediStreams).flatMap(s => s);
+    return darkJediStreams.length ? Observable.merge(darkJediStreams) : Observable.empty();
   }
 }
 
