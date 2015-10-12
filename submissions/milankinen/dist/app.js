@@ -99,20 +99,24 @@ var appStateP = _baconjs2["default"].combineTemplate({
     } });
 });
 
-// when scrolling happens, cancel all obsolete sith load request
-loadSith.$.plug(sithsScrolledS.map(function () {
-  return createCancelEvents();
-}).flatMap(_baconjs2["default"].fromArray).doAction(console.log.bind(console)));
-
 // send load/cancel events based on current planet & siths
-loadSith.$.plug(appStateP.changes().map(function (_ref3) {
+// we can safely send cancel/load sith events every time when state
+// changes because .skipDuplicates removes the duplicate events per idx
+// in "sithLoadedS" stream
+loadSith.$.plug(appStateP.changes().skipWhile(function (_ref3) {
   var siths = _ref3.siths;
-  var planet = _ref3.planet;
+  return !(0, _lodash.find)(siths, function (s) {
+    return s.id;
+  });
+}) // we must wait Darth Sidious first!!
+.map(function (_ref4) {
+  var siths = _ref4.siths;
+  var planet = _ref4.planet;
 
   if (isPlanetHomeWorldForListedSiths(planet, siths)) {
     return createCancelEvents();
   } else {
-    return createLoadMasterApprenticeEvents(siths);
+    return createEventsPerSithSlot(siths);
   }
 }).flatMap(_baconjs2["default"].fromArray));
 
@@ -139,20 +143,24 @@ function isScrollPossible(siths, idxDelta) {
   });
 }
 
-// if surrounding slots are empty then create master/apprentice events
-function createLoadMasterApprenticeEvents(siths) {
-  var nestedEvents = siths.filter(function (sith) {
-    return sith.id;
-  }).map(function (sith) {
-    var idx = sith.idx;
-    var master = sith.master;
-    var apprentice = sith.apprentice;
+function createEventsPerSithSlot(siths) {
+  return siths.map(function (_ref5) {
+    var idx = _ref5.idx;
+    var id = _ref5.id;
 
-    var loadMaster = master.url && siths[idx - 1] && !siths[idx - 1].id;
-    var loadApprentice = apprentice.url && siths[idx + 1] && !siths[idx + 1].id;
-    return (0, _lodash.compact)([loadMaster ? { idx: idx - 1, url: master.url } : null, loadApprentice ? { idx: idx + 1, url: apprentice.url } : null]);
+    var master = siths[idx - 1];
+    var apprentice = siths[idx + 1];
+    if (master && master.apprentice && master.apprentice.url && master.apprentice.id !== id) {
+      // this slot was removed due to scroll-up
+      return { idx: idx, url: master.apprentice.url };
+    } else if (apprentice && apprentice.master && apprentice.master.url && apprentice.master.id !== id) {
+      // this slot was removed due to scroll-down
+      return { idx: idx, url: apprentice.master.url };
+    } else {
+      // cancel requests for this slot (if any)
+      return { idx: idx };
+    }
   });
-  return (0, _lodash.flatten)(nestedEvents);
 }
 
 function App(props) {
@@ -180,10 +188,10 @@ function App(props) {
         _react2["default"].createElement(
           "ul",
           { className: "css-slots" },
-          siths.map(function (_ref4) {
-            var idx = _ref4.idx;
-            var name = _ref4.name;
-            var homeworld = _ref4.homeworld;
+          siths.map(function (_ref6) {
+            var idx = _ref6.idx;
+            var name = _ref6.name;
+            var homeworld = _ref6.homeworld;
             return _react2["default"].createElement(
               "li",
               { key: idx, className: "css-slot" + (homeworld && homeworld.id === planet.id ? " red" : "") },
