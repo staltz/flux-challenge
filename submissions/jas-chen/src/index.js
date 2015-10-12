@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import configureStore from './configureStore.js';
+import * as actions from './actions.js';
 import dashboard from './component/dashboard.js';
 import timetravel from './component/timeTravel.js';
 import DarkJediFetcher from './DarkJediFetcher.js';
@@ -11,58 +12,21 @@ const timeTravelNode = document.getElementById("time-travel");
 const dashboardNode = document.getElementById('app-container');
 
 const states = [];
-const obiWanLocation$ = DOM.fromWebSocket('ws://localhost:4000');
+const obiWanLocation$ = DOM.fromWebSocket('ws://localhost:4000')
+  .map(event => JSON.parse(event.data));
 
 let app;
-let timeTraveled = false;
 
 function setupApp(initState) {
   const store = configureStore(initState);
-
-  // init states
-  if(!states.length) {
-    states.push(store.getState());
-  }
-
-  store.subscribe(() => {
-    states.push(store.getState());
-  });
 
   const {
     element: Dashboard,
     events: { upClick$, downClick$ }
   } = dashboard(store.state$);
 
-  const darkJediFetcher = new DarkJediFetcher();
-  const darkJedi$ = store.state$.flatMap(darkJediFetcher.handle);
-
-  const action$ = Observable.merge(
-    obiWanLocation$.map(data => {
-      return {
-        type: 'NEXT_PLANET',
-        payload: JSON.parse(event.data)
-      };
-    }),
-    darkJedi$.map(darkJedi => {
-      return {
-        type: 'NEXT_SITH_LORD',
-        payload: darkJedi
-      };
-    }),
-    upClick$.map(() => {
-      return {
-        type: 'SCROLL_UP'
-      };
-    }),
-    downClick$.map(() => {
-      return {
-        type: 'SCROLL_DOWN'
-      };
-    })
-  );
-
-  // if we write ReactDOM.render(Dashboard, dashboardNode);
-  // click events will not work after doing time travel.
+  // if we write `ReactDOM.render(Dashboard, dashboardNode);`
+  // click event streams will not work after doing time travel.
   // so we need to wrap Dashboard to a React component.
   class App extends React.Component {
     render() {
@@ -72,17 +36,31 @@ function setupApp(initState) {
 
   ReactDOM.render(<App />, dashboardNode);
 
+
+
   let subscription = null;
 
   function start() {
-    if (timeTraveled) {
-      // pop states after doing time travel
-      while (initState !== states[states.length - 1]) {
-        states.pop();
-      }
-
-      timeTraveled = false;
+    // pop states after doing time travel
+    while (initState && initState !== states[states.length - 1]) {
+      states.pop();
     }
+
+    if(!states.length) {
+      states.push(store.getState());
+    }
+
+    store.subscribe(() => states.push(store.getState()));
+
+    const darkJediFetcher = new DarkJediFetcher();
+    const darkJedi$ = store.state$.flatMap(darkJediFetcher.handle);
+
+    const action$ = Observable.merge(
+      obiWanLocation$.map(actions.nextPlanet),
+      darkJedi$.map(actions.nextDarkJedi),
+      upClick$.map(actions.scrollUp),
+      downClick$.map(actions.scrollDown)
+    );
 
     subscription = action$.subscribe(store.dispatch);
   };
@@ -120,7 +98,6 @@ tmClick$.subscribe((e) => {
 });
 
 sliderEv$.subscribe((e) => {
-  timeTraveled = true;
   const index = e.target.value;
   app = setupApp(states[index]);
 });
