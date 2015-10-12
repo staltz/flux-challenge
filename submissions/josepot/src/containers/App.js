@@ -13,7 +13,6 @@ import { MAX_VISIBLE_SITHS, OBI_WS } from '../config';
 class App extends Component {
   constructor(props) {
     super(props);
-
     const { dispatch } = this.props;
 
     this.ws = new WebSocket(OBI_WS);
@@ -79,7 +78,7 @@ function mapStateToProps(state) {
   let isScrollUpDisabled = true;
   let isScrollDownDisabled = true;
 
-  if(siths.length > 0  && !isHomeworldFound(currentPlanet, siths)) {
+  if(siths.length > 0  && !isHomeworldFound(state)) {
     isScrollUpDisabled =
       paddingTop === MAX_VISIBLE_SITHS - 1 ||
       R.isNil(R.head(siths).master.id);

@@ -38,12 +38,15 @@ export default function list(state = initialState, action) {
 
     case DOWN: {
       let paddingTop = state.paddingTop - N_SITHS_TO_SCROLL;
-      let siths = state.siths.slice(0);
+      let siths = state.siths;
 
       if (paddingTop < 0) {
-        siths = state.siths.slice(
-          R.min(Math.abs(paddingTop), state.siths.length - 1)
+        const nSithsToRemove = R.min(
+          Math.abs(paddingTop),
+          state.siths.length - 1
         );
+
+        siths = state.siths.slice(nSithsToRemove);
         paddingTop = 0;
       }
 

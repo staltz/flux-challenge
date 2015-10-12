@@ -1,7 +1,6 @@
 import {
   LOADING_SITH, ABORT_REQUEST, SITH_LOADED
 } from '../actions';
-
 import { INITIAL_SITH_ID } from '../config';
 
 const initialState = {

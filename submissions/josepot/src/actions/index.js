@@ -10,31 +10,11 @@ export const ABORT_REQUEST = 'ABORT_REQUEST';
 export const SITH_LOADED = 'SITH_LOADED';
 const ABORT_MSG = 'Internally aborted request';
 
-export function isHomeworldFound(planet, siths) {
+export function isHomeworldFound(state) {
   return R.containsWith(
     (planet, sith) => planet.id == sith.homeworld.id,
-     planet, siths
+     state.currentPlanet, state.list.siths
   );
-}
-
-function getAvailableSpots(state, direction) {
-  return direction === UP ?
-    state.list.paddingTop :
-    MAX_VISIBLE_SITHS - state.list.siths.length - state.list.paddingTop;
-}
-
-function getNextSith(siths, direction) {
-  return siths.length > 0 &&
-    direction === UP ? R.head(siths).master : R.last(siths).apprentice;
-}
-
-function getNextSithToLoad(state, direction) {
-  const { siths } = state.list;
-
-  return !isHomeworldFound(state.currentPlanet, siths) &&
-    getAvailableSpots(state, direction) > 0 &&
-    R.isNil(state.onGoingRequests[direction]) &&
-    getNextSith(siths, direction);
 }
 
 function getRequest(sithId) {
@@ -56,13 +36,58 @@ function getRequest(sithId) {
   return { id: sithId, rawRequest, promiseRequest };
 }
 
-function cancelUnnecessaryRequests() {
+function getOppositeDirection(direction) {
+  return direction === UP ? DOWN : UP;
+}
+
+function getAvailableSpots(state, direction) {
+  return direction === UP ?
+    state.list.paddingTop :
+    MAX_VISIBLE_SITHS - state.list.siths.length - state.list.paddingTop;
+}
+
+function getNextSith(siths, direction) {
+  return siths.length > 0 &&
+    (direction === UP ? R.head(siths).master : R.last(siths).apprentice);
+}
+
+function getNextSithToLoad(state, direction) {
+  return !isHomeworldFound(state) &&
+    getAvailableSpots(state, direction) > 0 &&
+    R.isNil(state.onGoingRequests[direction]) &&
+    getNextSith(state.list.siths, direction);
+}
+
+function loadSiths(directions) {
+  return (dispatch, getState) => {
+    directions.forEach((direction) => {
+      const nextSith = getNextSithToLoad(getState(), direction);
+
+      if(nextSith && !R.isNil(nextSith.id)) {
+        const request = getRequest(nextSith.id);
+
+        dispatch({ type: LOADING_SITH, direction, request });
+        request.promiseRequest.then((sith) => {
+          dispatch({ type: SITH_LOADED, direction, sith });
+          dispatch(
+            isHomeworldFound(getState()) ?
+              cancelUnnecessaryRequests([UP, DOWN]) :
+              loadSiths([direction])
+          );
+        }, (err) => {
+          if(err.message !== ABORT_MSG) throw err;
+        });
+      }
+    });
+  }
+}
+
+function cancelUnnecessaryRequests(directions) {
   return (dispatch, getState) => {
     const state = getState();
-    const { currentPlanet, list } = state;
-    const homeworldFound = isHomeworldFound(currentPlanet, list.siths);
+    const homeworldFound = isHomeworldFound(state);
 
-    [UP, DOWN].forEach((direction) => {
+    directions.forEach((direction) => {
       const requestToCancel =
         (homeworldFound || getAvailableSpots(state, direction) === 0) &&
         state.onGoingRequests[direction];
@@ -75,30 +100,11 @@ function cancelUnnecessaryRequests() {
   }
 }
 
-function tryToLoadNextSith(direction) {
-  return (dispatch, getState) => {
-    const nextSith = getNextSithToLoad(getState(), direction);
-    if(nextSith && nextSith.id) {
-      const request = getRequest(nextSith.id);
-      dispatch({ type: LOADING_SITH, direction, request });
-
-      request.promiseRequest.then((sith) => {
-        dispatch({ type: SITH_LOADED, direction, sith });
-        dispatch(tryToLoadNextSith(direction));
-        dispatch(cancelUnnecessaryRequests());
-      }, (err) => {
-        if(err.message !== ABORT_MSG) throw err;
-      });
-    }
-  }
-}
-
 export function initialRequest() {
   return (dispatch, getState) => {
     getRequest(INITIAL_SITH_ID).promiseRequest.then((sith) => {
       dispatch({ type: SITH_LOADED, direction : DOWN, sith });
-      dispatch(tryToLoadNextSith(UP));
-      dispatch(tryToLoadNextSith(DOWN));
+      dispatch(loadSiths([UP, DOWN]));
     });
   }
 }
@@ -106,17 +112,20 @@ export function initialRequest() {
 export function scroll(direction) {
   return (dispatch) => {
     dispatch({type: direction});
-    dispatch(cancelUnnecessaryRequests());
-    dispatch(tryToLoadNextSith(direction));
+    dispatch(cancelUnnecessaryRequests([getOppositeDirection(direction)]));
+    dispatch(loadSiths([direction]));
   }
 }
 
 export function obiWanMoved(planet) {
   return (dispatch, getState) => {
-    dispatch({
-      type: OBI_WAN_MOVED,
-      planet
-    });
-    dispatch(cancelUnnecessaryRequests());
+    const homeworldFoundPrev = isHomeworldFound(getState());
+    dispatch({ type: OBI_WAN_MOVED, planet });
+    const homeworldFoundPost = isHomeworldFound(getState());
+
+    if(homeworldFoundPrev !== homeworldFoundPost) {
+      const action = homeworldFoundPost ? cancelUnnecessaryRequests : loadSiths;
+      R.compose(dispatch, R.partial(action, [UP, DOWN]))();
+    }
   }
 }
