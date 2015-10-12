@@ -13,14 +13,14 @@ interface State {
     obiWanWorld: ObiWanWorldState.StateSlice;
 }
 
-function onlyOneSithLoaded(lords: SithLordsState.SithLord[]): boolean {
+function lessThanThreeSithLoaded(lords: SithLordsState.SithLord[]): boolean {
     let count = 0;
     for (const l of lords) {
         if (l.status === SithLordsState.SithLordStatus.PRESENT) {
             count += 1;
         }
     }
-    return count < 2;
+    return count < 3;
 }
 
 function obiWanIsOnSamePlanetAsSith(state: State): boolean {
@@ -45,23 +45,30 @@ function sithProps(state: State): SithProps[] {
     });
 }
 
+function lastLordHasNoApprentice(lords: SithLordsState.SithLord[]): boolean {
+    for (const l of lords.reverse()) {
+        if (l.status === SithLordsState.SithLordStatus.PRESENT) {
+            return !l.apprenticeUrl;
+        }
+    }
+}
 
 function scrollUpDisabled(state: State, obiWanSamePlanet: boolean): boolean {
     const lords = state.sithLords.v;
-    const lastLordHasNoApprentice = (
-        lords[4].status === SithLordsState.SithLordStatus.PRESENT &&
-        !lords[4].apprenticeUrl
-    );
-    return obiWanSamePlanet || onlyOneSithLoaded(lords) || lastLordHasNoApprentice;
+    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || lastLordHasNoApprentice(lords);
+}
+
+function firstLordHasNoMaster(lords: SithLordsState.SithLord[]): boolean {
+    for (const l of lords) {
+        if (l.status === SithLordsState.SithLordStatus.PRESENT) {
+            return !l.masterUrl;
+        }
+    }
 }
 
 function scrollDownDisabled(state: State, obiWanSamePlanet: boolean): boolean {
     const lords = state.sithLords.v;
-    const firstLordHasNoMaster = (
-        lords[0].status === SithLordsState.SithLordStatus.PRESENT &&
-        !lords[0].masterUrl
-    );
-    return obiWanSamePlanet || onlyOneSithLoaded(lords) || firstLordHasNoMaster;
+    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || firstLordHasNoMaster(lords);
 }
 
 export class App extends Flux.Container<State> {
