@@ -60,8 +60,6 @@ function setupApp(initState) {
     })
   );
 
-  // re-render entire app to get upClick$ and downClick$ work.
-  ReactDOM.unmountComponentAtNode(dashboardNode);
   ReactDOM.render(Dashboard, dashboardNode);
 
   let subscription = null;
@@ -70,10 +68,6 @@ function setupApp(initState) {
     if (timeTraveled) {
       // pop states after doing time travel
       while (initState !== states[states.length - 1]) {
-        if (states.length === 0) {
-          throw new Error('cannot pop anymore');
-        }
-
         states.pop();
       }
 
@@ -118,5 +112,7 @@ tmClick$.subscribe((e) => {
 sliderEv$.subscribe((e) => {
   timeTraveled = true;
   const index = e.target.value;
+  // re-render entire app to get upClick$ and downClick$ work after time travel.
+  ReactDOM.unmountComponentAtNode(dashboardNode);
   app = setupApp(states[index]);
 });
