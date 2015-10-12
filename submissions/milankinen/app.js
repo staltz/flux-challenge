@@ -75,22 +75,19 @@ const appStateP =
       downOk: !state.danger && isScrollPossible(state.siths, -SCROLL) && !find(state.siths, s => s.apprentice && !s.apprentice.url)
     }}))
 
-// when scrolling happens, cancel all obsolete sith load request
-loadSith.$.plug(
-  sithsScrolledS
-    .map(() => createCancelEvents())
-    .flatMap(Bacon.fromArray)
-)
-
 // send load/cancel events based on current planet & siths
+// we can safely send cancel/load sith events every time when state
+// changes because .skipDuplicates removes the duplicate events per idx
+// in "sithLoadedS" stream
 loadSith.$.plug(
   appStateP
     .changes()
+    .skipWhile(({siths}) => !find(siths, s => s.id))   // we must wait Darth Sidious first!!
     .map(({siths, planet}) => {
       if (isPlanetHomeWorldForListedSiths(planet, siths)) {
         return createCancelEvents()
       } else {
-        return createLoadMasterApprenticeEvents(siths)
+        return createEventsPerSithSlot(siths)
       }
     })
     .flatMap(Bacon.fromArray)
@@ -116,21 +113,21 @@ function isScrollPossible(siths, idxDelta) {
   return !!find(siths, s => s.id && s.idx + idxDelta >= 0 && s.idx + idxDelta < MAX_SITHS)
 }
 
-// if surrounding slots are empty then create master/apprentice events
-function createLoadMasterApprenticeEvents(siths) {
-  const nestedEvents =
-    siths
-      .filter(sith => sith.id)
-      .map(sith => {
-        const {idx, master, apprentice} = sith
-        const loadMaster = master.url && siths[idx - 1] && !siths[idx - 1].id
-        const loadApprentice = apprentice.url && siths[idx + 1] && !siths[idx + 1].id
-        return compact([
-          loadMaster ? {idx: idx - 1, url: master.url} : null,
-          loadApprentice ? {idx: idx + 1, url: apprentice.url} : null
-        ])
-      })
-  return flatten(nestedEvents)
+function createEventsPerSithSlot(siths) {
+  return siths.map(({idx, id}) => {
+    const master = siths[idx - 1]
+    const apprentice = siths[idx + 1]
+    if (master && master.apprentice && master.apprentice.url && master.apprentice.id !== id) {
+      // this slot was removed due to scroll-up
+      return {idx, url: master.apprentice.url}
+    } else if (apprentice && apprentice.master && apprentice.master.url && apprentice.master.id !== id) {
+      // this slot was removed due to scroll-down
+      return {idx, url: apprentice.master.url}
+    } else {
+      // cancel requests for this slot (if any)
+      return {idx}
+    }
+  })
 }
 
 function App(props) {
