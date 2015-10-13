@@ -115,7 +115,7 @@ darthSidious = mkJediUrl 3616
 
 init : Int -> Int -> JediUrl -> (Model, Effects Action)
 init nbSlots scrollSpeed jediUrl =
-  fetchJedi (initModel nbSlots scrollSpeed) (nbSlots // 2) jediUrl
+  fetchJedi 0 (nbSlots // 2) jediUrl (initModel nbSlots scrollSpeed)
 
 
 initModel : Int -> Int -> Model
@@ -138,7 +138,7 @@ initModel nbSlots scrollSpeed =
 type Action
   = SetWorld (Maybe World)
   | SetJedi JediRequest
-            (Maybe Jedi)
+            (Result Http.Error Jedi)
   | Scroll ScrollDir Int
   | NoAction
 
@@ -151,8 +151,8 @@ type Action
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
-    SetJedi request newJedi ->
-      setJedi request newJedi model
+    SetJedi request newJediResult ->
+      setJedi request newJediResult model
 
     SetWorld mWorld ->
       setWorld mWorld model
@@ -181,30 +181,45 @@ setWorld mWorld model =
         else resumeAllRequests model'
 
 
-{-| Set the jedi at request.insertPos, adjusting for scrolling, remove the
+{-| Set the jedi at request.insertPos after adjusting for scrolling, remove the
 completed request from the list, and fetch the jedis before/after the new jedi
-if required
+if required.
+If Obi-Wan is on the new jedi's homeworld, abort and save all outstanding requests.
 -}
-setJedi : JediRequest -> Maybe Jedi -> Model -> (Model, Effects Action)
-setJedi request newMJedi model =
-  -- We adjust the position in which to inject the new jedi to account for
-  -- any scrolling since the jedi was requested.
-  let adjustedPos =
+setJedi : JediRequest -> Result Http.Error Jedi -> Model -> (Model, Effects Action)
+setJedi request newJediResult model =
+  let newMJedi = Result.toMaybe newJediResult
+
+      adjustedPos =
         adjustPos request.insertPos
                   request.scrollPos
                   model.scrollPos
+
       newJediSlots =
         if inBounds adjustedPos model.jediSlots
           then Array.set adjustedPos newMJedi model.jediSlots
           -- Don't update the model if this jedi has been scrolled off-screen.
           else model.jediSlots
+
       model' = { model | jediRequests <- removeRequest request model.jediRequests
                        , jediSlots <- newJediSlots }
-  in
-      maybeFetchJedisAround adjustedPos model' `bindAll`
+
+      maybeRetry =
+        case newJediResult of
+          Err httpErr ->
+            retryRequest 1000 request
+          Ok _ ->
+            pure
+
+      maybeAbortAll =
         if (newMJedi `onWorld` model.world)
-          then [abortAndSaveAllRequests]
-          else []
+          then abortAndSaveAllRequests
+          else pure
+
+  in
+      maybeFetchJedisAround adjustedPos model'
+        >>= maybeRetry
+        >>= maybeAbortAll
 
 
 {-| Extract requests for jedis that are no longer in view and need to be
@@ -243,7 +258,7 @@ resumeAllRequests model =
         { model | requestsToResume <- [] }
   in
       pure model' `bindAll`
-        List.map retryRequest model.requestsToResume
+        List.map (retryRequest 0) model.requestsToResume
 
 
 {-|  Scrolling logic. If we can scroll (see `canScroll`):
@@ -284,8 +299,8 @@ doScroll model dir scrollSpeed =
             >>= maybeFetchJedisAround endJediPos
 
 
-fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
-fetchJedi model insertPos jediUrl =
+fetchJedi : Float -> Int -> JediUrl -> Model -> (Model, Effects Action)
+fetchJedi sleepMillis insertPos jediUrl model =
   let (sendTask, abortTask) =
         Http.getWithAbort decodeJedi jediUrl.url
 
@@ -303,10 +318,11 @@ fetchJedi model insertPos jediUrl =
         , abort = abortEffect }
 
       sendEffect =
-        sendTask
-          |> Task.toMaybe
-          |> Task.map (SetJedi request)
-          |> Effects.task
+        Task.sleep sleepMillis
+          `Task.andThen` (\_ -> sendTask)
+            |> Task.toResult
+            |> Task.map (SetJedi request)
+            |> Effects.task
 
   in
       ( { model | jediRequests <- request :: model.jediRequests
@@ -316,15 +332,15 @@ fetchJedi model insertPos jediUrl =
 
 {-| Replay a request (after adjusting the insert position)
 -}
-retryRequest : JediRequest -> Model -> (Model, Effects Action)
-retryRequest request model =
+retryRequest : Float -> JediRequest -> Model -> (Model, Effects Action)
+retryRequest sleepMillis request model =
   let model' = { model | jediRequests <- removeRequest request model.jediRequests }
       newInsertPos =
         adjustPos request.insertPos
                   request.scrollPos
                   model'.scrollPos
   in
-      fetchJedi model' newInsertPos request.jediUrl
+      fetchJedi sleepMillis newInsertPos request.jediUrl model'
 
 
 {-| Check whether we have jedis around the jedi at `pos`, and fetch them if we
@@ -347,7 +363,7 @@ maybeFetchJedi pos nextPos getNextUrl model =
   in
     case mNext of
       Just nextUrl ->
-        fetchJedi model nextPos nextUrl
+        fetchJedi 0 nextPos nextUrl model
       Nothing ->
         pure model
 
