@@ -254,12 +254,12 @@ don't.
 -}
 maybeFetchJedisAround : Int -> Model -> (Model, Effects Action)
 maybeFetchJedisAround pos model =
-  let (model' , effects)  = maybeFetchJedi model  pos (pos - 1) .master
-      (model'', effects') = maybeFetchJedi model' pos (pos + 1) .apprentice
-  in (model'', Effects.batch [effects, effects'])
+  pure model
+    >>= maybeFetchJedi pos (pos - 1) .master
+    >>= maybeFetchJedi pos (pos + 1) .apprentice
 
-maybeFetchJedi : Model -> Int -> Int -> (Jedi -> Maybe JediUrl) -> (Model, Effects Action)
-maybeFetchJedi model pos nextPos getNextUrl =
+maybeFetchJedi : Int -> Int -> (Jedi -> Maybe JediUrl) -> Model -> (Model, Effects Action)
+maybeFetchJedi pos nextPos getNextUrl model =
   let
     mNext =
       if needJediAt nextPos model

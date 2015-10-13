@@ -4945,10 +4945,10 @@ Elm.Main.make = function (_elm) {
          }();
       }();
    });
-   var maybeFetchJedi = F4(function (model,
-   pos,
+   var maybeFetchJedi = F4(function (pos,
    nextPos,
-   getNextUrl) {
+   getNextUrl,
+   model) {
       return function () {
          var mNext = A2(needJediAt,
          nextPos,
@@ -4973,30 +4973,21 @@ Elm.Main.make = function (_elm) {
    });
    var maybeFetchJedisAround = F2(function (pos,
    model) {
-      return function () {
-         var $ = A4(maybeFetchJedi,
-         model,
-         pos,
-         pos - 1,
-         function (_) {
-            return _.master;
-         }),
-         model$ = $._0,
-         effects = $._1;
-         var $ = A4(maybeFetchJedi,
-         model$,
-         pos,
-         pos + 1,
-         function (_) {
-            return _.apprentice;
-         }),
-         model$$ = $._0,
-         effects$ = $._1;
-         return {ctor: "_Tuple2"
-                ,_0: model$$
-                ,_1: $Effects.batch(_L.fromArray([effects
-                                                 ,effects$]))};
-      }();
+      return A2(_op[">>="],
+      A2(_op[">>="],
+      pure(model),
+      A3(maybeFetchJedi,
+      pos,
+      pos - 1,
+      function (_) {
+         return _.master;
+      })),
+      A3(maybeFetchJedi,
+      pos,
+      pos + 1,
+      function (_) {
+         return _.apprentice;
+      }));
    });
    var setJedi = F3(function (request,
    newMJedi,
