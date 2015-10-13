@@ -4627,7 +4627,7 @@ Elm.Main.make = function (_elm) {
                                                          ,effects$]))};
               }();}
          _U.badCase($moduleName,
-         "between lines 468 and 470");
+         "between lines 484 and 486");
       }();
    });
    var pure = function (model) {
@@ -4677,7 +4677,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 437 and 439");
+         "between lines 449 and 451");
       }();
    };
    var isNothing = function ($) {
@@ -4703,7 +4703,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 340 and 342");
+         "between lines 341 and 343");
       }()))]));
    };
    var onWorld = F2(function (mJedi,
@@ -4726,7 +4726,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 319 and 322");
+         "between lines 320 and 323");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4750,7 +4750,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 362 and 368");
+         "between lines 363 and 369");
       }());
    });
    var haveJediAt = F2(function (pos,
@@ -4817,27 +4817,6 @@ Elm.Main.make = function (_elm) {
       return {ctor: "Scroll"
              ,_0: a};
    };
-   var viewScrollButton = F2(function (address,
-   _v21) {
-      return function () {
-         switch (_v21.ctor)
-         {case "_Tuple3":
-            return A2($Html.button,
-              A2($List._op["::"],
-              $Html$Attributes.classList(_L.fromArray([{ctor: "_Tuple2"
-                                                       ,_0: _v21._1
-                                                       ,_1: true}
-                                                      ,{ctor: "_Tuple2"
-                                                       ,_0: "css-button-disabled"
-                                                       ,_1: $Basics.not(_v21._2)}])),
-              _v21._2 ? _L.fromArray([A2($Html$Events.onClick,
-              address,
-              Scroll(_v21._0))]) : _L.fromArray([])),
-              _L.fromArray([]));}
-         _U.badCase($moduleName,
-         "between lines 382 and 389");
-      }();
-   });
    var SetJedi = F2(function (a,
    b) {
       return {ctor: "SetJedi"
@@ -4890,7 +4869,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 419 and 425");
+         "between lines 431 and 437");
       }();
    });
    var Jedi = F5(function (a,
@@ -4935,15 +4914,15 @@ Elm.Main.make = function (_elm) {
    decodeJediUrl));
    var fetchJedi = F3(function (model,
    insertPos,
-   _v28) {
+   _v23) {
       return function () {
          return function () {
             var $ = A2($Http.getWithAbort,
             decodeJedi,
-            _v28.url),
+            _v23.url),
             sendTask = $._0,
             abortTask = $._1;
-            var abortEffect = $Effects.task($Task.map(function (_v30) {
+            var abortEffect = $Effects.task($Task.map(function (_v25) {
                return function () {
                   return NoAction;
                }();
@@ -4988,7 +4967,7 @@ Elm.Main.make = function (_elm) {
                case "Nothing":
                return pure(model);}
             _U.badCase($moduleName,
-            "between lines 268 and 272");
+            "between lines 269 and 273");
          }();
       }();
    });
@@ -5096,7 +5075,7 @@ Elm.Main.make = function (_elm) {
                  0,
                  0 - scrollSpeed);}
             _U.badCase($moduleName,
-            "between lines 311 and 313");
+            "between lines 312 and 314");
          }()(jediSlots));
          var $ = function () {
             switch (upOrDown.ctor)
@@ -5117,7 +5096,7 @@ Elm.Main.make = function (_elm) {
                          return _.master;
                       }};}
             _U.badCase($moduleName,
-            "between lines 301 and 308");
+            "between lines 302 and 309");
          }(),
          firstOrLast = $._0,
          apprenticeOrMaster = $._1;
@@ -5169,10 +5148,12 @@ Elm.Main.make = function (_elm) {
          newScrollPos = $._1,
          endJediPos = $._2;
          return A2(_op[">>="],
-         abortRequests(_U.replace([["jediSlots"
-                                   ,newJedis]
-                                  ,["scrollPos",newScrollPos]],
+         A2(_op[">>="],
+         pure(_U.replace([["jediSlots"
+                          ,newJedis]
+                         ,["scrollPos",newScrollPos]],
          model)),
+         abortRequests),
          maybeFetchJedisAround(endJediPos));
       }();
    });
@@ -5199,6 +5180,38 @@ Elm.Main.make = function (_elm) {
          "between lines 130 and 141");
       }();
    });
+   var viewScrollButton = F4(function (address,
+   scrollDisabled,
+   jediSlots,
+   dir) {
+      return function () {
+         var clickHandler = A2($Html$Events.onClick,
+         address,
+         Scroll(dir));
+         var enabled = $Basics.not(scrollDisabled) && A2(canScroll,
+         dir,
+         jediSlots);
+         var className = function () {
+            switch (dir.ctor)
+            {case "Down":
+               return "css-button-down";
+               case "Up":
+               return "css-button-up";}
+            _U.badCase($moduleName,
+            "between lines 383 and 389");
+         }();
+         var classes = $Html$Attributes.classList(_L.fromArray([{ctor: "_Tuple2"
+                                                                ,_0: className
+                                                                ,_1: true}
+                                                               ,{ctor: "_Tuple2"
+                                                                ,_0: "css-button-disabled"
+                                                                ,_1: $Basics.not(enabled)}]));
+         return A2($Html.button,
+         enabled ? _L.fromArray([classes
+                                ,clickHandler]) : _L.fromArray([classes]),
+         _L.fromArray([]));
+      }();
+   });
    var viewScrollButtons = F3(function (address,
    jediSlots,
    mWorld) {
@@ -5209,19 +5222,11 @@ Elm.Main.make = function (_elm) {
          return A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("css-scroll-buttons")]),
          A2($List.map,
-         viewScrollButton(address),
-         _L.fromArray([{ctor: "_Tuple3"
-                       ,_0: Up
-                       ,_1: "css-button-up"
-                       ,_2: $Basics.not(scrollDisabled) && A2(canScroll,
-                       Up,
-                       jediSlots)}
-                      ,{ctor: "_Tuple3"
-                       ,_0: Down
-                       ,_1: "css-button-down"
-                       ,_2: $Basics.not(scrollDisabled) && A2(canScroll,
-                       Down,
-                       jediSlots)}])));
+         A3(viewScrollButton,
+         address,
+         scrollDisabled,
+         jediSlots),
+         _L.fromArray([Up,Down])));
       }();
    });
    var viewJediList = F3(function (address,
@@ -5240,15 +5245,15 @@ Elm.Main.make = function (_elm) {
                    mWorld)]));
    });
    var view = F2(function (address,
-   _v42) {
+   _v38) {
       return function () {
          return A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("css-root")]),
-         _L.fromArray([viewPlanetMonitor(_v42.world)
+         _L.fromArray([viewPlanetMonitor(_v38.world)
                       ,A3(viewJediList,
                       address,
-                      _v42.jediSlots,
-                      _v42.world)]));
+                      _v38.jediSlots,
+                      _v38.world)]));
       }();
    });
    var app = $StartApp.start({_: {}

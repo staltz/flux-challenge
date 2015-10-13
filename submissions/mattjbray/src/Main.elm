@@ -373,21 +373,32 @@ viewScrollButtons address jediSlots mWorld =
   let scrollDisabled = any (flip onWorld mWorld) jediSlots
   in
     div [ class "css-scroll-buttons" ]
-      (List.map (viewScrollButton address)
-                [ (Up, "css-button-up", not scrollDisabled && canScroll Up jediSlots)
-                , (Down, "css-button-down", not scrollDisabled && canScroll Down jediSlots)
-                ])
+      (List.map
+         (viewScrollButton address scrollDisabled jediSlots)
+         [ Up, Down ])
 
-viewScrollButton : Signal.Address Action -> (ScrollDir, String, Bool) -> Html
-viewScrollButton address (dir, className, enabled) =
-  button
-    (classList [ (className, True)
-               , ("css-button-disabled", not enabled)
-               ]
-    :: if enabled
-       then [onClick address (Scroll dir)]
-       else [])
-    []
+viewScrollButton : Signal.Address Action -> Bool -> Array (Maybe Jedi) -> ScrollDir -> Html
+viewScrollButton address scrollDisabled jediSlots dir =
+  let className =
+        case dir of
+          Up ->
+            "css-button-up"
+          Down ->
+            "css-button-down"
+
+      enabled = not scrollDisabled && canScroll dir jediSlots
+
+      classes = classList [ (className, True)
+                          , ("css-button-disabled", not enabled)
+                          ]
+
+      clickHandler = onClick address (Scroll dir)
+  in
+      button
+        (if enabled
+           then [classes, clickHandler]
+           else [classes])
+        []
 
 --
 -- Decoders
