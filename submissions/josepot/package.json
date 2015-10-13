@@ -1,0 +1,28 @@
+{
+  "name": "flux-challenge-josepot",
+  "version": "0.0.0",
+  "description": "Flux Challenge",
+  "scripts": {
+    "start": "webpack --watch",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josepot/flux-challenge.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "classnames": "^2.1.5",
+    "ramda": "^0.17.1",
+    "react": "^0.13.3",
+    "react-redux": "^2.1.2",
+    "redux": "^3.0.0",
+    "redux-thunk": "^0.1.0",
+    "xhr": "^2.1.0"
+  },
+  "devDependencies": {
+    "babel-core": "^5.6.18",
+    "babel-loader": "^5.1.4",
+    "webpack": "^1.9.11"
+  }
+}
