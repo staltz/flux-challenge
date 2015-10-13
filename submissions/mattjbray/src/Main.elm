@@ -422,10 +422,11 @@ decodeWorld =
 -- If id is null return Nothing, otherwise return a JediUrl
 decodeJediUrl : Json.Decoder (Maybe JediUrl)
 decodeJediUrl =
-  ("id" := (Json.oneOf
-              [ Json.map Just Json.int
-              , Json.null Nothing
-              ]))
+  ("id" :=
+     (Json.oneOf
+        [ Json.map Just Json.int
+        , Json.null Nothing
+        ]))
   `Json.andThen`
     (\mId ->
        case mId of
