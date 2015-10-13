@@ -87,6 +87,10 @@ type alias JediRequest =
   , scrollPos:Int
   , abort:Effects Action}
 
+type ScrollDir
+  = Up
+  | Down
+
 darthSidious : JediUrl
 darthSidious =
   { id=3616
@@ -110,10 +114,6 @@ initModel =
 -- Actions
 --
 
-type ScrollDir
-  = Up
-  | Down
-
 type Action
   = SetWorld (Maybe World)
   | SetJedi JediRequest
@@ -125,14 +125,26 @@ type Action
 -- Update
 --
 
-adjustPos : Int -> Int -> Int -> Int
-adjustPos pos oldScrollPos newScrollPos =
-  let offset = oldScrollPos - newScrollPos
-  in pos + offset
+update : Action -> Model -> (Model, Effects Action)
+update action model =
+  case action of
+    SetJedi request newJedi ->
+      setJedi request newJedi model
 
-removeRequest : JediRequest -> List JediRequest -> List JediRequest
-removeRequest request requests =
-  List.filter (\ r -> r /= request) requests
+    SetWorld mWorld ->
+      ( { model | world <- mWorld }
+      , Effects.none
+      )
+
+    Scroll dir ->
+      doScroll model dir
+
+    NoAction ->
+      (model, Effects.none)
+
+--
+-- Business logic
+--
 
 {-| Set the jedi at request.insertPos, adjusting for scrolling, remove the
 completed request from the list, and fetch the jedis before/after the new jedi
@@ -156,23 +168,6 @@ setJedi request newMJedi model =
   in
       maybeFetchJedisAround model' adjustedPos
 
-
-update : Action -> Model -> (Model, Effects Action)
-update action model =
-  case action of
-    SetJedi request newJedi ->
-      setJedi request newJedi model
-
-    SetWorld mWorld ->
-      ( { model | world <- mWorld }
-      , Effects.none
-      )
-
-    Scroll dir ->
-      doScroll model dir
-
-    NoAction -> (model, Effects.none)
-
 {-| Extract requests for jedis that are no longer in view and need to be
 aborted.
 -}
@@ -191,6 +186,13 @@ abortRequests model =
       ( { model | jediRequests <- newRequests }
       , Effects.batch aborts )
 
+{-|  Scrolling logic. If we can scroll (see `canScroll`):
+* remove `scrollSpeed` jedis from the beginning (end) of the slots list,
+* add `scrollSpeed` empty slots to the end (beginning),
+* abort any requests for jedis that are now out of view,
+* if the first (last) jedi has a master (an apprentice), fire off a new jedi
+  request.
+-}
 doScroll : Model -> ScrollDir -> (Model, Effects Action)
 doScroll model dir =
   if not (canScroll dir model.jediSlots)
@@ -237,45 +239,6 @@ doScroll model dir =
                     ( model'''
                     , Effects.batch [aborts, send]
                     )
---
--- Lib
---
-
-inBounds : Int -> Array x -> Bool
-inBounds pos slots =
-  pos >= 0 && pos < Array.length slots
-
-notNothing : Maybe x -> Bool
-notNothing maybe =
-  case maybe of
-    Nothing -> False
-    Just _  -> True
-
-isNothing : Maybe x -> Bool
-isNothing = not << notNothing
-
-{-| Naive Array.any
--}
-any : (a -> Bool) -> Array a -> Bool
-any pred array = Array.length (Array.filter pred array) > 0
-
-{-| Maybe.map2 from elm-lang/core 3.0.0
--}
-mMap2 : (a -> b -> value) -> Maybe a -> Maybe b -> Maybe value
-mMap2 func ma mb =
-  case (ma,mb) of
-    (Just a, Just b) -> Just (func a b)
-    _ -> Nothing
-
-{-| The same as Maybe.andThen, but when your input is a nested Maybe.
- -}
-andThenAndThen : Maybe (Maybe a) -> (a -> Maybe b) -> Maybe b
-andThenAndThen mmValue f =
-  mmValue `andThen` flip andThen f
-
---
--- Helpers
---
 
 fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
 fetchJedi model insertPos {url} =
@@ -301,19 +264,13 @@ fetchJedi model insertPos {url} =
           |> Effects.task
 
   in
-    ( { model | jediRequests <- request :: model.jediRequests
-              , nextRequestId <- model.nextRequestId + 1 }
-    , sendEffect )
+      ( { model | jediRequests <- request :: model.jediRequests
+                , nextRequestId <- model.nextRequestId + 1 }
+      , sendEffect )
 
-haveJediAt : Int -> Model -> Bool
-haveJediAt pos {jediSlots} = Array.get pos jediSlots /= Just Nothing
-
-needJediAt : Int -> Model -> Bool
-needJediAt pos model =
-  inBounds pos model.jediSlots && not (haveJediAt pos model)
-
--- Check whether we have jedis around the jedi at `pos`, and fetch them if we
--- don't
+{-| Check whether we have jedis around the jedi at `pos`, and fetch them if we
+don't.
+-}
 maybeFetchJedisAround : Model -> Int -> (Model, Effects Action)
 maybeFetchJedisAround model pos =
   let (model' , effects)  = maybeFetchJedi model  pos (pos - 1) .master
@@ -334,8 +291,29 @@ maybeFetchJedi model pos nextPos getNextUrl =
       Nothing ->
         (model, Effects.none)
 
--- Return True if the first (last) jedi in the list has an apprentice (master)
--- AND we would have at least one jedi in view after the scroll
+--
+-- Helpers
+--
+
+adjustPos : Int -> Int -> Int -> Int
+adjustPos pos oldScrollPos newScrollPos =
+  let offset = oldScrollPos - newScrollPos
+  in pos + offset
+
+removeRequest : JediRequest -> List JediRequest -> List JediRequest
+removeRequest request requests =
+  List.filter (\ r -> r /= request) requests
+
+haveJediAt : Int -> Model -> Bool
+haveJediAt pos {jediSlots} = Array.get pos jediSlots /= Just Nothing
+
+needJediAt : Int -> Model -> Bool
+needJediAt pos model =
+  inBounds pos model.jediSlots && not (haveJediAt pos model)
+
+{-| Return True if the first (last) jedi in the list has an apprentice (master)
+AND we would have at least one jedi in view after the scroll.
+-}
 canScroll : ScrollDir -> Array (Maybe Jedi) -> Bool
 canScroll upOrDown jediSlots =
   let loadedJedis = Array.filter notNothing jediSlots
@@ -465,3 +443,39 @@ decodeJediUrl =
          Nothing ->
            -- id was null, return Nothing
            Json.succeed Nothing)
+
+--
+-- Lib
+--
+
+inBounds : Int -> Array x -> Bool
+inBounds pos slots =
+  pos >= 0 && pos < Array.length slots
+
+notNothing : Maybe x -> Bool
+notNothing maybe =
+  case maybe of
+    Nothing -> False
+    Just _  -> True
+
+isNothing : Maybe x -> Bool
+isNothing = not << notNothing
+
+{-| Naive Array.any
+ -}
+any : (a -> Bool) -> Array a -> Bool
+any pred array = Array.length (Array.filter pred array) > 0
+
+{-| Maybe.map2 from elm-lang/core 3.0.0
+ -}
+mMap2 : (a -> b -> value) -> Maybe a -> Maybe b -> Maybe value
+mMap2 func ma mb =
+  case (ma,mb) of
+    (Just a, Just b) -> Just (func a b)
+    _ -> Nothing
+
+{-| The same as Maybe.andThen, but when your input is a nested Maybe.
+ -}
+andThenAndThen : Maybe (Maybe a) -> (a -> Maybe b) -> Maybe b
+andThenAndThen mmValue f =
+  mmValue `andThen` flip andThen f

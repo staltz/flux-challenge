@@ -4612,6 +4612,60 @@ Elm.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
+   var andThenAndThen = F2(function (mmValue,
+   f) {
+      return A2($Maybe.andThen,
+      mmValue,
+      A2($Basics.flip,
+      $Maybe.andThen,
+      f));
+   });
+   var mMap2 = F3(function (func,
+   ma,
+   mb) {
+      return function () {
+         var _v0 = {ctor: "_Tuple2"
+                   ,_0: ma
+                   ,_1: mb};
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            switch (_v0._0.ctor)
+              {case "Just":
+                 switch (_v0._1.ctor)
+                   {case "Just":
+                      return $Maybe.Just(A2(func,
+                        _v0._0._0,
+                        _v0._1._0));}
+                   break;}
+              break;}
+         return $Maybe.Nothing;
+      }();
+   });
+   var any = F2(function (pred,
+   array) {
+      return _U.cmp($Array.length(A2($Array.filter,
+      pred,
+      array)),
+      0) > 0;
+   });
+   var notNothing = function (maybe) {
+      return function () {
+         switch (maybe.ctor)
+         {case "Just": return true;
+            case "Nothing": return false;}
+         _U.badCase($moduleName,
+         "between lines 457 and 459");
+      }();
+   };
+   var isNothing = function ($) {
+      return $Basics.not(notNothing($));
+   };
+   var inBounds = F2(function (pos,
+   slots) {
+      return _U.cmp(pos,
+      0) > -1 && _U.cmp(pos,
+      $Array.length(slots)) < 0;
+   });
    var viewPlanetMonitor = function (mWorld) {
       return A2($Html.h1,
       _L.fromArray([$Html$Attributes.$class("css-planet-monitor")]),
@@ -4626,47 +4680,9 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 382 and 384");
+         "between lines 360 and 362");
       }()))]));
    };
-   var haveJediAt = F2(function (pos,
-   _v2) {
-      return function () {
-         return !_U.eq(A2($Array.get,
-         pos,
-         _v2.jediSlots),
-         $Maybe.Just($Maybe.Nothing));
-      }();
-   });
-   var andThenAndThen = F2(function (mmValue,
-   f) {
-      return A2($Maybe.andThen,
-      mmValue,
-      A2($Basics.flip,
-      $Maybe.andThen,
-      f));
-   });
-   var mMap2 = F3(function (func,
-   ma,
-   mb) {
-      return function () {
-         var _v4 = {ctor: "_Tuple2"
-                   ,_0: ma
-                   ,_1: mb};
-         switch (_v4.ctor)
-         {case "_Tuple2":
-            switch (_v4._0.ctor)
-              {case "Just":
-                 switch (_v4._1.ctor)
-                   {case "Just":
-                      return $Maybe.Just(A2(func,
-                        _v4._0._0,
-                        _v4._1._0));}
-                   break;}
-              break;}
-         return $Maybe.Nothing;
-      }();
-   });
    var onWorld = F2(function (mJedi,
    mWorld) {
       return function () {
@@ -4687,7 +4703,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 361 and 364");
+         "between lines 339 and 342");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4711,33 +4727,17 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 404 and 410");
+         "between lines 382 and 388");
       }());
    });
-   var any = F2(function (pred,
-   array) {
-      return _U.cmp($Array.length(A2($Array.filter,
-      pred,
-      array)),
-      0) > 0;
-   });
-   var notNothing = function (maybe) {
+   var haveJediAt = F2(function (pos,
+   _v15) {
       return function () {
-         switch (maybe.ctor)
-         {case "Just": return true;
-            case "Nothing": return false;}
-         _U.badCase($moduleName,
-         "between lines 250 and 252");
+         return !_U.eq(A2($Array.get,
+         pos,
+         _v15.jediSlots),
+         $Maybe.Just($Maybe.Nothing));
       }();
-   };
-   var isNothing = function ($) {
-      return $Basics.not(notNothing($));
-   };
-   var inBounds = F2(function (pos,
-   slots) {
-      return _U.cmp(pos,
-      0) > -1 && _U.cmp(pos,
-      $Array.length(slots)) < 0;
    });
    var needJediAt = F2(function (pos,
    model) {
@@ -4812,7 +4812,7 @@ Elm.Main.make = function (_elm) {
               Scroll(_v17._0))]) : _L.fromArray([])),
               _L.fromArray([]));}
          _U.badCase($moduleName,
-         "between lines 424 and 431");
+         "between lines 402 and 409");
       }();
    });
    var SetJedi = F2(function (a,
@@ -4825,11 +4825,11 @@ Elm.Main.make = function (_elm) {
       return {ctor: "SetWorld"
              ,_0: a};
    };
-   var Down = {ctor: "Down"};
-   var Up = {ctor: "Up"};
    var darthSidious = {_: {}
                       ,id: 3616
                       ,url: "http://localhost:3000/dark-jedis/3616"};
+   var Down = {ctor: "Down"};
+   var Up = {ctor: "Up"};
    var JediRequest = F4(function (a,
    b,
    c,
@@ -4867,7 +4867,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 461 and 467");
+         "between lines 439 and 445");
       }();
    });
    var Jedi = F5(function (a,
@@ -4967,7 +4967,7 @@ Elm.Main.make = function (_elm) {
                       ,_0: model
                       ,_1: $Effects.none};}
             _U.badCase($moduleName,
-            "between lines 331 and 335");
+            "between lines 288 and 292");
          }();
       }();
    });
@@ -5075,7 +5075,7 @@ Elm.Main.make = function (_elm) {
                  0,
                  0 - scrollSpeed);}
             _U.badCase($moduleName,
-            "between lines 353 and 355");
+            "between lines 331 and 333");
          }()(jediSlots));
          var $ = function () {
             switch (upOrDown.ctor)
@@ -5096,7 +5096,7 @@ Elm.Main.make = function (_elm) {
                          return _.master;
                       }};}
             _U.badCase($moduleName,
-            "between lines 343 and 350");
+            "between lines 321 and 328");
          }(),
          firstOrLast = $._0,
          apprenticeOrMaster = $._1;
@@ -5152,7 +5152,7 @@ Elm.Main.make = function (_elm) {
                       }
                       ,_4: scrollSpeed - 1};}
             _U.badCase($moduleName,
-            "between lines 206 and 222");
+            "between lines 208 and 224");
          }(),
          newJedis = $._0,
          firstOrLastJediIndex = $._1,
@@ -5192,7 +5192,7 @@ Elm.Main.make = function (_elm) {
                       ,_0: model$$
                       ,_1: aborts};}
             _U.badCase($moduleName,
-            "between lines 230 and 239");
+            "between lines 232 and 241");
          }();
       }();
    });
@@ -5220,7 +5220,7 @@ Elm.Main.make = function (_elm) {
                    model)
                    ,_1: $Effects.none};}
          _U.badCase($moduleName,
-         "between lines 162 and 174");
+         "between lines 130 and 143");
       }();
    });
    var viewScrollButtons = F3(function (address,
@@ -5295,32 +5295,26 @@ Elm.Main.make = function (_elm) {
                       ,Jedi: Jedi
                       ,JediUrl: JediUrl
                       ,JediRequest: JediRequest
+                      ,Up: Up
+                      ,Down: Down
                       ,darthSidious: darthSidious
                       ,init: init
                       ,initModel: initModel
-                      ,Up: Up
-                      ,Down: Down
                       ,SetWorld: SetWorld
                       ,SetJedi: SetJedi
                       ,Scroll: Scroll
                       ,NoAction: NoAction
-                      ,adjustPos: adjustPos
-                      ,removeRequest: removeRequest
-                      ,setJedi: setJedi
                       ,update: update
+                      ,setJedi: setJedi
                       ,abortRequests: abortRequests
                       ,doScroll: doScroll
-                      ,inBounds: inBounds
-                      ,notNothing: notNothing
-                      ,isNothing: isNothing
-                      ,any: any
-                      ,mMap2: mMap2
-                      ,andThenAndThen: andThenAndThen
                       ,fetchJedi: fetchJedi
-                      ,haveJediAt: haveJediAt
-                      ,needJediAt: needJediAt
                       ,maybeFetchJedisAround: maybeFetchJedisAround
                       ,maybeFetchJedi: maybeFetchJedi
+                      ,adjustPos: adjustPos
+                      ,removeRequest: removeRequest
+                      ,haveJediAt: haveJediAt
+                      ,needJediAt: needJediAt
                       ,canScroll: canScroll
                       ,onWorld: onWorld
                       ,view: view
@@ -5331,7 +5325,13 @@ Elm.Main.make = function (_elm) {
                       ,viewScrollButton: viewScrollButton
                       ,decodeJedi: decodeJedi
                       ,decodeWorld: decodeWorld
-                      ,decodeJediUrl: decodeJediUrl};
+                      ,decodeJediUrl: decodeJediUrl
+                      ,inBounds: inBounds
+                      ,notNothing: notNothing
+                      ,isNothing: isNothing
+                      ,any: any
+                      ,mMap2: mMap2
+                      ,andThenAndThen: andThenAndThen};
    return _elm.Main.values;
 };
 Elm.Maybe = Elm.Maybe || {};
