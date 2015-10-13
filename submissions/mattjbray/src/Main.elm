@@ -173,26 +173,35 @@ update action model =
 
     NoAction -> (model, Effects.none)
 
-{-| Split requests into those that are still in view and those that we want to
-abort.
+{-| Extract requests for jedis that are no longer in view and need to be
+aborted.
 -}
-partitionRequestsToAbort : Model -> (List JediRequest, List JediRequest)
-partitionRequestsToAbort model =
-  List.partition
-    (\request ->
-      (inBounds (adjustPos request.insertPos
-                           request.scrollPos
-                           model.scrollPos)
-                model.jediSlots))
-    model.jediRequests
+abortRequests : Model -> (Model, Effects Action)
+abortRequests model =
+  let (newRequests, requestsToAbort) =
+        List.partition
+          (\request ->
+             (inBounds (adjustPos request.insertPos
+                        request.scrollPos
+                        model.scrollPos)
+             model.jediSlots))
+          model.jediRequests
+      aborts = List.map .abort requestsToAbort
+  in
+      ( { model | jediRequests <- newRequests }
+      , Effects.batch aborts )
 
 doScroll : Model -> ScrollDir -> (Model, Effects Action)
 doScroll model dir =
   if not (canScroll dir model.jediSlots)
     then (model, Effects.none)
     else
-      let slotsLength = Array.length model.jediSlots
-          emptySlots = Array.repeat scrollSpeed Nothing
+      let slotsLength =
+            Array.length model.jediSlots
+
+          emptySlots =
+            Array.repeat scrollSpeed Nothing
+
           (newJedis, firstOrLastJediIndex, newScrollPos, getNextUrl, insertPos) =
             case dir of
               Up ->
@@ -209,22 +218,24 @@ doScroll model dir =
                 , .apprentice
                 , slotsLength - scrollSpeed
                 )
+
       in
         let mJedi = Array.get firstOrLastJediIndex model.jediSlots
+
             model' = { model | jediSlots <- newJedis
                              , scrollPos <- newScrollPos }
-            (newRequests, requestsToAbort) = partitionRequestsToAbort model'
-            aborts = List.map .abort requestsToAbort
+
+            (model'', aborts) = abortRequests model'
         in
             case mJedi `andThen` flip andThen getNextUrl of
               Nothing ->
-                (model', Effects.none)
+                (model'', aborts)
               Just nextUrl ->
-                let (model'', send) =
-                      fetchJedi model' insertPos nextUrl
+                let (model''', send) =
+                      fetchJedi model'' insertPos nextUrl
                 in
-                    ( model''
-                    , Effects.batch (List.append aborts [send])
+                    ( model'''
+                    , Effects.batch [aborts, send]
                     )
 --
 -- Lib
