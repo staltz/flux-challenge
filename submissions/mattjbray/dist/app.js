@@ -4627,7 +4627,7 @@ Elm.Main.make = function (_elm) {
                                                          ,effects$]))};
               }();}
          _U.badCase($moduleName,
-         "between lines 484 and 486");
+         "between lines 485 and 487");
       }();
    });
    var pure = function (model) {
@@ -4677,7 +4677,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 449 and 451");
+         "between lines 450 and 452");
       }();
    };
    var isNothing = function ($) {
@@ -4869,7 +4869,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 431 and 437");
+         "between lines 432 and 438");
       }();
    });
    var Jedi = F5(function (a,

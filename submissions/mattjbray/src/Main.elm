@@ -475,12 +475,12 @@ andThenAndThen mmValue f =
 
 {-| Monadic pure: lift a Model to a (Model, Effects Action).
 -}
-pure : Model -> (Model, Effects Action)
+pure : a -> (a, Effects Action)
 pure model = (model, Effects.none)
 
 {-| Monadic bind: compose effectful computations.
 -}
-(>>=) : (Model, Effects Action) -> (Model -> (Model, Effects Action)) -> (Model, Effects Action)
+(>>=) : (a, Effects Action) -> (a -> (a, Effects Action)) -> (a, Effects Action)
 (model, effects) >>= f =
   let (model', effects') = f model
   in
