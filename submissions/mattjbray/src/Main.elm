@@ -132,15 +132,13 @@ update action model =
       setJedi request newJedi model
 
     SetWorld mWorld ->
-      ( { model | world <- mWorld }
-      , Effects.none
-      )
+      pure { model | world <- mWorld }
 
     Scroll dir ->
       doScroll model dir
 
     NoAction ->
-      (model, Effects.none)
+      pure model
 
 --
 -- Business logic
@@ -166,7 +164,7 @@ setJedi request newMJedi model =
       model' = { model | jediRequests <- removeRequest request model.jediRequests
                        , jediSlots <- newJediSlots }
   in
-      maybeFetchJedisAround model' adjustedPos
+      maybeFetchJedisAround adjustedPos model'
 
 {-| Extract requests for jedis that are no longer in view and need to be
 aborted.
@@ -189,14 +187,14 @@ abortRequests model =
 {-|  Scrolling logic. If we can scroll (see `canScroll`):
 * remove `scrollSpeed` jedis from the beginning (end) of the slots list,
 * add `scrollSpeed` empty slots to the end (beginning),
-* abort any requests for jedis that are now out of view,
+* abort any requests for jedis that are now out of view, and
 * if the first (last) jedi has a master (an apprentice), fire off a new jedi
   request.
 -}
 doScroll : Model -> ScrollDir -> (Model, Effects Action)
 doScroll model dir =
   if not (canScroll dir model.jediSlots)
-    then (model, Effects.none)
+    then pure model
     else
       let slotsLength =
             Array.length model.jediSlots
@@ -218,18 +216,10 @@ doScroll model dir =
                 )
 
       in
-        let model' =
-              { model | jediSlots <- newJedis
-                      , scrollPos <- newScrollPos }
-
-            (model'', aborts) =
-              abortRequests model'
-
-            (model''', sends) =
-              maybeFetchJedisAround model'' endJediPos
-
-        in
-            (model''', Effects.batch [aborts, sends])
+          pure { model | jediSlots <- newJedis
+                       , scrollPos <- newScrollPos }
+            >>= abortRequests
+            >>= maybeFetchJedisAround endJediPos
 
 fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
 fetchJedi model insertPos {url} =
@@ -262,8 +252,8 @@ fetchJedi model insertPos {url} =
 {-| Check whether we have jedis around the jedi at `pos`, and fetch them if we
 don't.
 -}
-maybeFetchJedisAround : Model -> Int -> (Model, Effects Action)
-maybeFetchJedisAround model pos =
+maybeFetchJedisAround : Int -> Model -> (Model, Effects Action)
+maybeFetchJedisAround pos model =
   let (model' , effects)  = maybeFetchJedi model  pos (pos - 1) .master
       (model'', effects') = maybeFetchJedi model' pos (pos + 1) .apprentice
   in (model'', Effects.batch [effects, effects'])
@@ -280,7 +270,7 @@ maybeFetchJedi model pos nextPos getNextUrl =
       Just nextUrl ->
         fetchJedi model nextPos nextUrl
       Nothing ->
-        (model, Effects.none)
+        pure model
 
 --
 -- Helpers
@@ -470,3 +460,16 @@ mMap2 func ma mb =
 andThenAndThen : Maybe (Maybe a) -> (a -> Maybe b) -> Maybe b
 andThenAndThen mmValue f =
   mmValue `andThen` flip andThen f
+
+{-| Monadic pure: lift a Model to a (Model, Effects Action).
+-}
+pure : Model -> (Model, Effects Action)
+pure model = (model, Effects.none)
+
+{-| Monadic bind: compose effectful computations.
+-}
+(>>=) : (Model, Effects Action) -> (Model -> (Model, Effects Action)) -> (Model, Effects Action)
+(model, effects) >>= f =
+  let (model', effects') = f model
+  in
+      (model', Effects.batch [effects, effects'])
