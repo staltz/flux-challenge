@@ -227,7 +227,7 @@ doScroll model dir =
 
             (model'', aborts) = abortRequests model'
         in
-            case mJedi `andThen` flip andThen getNextUrl of
+            case mJedi `andThenAndThen` getNextUrl of
               Nothing ->
                 (model'', aborts)
               Just nextUrl ->
@@ -254,17 +254,24 @@ notNothing maybe =
 isNothing : Maybe x -> Bool
 isNothing = not << notNothing
 
--- Naive Array.any
+{-| Naive Array.any
+-}
 any : (a -> Bool) -> Array a -> Bool
 any pred array = Array.length (Array.filter pred array) > 0
 
--- Maybe.map2
--- from elm-lang/core 3.0.0
+{-| Maybe.map2 from elm-lang/core 3.0.0
+-}
 mMap2 : (a -> b -> value) -> Maybe a -> Maybe b -> Maybe value
 mMap2 func ma mb =
   case (ma,mb) of
     (Just a, Just b) -> Just (func a b)
     _ -> Nothing
+
+{-| The same as Maybe.andThen, but when your input is a nested Maybe.
+ -}
+andThenAndThen : Maybe (Maybe a) -> (a -> Maybe b) -> Maybe b
+andThenAndThen mmValue f =
+  mmValue `andThen` flip andThen f
 
 --
 -- Helpers
@@ -318,7 +325,7 @@ maybeFetchJedi model pos nextPos getNextUrl =
   let
     mNext =
       if needJediAt nextPos model
-        then Array.get pos model.jediSlots `andThen` flip andThen getNextUrl
+        then Array.get pos model.jediSlots `andThenAndThen` getNextUrl
         else Nothing
   in
     case mNext of
@@ -341,7 +348,7 @@ canScroll upOrDown jediSlots =
             ( (\jedis -> Array.get (Array.length jedis - 1) jedis)
             , .apprentice)
       mJedi = firstOrLast loadedJedis
-      next = mJedi `andThen` (flip andThen apprenticeOrMaster)
+      next = mJedi `andThenAndThen` apprenticeOrMaster
       jediInView = jediSlots
                      |> (case upOrDown of
                            Up -> Array.slice 0 -scrollSpeed

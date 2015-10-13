@@ -4626,7 +4626,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 375 and 377");
+         "between lines 382 and 384");
       }()))]));
    };
    var haveJediAt = F2(function (pos,
@@ -4637,6 +4637,14 @@ Elm.Main.make = function (_elm) {
          _v2.jediSlots),
          $Maybe.Just($Maybe.Nothing));
       }();
+   });
+   var andThenAndThen = F2(function (mmValue,
+   f) {
+      return A2($Maybe.andThen,
+      mmValue,
+      A2($Basics.flip,
+      $Maybe.andThen,
+      f));
    });
    var mMap2 = F3(function (func,
    ma,
@@ -4679,7 +4687,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 354 and 357");
+         "between lines 361 and 364");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4703,7 +4711,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 397 and 403");
+         "between lines 404 and 410");
       }());
    });
    var any = F2(function (pred,
@@ -4804,7 +4812,7 @@ Elm.Main.make = function (_elm) {
               Scroll(_v17._0))]) : _L.fromArray([])),
               _L.fromArray([]));}
          _U.badCase($moduleName,
-         "between lines 417 and 424");
+         "between lines 424 and 431");
       }();
    });
    var SetJedi = F2(function (a,
@@ -4859,7 +4867,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 454 and 460");
+         "between lines 461 and 467");
       }();
    });
    var Jedi = F5(function (a,
@@ -4942,13 +4950,11 @@ Elm.Main.make = function (_elm) {
       return function () {
          var mNext = A2(needJediAt,
          nextPos,
-         model) ? A2($Maybe.andThen,
+         model) ? A2(andThenAndThen,
          A2($Array.get,
          pos,
          model.jediSlots),
-         A2($Basics.flip,
-         $Maybe.andThen,
-         getNextUrl)) : $Maybe.Nothing;
+         getNextUrl) : $Maybe.Nothing;
          return function () {
             switch (mNext.ctor)
             {case "Just":
@@ -4961,7 +4967,7 @@ Elm.Main.make = function (_elm) {
                       ,_0: model
                       ,_1: $Effects.none};}
             _U.badCase($moduleName,
-            "between lines 324 and 328");
+            "between lines 331 and 335");
          }();
       }();
    });
@@ -5069,7 +5075,7 @@ Elm.Main.make = function (_elm) {
                  0,
                  0 - scrollSpeed);}
             _U.badCase($moduleName,
-            "between lines 346 and 348");
+            "between lines 353 and 355");
          }()(jediSlots));
          var $ = function () {
             switch (upOrDown.ctor)
@@ -5090,7 +5096,7 @@ Elm.Main.make = function (_elm) {
                          return _.master;
                       }};}
             _U.badCase($moduleName,
-            "between lines 336 and 343");
+            "between lines 343 and 350");
          }(),
          firstOrLast = $._0,
          apprenticeOrMaster = $._1;
@@ -5098,11 +5104,9 @@ Elm.Main.make = function (_elm) {
          notNothing,
          jediSlots);
          var mJedi = firstOrLast(loadedJedis);
-         var next = A2($Maybe.andThen,
+         var next = A2(andThenAndThen,
          mJedi,
-         A2($Basics.flip,
-         $Maybe.andThen,
-         apprenticeOrMaster));
+         apprenticeOrMaster);
          return notNothing(next) && jediInView;
       }();
    });
@@ -5166,11 +5170,9 @@ Elm.Main.make = function (_elm) {
          firstOrLastJediIndex,
          model.jediSlots);
          return function () {
-            var _v33 = A2($Maybe.andThen,
+            var _v33 = A2(andThenAndThen,
             mJedi,
-            A2($Basics.flip,
-            $Maybe.andThen,
-            getNextUrl));
+            getNextUrl);
             switch (_v33.ctor)
             {case "Just":
                return function () {
@@ -5313,6 +5315,7 @@ Elm.Main.make = function (_elm) {
                       ,isNothing: isNothing
                       ,any: any
                       ,mMap2: mMap2
+                      ,andThenAndThen: andThenAndThen
                       ,fetchJedi: fetchJedi
                       ,haveJediAt: haveJediAt
                       ,needJediAt: needJediAt
