@@ -4636,19 +4636,14 @@ Elm.Main.make = function (_elm) {
          "between lines 598 and 600");
       }();
    });
-   var sequence = F2(function (modelEffects,
-   actions) {
-      return function () {
-         switch (actions.ctor)
-         {case "::": return A2(sequence,
-              A2(_op[">>="],
-              modelEffects,
-              actions._0),
-              actions._1);
-            case "[]": return modelEffects;}
-         _U.badCase($moduleName,
-         "between lines 607 and 610");
-      }();
+   var bindAll = F2(function (modelEffects,
+   fs) {
+      return A3($List.foldl,
+      $Basics.flip(F2(function (x,y) {
+         return A2(_op[">>="],x,y);
+      })),
+      modelEffects,
+      fs);
    });
    var pure = function (model) {
       return {ctor: "_Tuple2"
@@ -4667,18 +4662,18 @@ Elm.Main.make = function (_elm) {
    ma,
    mb) {
       return function () {
-         var _v7 = {ctor: "_Tuple2"
+         var _v4 = {ctor: "_Tuple2"
                    ,_0: ma
                    ,_1: mb};
-         switch (_v7.ctor)
+         switch (_v4.ctor)
          {case "_Tuple2":
-            switch (_v7._0.ctor)
+            switch (_v4._0.ctor)
               {case "Just":
-                 switch (_v7._1.ctor)
+                 switch (_v4._1.ctor)
                    {case "Just":
                       return $Maybe.Just(A2(func,
-                        _v7._0._0,
-                        _v7._1._0));}
+                        _v4._0._0,
+                        _v4._1._0));}
                    break;}
               break;}
          return $Maybe.Nothing;
@@ -4729,7 +4724,7 @@ Elm.Main.make = function (_elm) {
    var onWorld = F2(function (mJedi,
    mWorld) {
       return function () {
-         var _v16 = A3(mMap2,
+         var _v13 = A3(mMap2,
          F2(function (v0,v1) {
             return {ctor: "_Tuple2"
                    ,_0: v0
@@ -4737,12 +4732,12 @@ Elm.Main.make = function (_elm) {
          }),
          mWorld,
          mJedi);
-         switch (_v16.ctor)
+         switch (_v13.ctor)
          {case "Just":
-            switch (_v16._0.ctor)
+            switch (_v13._0.ctor)
               {case "_Tuple2":
-                 return _U.eq(_v16._0._1.homeworld.id,
-                   _v16._0._0.id);}
+                 return _U.eq(_v13._0._1.homeworld.id,
+                   _v13._0._0.id);}
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
@@ -4815,11 +4810,11 @@ Elm.Main.make = function (_elm) {
       }();
    });
    var haveJediAt = F2(function (pos,
-   _v23) {
+   _v20) {
       return function () {
          return !_U.eq(A2($Array.get,
          pos,
-         _v23.jediSlots),
+         _v20.jediSlots),
          $Maybe.Just($Maybe.Nothing));
       }();
    });
@@ -5093,7 +5088,7 @@ Elm.Main.make = function (_elm) {
          jediUrl.url),
          sendTask = $._0,
          abortTask = $._1;
-         var abortEffect = $Effects.task($Task.map(function (_v28) {
+         var abortEffect = $Effects.task($Task.map(function (_v25) {
             return function () {
                return NoAction;
             }();
@@ -5149,7 +5144,7 @@ Elm.Main.make = function (_elm) {
          var model$ = _U.replace([["requestsToResume"
                                   ,_L.fromArray([])]],
          model);
-         return A2(sequence,
+         return A2(bindAll,
          pure(model$),
          A2($List.map,
          retryRequest,
@@ -5396,7 +5391,7 @@ Elm.Main.make = function (_elm) {
                       ,mMap2: mMap2
                       ,andThenAndThen: andThenAndThen
                       ,pure: pure
-                      ,sequence: sequence
+                      ,bindAll: bindAll
                       ,aFirst: aFirst
                       ,aLast: aLast};
    return _elm.Main.values;

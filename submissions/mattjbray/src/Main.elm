@@ -239,7 +239,7 @@ resumeAllRequests model =
   let model' =
         { model | requestsToResume <- [] }
   in
-      pure model' `sequence`
+      pure model' `bindAll`
         List.map retryRequest model.requestsToResume
 
 
@@ -601,13 +601,12 @@ pure model = (model, Effects.none)
 
 
 {-| Does this have a well known name?
+Thread a (model, effects) pair through a list of (model -> (model, effects))
+functions.
 -}
-sequence : (a, Effects b) -> List (a -> (a, Effects b)) -> (a, Effects b)
-sequence modelEffects actions =
-  case actions of
-    [] -> modelEffects
-    (f :: fs) ->
-      (modelEffects >>= f) `sequence` fs
+bindAll : (a, Effects b) -> List (a -> (a, Effects b)) -> (a, Effects b)
+bindAll modelEffects fs =
+  List.foldl (flip (>>=)) modelEffects fs
 
 
 aFirst : Array a -> Maybe a
