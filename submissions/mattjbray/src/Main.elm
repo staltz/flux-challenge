@@ -11,16 +11,20 @@ import Maybe exposing (andThen)
 import StartApp
 import Task
 
+
 --
 -- Config
 --
 
+
 scrollSpeed = 2
 nbSlots = 5
+
 
 --
 -- Wiring
 --
+
 
 app =
   StartApp.start
@@ -30,20 +34,25 @@ app =
     , inputs = [Signal.map SetWorld currentWorld]
     }
 
+
 main =
   app.html
+
 
 port tasks : Signal (Task.Task Effects.Never ())
 port tasks =
   app.tasks
 
+
 -- index.html creates a websocket and calls this port whenever a message is
 -- received.
 port currentWorld : Signal (Maybe World)
 
+
 --
 -- Models
 --
+
 
 type alias Model =
   { -- Obi-Wan's current location
@@ -63,10 +72,12 @@ type alias Model =
   , nextRequestId:Int
   }
 
+
 type alias World =
   { id:Int
   , name:String
   }
+
 
 type alias Jedi =
   { id:Int
@@ -76,10 +87,12 @@ type alias Jedi =
   , apprentice:Maybe JediUrl
   }
 
+
 type alias JediUrl =
   { id:Int
   , url:String
   }
+
 
 type alias JediRequest =
   { id:Int
@@ -87,9 +100,11 @@ type alias JediRequest =
   , scrollPos:Int
   , abort:Effects Action}
 
+
 type ScrollDir
   = Up
   | Down
+
 
 darthSidious : JediUrl
 darthSidious =
@@ -97,9 +112,11 @@ darthSidious =
   , url="http://localhost:3000/dark-jedis/3616"
   }
 
+
 init : JediUrl -> (Model, Effects Action)
 init jediUrl =
   fetchJedi initModel (nbSlots // 2) jediUrl
+
 
 initModel : Model
 initModel =
@@ -110,9 +127,11 @@ initModel =
   , nextRequestId = 0
   }
 
+
 --
 -- Actions
 --
+
 
 type Action
   = SetWorld (Maybe World)
@@ -121,9 +140,11 @@ type Action
   | Scroll ScrollDir
   | NoAction
 
+
 --
 -- Update
 --
+
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -140,9 +161,11 @@ update action model =
     NoAction ->
       pure model
 
+
 --
 -- Business logic
 --
+
 
 {-| Set the jedi at request.insertPos, adjusting for scrolling, remove the
 completed request from the list, and fetch the jedis before/after the new jedi
@@ -166,6 +189,7 @@ setJedi request newMJedi model =
   in
       maybeFetchJedisAround adjustedPos model'
 
+
 {-| Extract requests for jedis that are no longer in view and need to be
 aborted.
 -}
@@ -183,6 +207,7 @@ abortRequests model =
   in
       ( { model | jediRequests <- newRequests }
       , Effects.batch aborts )
+
 
 {-|  Scrolling logic. If we can scroll (see `canScroll`):
 * remove `scrollSpeed` jedis from the beginning (end) of the slots list,
@@ -221,6 +246,7 @@ doScroll model dir =
             >>= abortRequests
             >>= maybeFetchJedisAround endJediPos
 
+
 fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
 fetchJedi model insertPos {url} =
   let (sendTask, abortTask) =
@@ -249,6 +275,7 @@ fetchJedi model insertPos {url} =
                 , nextRequestId <- model.nextRequestId + 1 }
       , sendEffect )
 
+
 {-| Check whether we have jedis around the jedi at `pos`, and fetch them if we
 don't.
 -}
@@ -257,6 +284,7 @@ maybeFetchJedisAround pos model =
   pure model
     >>= maybeFetchJedi pos (pos - 1) .master
     >>= maybeFetchJedi pos (pos + 1) .apprentice
+
 
 maybeFetchJedi : Int -> Int -> (Jedi -> Maybe JediUrl) -> Model -> (Model, Effects Action)
 maybeFetchJedi pos nextPos getNextUrl model =
@@ -272,25 +300,31 @@ maybeFetchJedi pos nextPos getNextUrl model =
       Nothing ->
         pure model
 
+
 --
 -- Helpers
 --
+
 
 adjustPos : Int -> Int -> Int -> Int
 adjustPos pos oldScrollPos newScrollPos =
   let offset = oldScrollPos - newScrollPos
   in pos + offset
 
+
 removeRequest : JediRequest -> List JediRequest -> List JediRequest
 removeRequest request requests =
   List.filter (\ r -> r /= request) requests
 
+
 haveJediAt : Int -> Model -> Bool
 haveJediAt pos {jediSlots} = Array.get pos jediSlots /= Just Nothing
+
 
 needJediAt : Int -> Model -> Bool
 needJediAt pos model =
   inBounds pos model.jediSlots && not (haveJediAt pos model)
+
 
 {-| Return True if the first (last) jedi in the list has an apprentice (master)
 AND we would have at least one jedi in view after the scroll.
@@ -325,6 +359,7 @@ canScroll upOrDown jediSlots =
   in
       notNothing next && jediInView
 
+
 onWorld : Maybe Jedi -> Maybe World -> Bool
 onWorld mJedi mWorld =
   case mMap2 (,) mWorld mJedi of
@@ -332,9 +367,11 @@ onWorld mJedi mWorld =
       jedi.homeworld.id == world.id
     Nothing -> False
 
+
 --
 -- Views
 --
+
 
 view : Signal.Address Action -> Model -> Html
 view address {world, jediSlots} =
@@ -342,6 +379,7 @@ view address {world, jediSlots} =
     [ viewPlanetMonitor world
     , viewJediList address jediSlots world
     ]
+
 
 viewPlanetMonitor : Maybe World -> Html
 viewPlanetMonitor mWorld =
@@ -353,6 +391,7 @@ viewPlanetMonitor mWorld =
                Nothing -> "in transit"))
     ]
 
+
 viewJediList : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
 viewJediList address jediSlots mWorld =
     div [ class "css-scrollable-list" ]
@@ -361,6 +400,7 @@ viewJediList address jediSlots mWorld =
                     (Array.toList jediSlots))
       , viewScrollButtons address jediSlots mWorld
       ]
+
 
 viewJedi : Maybe World -> Maybe Jedi -> Html
 viewJedi mWorld mJedi =
@@ -378,6 +418,7 @@ viewJedi mWorld mJedi =
          ]
     )
 
+
 viewScrollButtons : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
 viewScrollButtons address jediSlots mWorld =
   let scrollDisabled = any (flip onWorld mWorld) jediSlots
@@ -386,6 +427,7 @@ viewScrollButtons address jediSlots mWorld =
       (List.map
          (viewScrollButton address scrollDisabled jediSlots)
          [ Up, Down ])
+
 
 viewScrollButton : Signal.Address Action -> Bool -> Array (Maybe Jedi) -> ScrollDir -> Html
 viewScrollButton address scrollDisabled jediSlots dir =
@@ -410,9 +452,11 @@ viewScrollButton address scrollDisabled jediSlots dir =
            else [classes])
         []
 
+
 --
 -- Decoders
 --
+
 
 decodeJedi : Json.Decoder Jedi
 decodeJedi =
@@ -423,11 +467,13 @@ decodeJedi =
     ("master" := decodeJediUrl)
     ("apprentice" := decodeJediUrl)
 
+
 decodeWorld : Json.Decoder World
 decodeWorld =
   Json.object2 World
     ("id" := Json.int)
     ("name" := Json.string)
+
 
 -- If id is null return Nothing, otherwise return a JediUrl
 decodeJediUrl : Json.Decoder (Maybe JediUrl)
@@ -447,12 +493,16 @@ decodeJediUrl =
            -- id was null, return Nothing
            Json.succeed Nothing)
 
+
 --
 -- Lib
 --
+
+
 inBounds : Int -> Array x -> Bool
 inBounds pos slots =
   pos >= 0 && pos < Array.length slots
+
 
 notNothing : Maybe x -> Bool
 notNothing maybe =
@@ -460,13 +510,16 @@ notNothing maybe =
     Nothing -> False
     Just _  -> True
 
+
 isNothing : Maybe x -> Bool
 isNothing = not << notNothing
+
 
 {-| Naive Array.any
  -}
 any : (a -> Bool) -> Array a -> Bool
 any pred array = Array.length (Array.filter pred array) > 0
+
 
 {-| Maybe.map2 from elm-lang/core 3.0.0
  -}
@@ -476,16 +529,19 @@ mMap2 func ma mb =
     (Just a, Just b) -> Just (func a b)
     _ -> Nothing
 
+
 {-| The same as Maybe.andThen, but when your input is a nested Maybe.
  -}
 andThenAndThen : Maybe (Maybe a) -> (a -> Maybe b) -> Maybe b
 andThenAndThen mmValue f =
   mmValue `andThen` flip andThen f
 
+
 {-| Monadic pure: lift a Model to a (Model, Effects Action).
 -}
 pure : a -> (a, Effects Action)
 pure model = (model, Effects.none)
+
 
 {-| Monadic bind: compose effectful computations.
 -}
@@ -498,6 +554,7 @@ pure model = (model, Effects.none)
 
 aFirst : Array a -> Maybe a
 aFirst = Array.get 0
+
 
 aLast : Array a -> Maybe a
 aLast arr = Array.get (Array.length arr - 1) arr

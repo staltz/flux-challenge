@@ -4633,7 +4633,7 @@ Elm.Main.make = function (_elm) {
                                                          ,effects$]))};
               }();}
          _U.badCase($moduleName,
-         "between lines 494 and 496");
+         "between lines 550 and 552");
       }();
    });
    var pure = function (model) {
@@ -4683,7 +4683,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 459 and 461");
+         "between lines 509 and 511");
       }();
    };
    var isNothing = function ($) {
@@ -4709,7 +4709,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 351 and 353");
+         "between lines 389 and 391");
       }()))]));
    };
    var onWorld = F2(function (mJedi,
@@ -4732,7 +4732,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 330 and 333");
+         "between lines 365 and 368");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4756,7 +4756,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 373 and 379");
+         "between lines 413 and 419");
       }());
    });
    var haveJediAt = F2(function (pos,
@@ -4875,7 +4875,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 442 and 448");
+         "between lines 488 and 494");
       }();
    });
    var Jedi = F5(function (a,
@@ -4973,7 +4973,7 @@ Elm.Main.make = function (_elm) {
                case "Nothing":
                return pure(model);}
             _U.badCase($moduleName,
-            "between lines 269 and 273");
+            "between lines 297 and 301");
          }();
       }();
    });
@@ -5080,7 +5080,7 @@ Elm.Main.make = function (_elm) {
                       ,_2: 0
                       ,_3: 0 - scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 304 and 316");
+            "between lines 338 and 350");
          }(),
          getFirstOrLast = $._0,
          apprenticeOrMaster = $._1,
@@ -5130,7 +5130,7 @@ Elm.Main.make = function (_elm) {
                       ,_1: model.scrollPos - scrollSpeed
                       ,_2: scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 206 and 218");
+            "between lines 231 and 243");
          }(),
          newJedis = $._0,
          newScrollPos = $._1,
@@ -5165,7 +5165,7 @@ Elm.Main.make = function (_elm) {
                                     ,action._0]],
               model));}
          _U.badCase($moduleName,
-         "between lines 130 and 141");
+         "between lines 151 and 162");
       }();
    });
    var viewScrollButton = F4(function (address,
@@ -5186,7 +5186,7 @@ Elm.Main.make = function (_elm) {
                case "Up":
                return "css-button-up";}
             _U.badCase($moduleName,
-            "between lines 393 and 399");
+            "between lines 435 and 441");
          }();
          var classes = $Html$Attributes.classList(_L.fromArray([{ctor: "_Tuple2"
                                                                 ,_0: className
