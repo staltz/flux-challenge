@@ -63,6 +63,8 @@ type alias Model =
     -- completes, it is removed from the list. On scrolling, requests for
     -- out-of-view jedis are aborted and removed from this list.
   , jediRequests:List JediRequest
+    -- List of requests that have been aborted and should be resumed later.
+  , requestsToResume:List JediRequest
   , nextRequestId:Int
   }
 
@@ -90,6 +92,7 @@ type alias JediUrl =
 
 type alias JediRequest =
   { id:Int
+  , jediUrl:JediUrl
   , insertPos:Int
   , scrollPos:Int
   , abort:Effects Action}
@@ -122,6 +125,7 @@ initModel nbSlots scrollSpeed =
   , scrollPos = 0
   , scrollSpeed = scrollSpeed
   , jediRequests = []
+  , requestsToResume = []
   , nextRequestId = 0
   }
 
@@ -173,8 +177,8 @@ setWorld mWorld model =
   let model' = { model | world <- mWorld }
   in
       if any (flip onWorld mWorld) model'.jediSlots
-        then abortAllRequests model'
-        else pure model'
+        then abortAndSaveAllRequests model'
+        else resumeAllRequests model'
 
 
 {-| Set the jedi at request.insertPos, adjusting for scrolling, remove the
@@ -219,12 +223,24 @@ abortRequests model =
       , Effects.batch aborts )
 
 
-{-| Abort all outstanding requests.
+{-| Abort all outstanding requests, and save them for resuming later.
 -}
-abortAllRequests : Model -> (Model, Effects Action)
-abortAllRequests model =
-  ( { model | jediRequests <- [] }
+abortAndSaveAllRequests : Model -> (Model, Effects Action)
+abortAndSaveAllRequests model =
+  ( { model | jediRequests <- []
+            , requestsToResume <- List.append model.requestsToResume model.jediRequests }
   , Effects.batch (List.map .abort model.jediRequests) )
+
+
+{-| Resume requests that have been aborted
+-}
+resumeAllRequests : Model -> (Model, Effects Action)
+resumeAllRequests model =
+  let model' =
+        { model | requestsToResume <- [] }
+  in
+      pure model' `sequence`
+        List.map retryRequest model.requestsToResume
 
 
 {-|  Scrolling logic. If we can scroll (see `canScroll`):
@@ -266,9 +282,9 @@ doScroll model dir scrollSpeed =
 
 
 fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
-fetchJedi model insertPos {url} =
+fetchJedi model insertPos jediUrl =
   let (sendTask, abortTask) =
-        Http.getWithAbort decodeJedi url
+        Http.getWithAbort decodeJedi jediUrl.url
 
       abortEffect =
         abortTask
@@ -278,6 +294,7 @@ fetchJedi model insertPos {url} =
 
       request =
         { id = model.nextRequestId
+        , jediUrl = jediUrl
         , insertPos = insertPos
         , scrollPos = model.scrollPos
         , abort = abortEffect }
@@ -292,6 +309,19 @@ fetchJedi model insertPos {url} =
       ( { model | jediRequests <- request :: model.jediRequests
                 , nextRequestId <- model.nextRequestId + 1 }
       , sendEffect )
+
+
+{-| Replay a request (after adjusting the insert position)
+-}
+retryRequest : JediRequest -> Model -> (Model, Effects Action)
+retryRequest request model =
+  let model' = { model | jediRequests <- removeRequest request model.jediRequests }
+      newInsertPos =
+        adjustPos request.insertPos
+                  request.scrollPos
+                  model'.scrollPos
+  in
+      fetchJedi model' newInsertPos request.jediUrl
 
 
 {-| Check whether we have jedis around the jedi at `pos`, and fetch them if we
@@ -557,17 +587,27 @@ andThenAndThen mmValue f =
 
 {-| Monadic pure: lift a Model to a (Model, Effects Action).
 -}
-pure : a -> (a, Effects Action)
+pure : a -> (a, Effects b)
 pure model = (model, Effects.none)
 
 
 {-| Monadic bind: compose effectful computations.
 -}
-(>>=) : (a, Effects Action) -> (a -> (a, Effects Action)) -> (a, Effects Action)
+(>>=) : (a, Effects b) -> (a -> (c, Effects b)) -> (c, Effects b)
 (model, effects) >>= f =
   let (model', effects') = f model
   in
       (model', Effects.batch [effects, effects'])
+
+
+{-| Does this have a well known name?
+-}
+sequence : (a, Effects b) -> List (a -> (a, Effects b)) -> (a, Effects b)
+sequence modelEffects actions =
+  case actions of
+    [] -> modelEffects
+    (f :: fs) ->
+      (modelEffects >>= f) `sequence` fs
 
 
 aFirst : Array a -> Maybe a

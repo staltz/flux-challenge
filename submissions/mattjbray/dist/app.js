@@ -4633,7 +4633,21 @@ Elm.Main.make = function (_elm) {
                                                          ,effects$]))};
               }();}
          _U.badCase($moduleName,
-         "between lines 568 and 570");
+         "between lines 598 and 600");
+      }();
+   });
+   var sequence = F2(function (modelEffects,
+   actions) {
+      return function () {
+         switch (actions.ctor)
+         {case "::": return A2(sequence,
+              A2(_op[">>="],
+              modelEffects,
+              actions._0),
+              actions._1);
+            case "[]": return modelEffects;}
+         _U.badCase($moduleName,
+         "between lines 607 and 610");
       }();
    });
    var pure = function (model) {
@@ -4653,18 +4667,18 @@ Elm.Main.make = function (_elm) {
    ma,
    mb) {
       return function () {
-         var _v4 = {ctor: "_Tuple2"
+         var _v7 = {ctor: "_Tuple2"
                    ,_0: ma
                    ,_1: mb};
-         switch (_v4.ctor)
+         switch (_v7.ctor)
          {case "_Tuple2":
-            switch (_v4._0.ctor)
+            switch (_v7._0.ctor)
               {case "Just":
-                 switch (_v4._1.ctor)
+                 switch (_v7._1.ctor)
                    {case "Just":
                       return $Maybe.Just(A2(func,
-                        _v4._0._0,
-                        _v4._1._0));}
+                        _v7._0._0,
+                        _v7._1._0));}
                    break;}
               break;}
          return $Maybe.Nothing;
@@ -4683,7 +4697,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 527 and 529");
+         "between lines 557 and 559");
       }();
    };
    var isNothing = function ($) {
@@ -4709,13 +4723,13 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 407 and 409");
+         "between lines 437 and 439");
       }()))]));
    };
    var onWorld = F2(function (mJedi,
    mWorld) {
       return function () {
-         var _v13 = A3(mMap2,
+         var _v16 = A3(mMap2,
          F2(function (v0,v1) {
             return {ctor: "_Tuple2"
                    ,_0: v0
@@ -4723,16 +4737,16 @@ Elm.Main.make = function (_elm) {
          }),
          mWorld,
          mJedi);
-         switch (_v13.ctor)
+         switch (_v16.ctor)
          {case "Just":
-            switch (_v13._0.ctor)
+            switch (_v16._0.ctor)
               {case "_Tuple2":
-                 return _U.eq(_v13._0._1.homeworld.id,
-                   _v13._0._0.id);}
+                 return _U.eq(_v16._0._1.homeworld.id,
+                   _v16._0._0.id);}
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 383 and 386");
+         "between lines 413 and 416");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4756,7 +4770,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 431 and 437");
+         "between lines 461 and 467");
       }());
    });
    var canScroll = F3(function (upOrDown,
@@ -4782,7 +4796,7 @@ Elm.Main.make = function (_elm) {
                       ,_2: 0
                       ,_3: 0 - scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 356 and 368");
+            "between lines 386 and 398");
          }(),
          getFirstOrLast = $._0,
          apprenticeOrMaster = $._1,
@@ -4801,11 +4815,11 @@ Elm.Main.make = function (_elm) {
       }();
    });
    var haveJediAt = F2(function (pos,
-   _v20) {
+   _v23) {
       return function () {
          return !_U.eq(A2($Array.get,
          pos,
-         _v20.jediSlots),
+         _v23.jediSlots),
          $Maybe.Just($Maybe.Nothing));
       }();
    });
@@ -4833,10 +4847,14 @@ Elm.Main.make = function (_elm) {
          return pos + offset;
       }();
    });
-   var abortAllRequests = function (model) {
+   var abortAndSaveAllRequests = function (model) {
       return {ctor: "_Tuple2"
              ,_0: _U.replace([["jediRequests"
-                              ,_L.fromArray([])]],
+                              ,_L.fromArray([])]
+                             ,["requestsToResume"
+                              ,A2($List.append,
+                              model.requestsToResume,
+                              model.jediRequests)]],
              model)
              ,_1: $Effects.batch(A2($List.map,
              function (_) {
@@ -4870,17 +4888,6 @@ Elm.Main.make = function (_elm) {
                 ,_1: $Effects.batch(aborts)};
       }();
    };
-   var setWorld = F2(function (mWorld,
-   model) {
-      return function () {
-         var model$ = _U.replace([["world"
-                                  ,mWorld]],
-         model);
-         return A2(any,
-         A2($Basics.flip,onWorld,mWorld),
-         model$.jediSlots) ? abortAllRequests(model$) : pure(model$);
-      }();
-   });
    var NoAction = {ctor: "NoAction"};
    var Scroll = F2(function (a,b) {
       return {ctor: "Scroll"
@@ -4907,7 +4914,7 @@ Elm.Main.make = function (_elm) {
                case "Up":
                return "css-button-up";}
             _U.badCase($moduleName,
-            "between lines 453 and 459");
+            "between lines 483 and 489");
          }();
          var classes = $Html$Attributes.classList(_L.fromArray([{ctor: "_Tuple2"
                                                                 ,_0: className
@@ -4939,6 +4946,7 @@ Elm.Main.make = function (_elm) {
              nbSlots,
              $Maybe.Nothing)
              ,nextRequestId: 0
+             ,requestsToResume: _L.fromArray([])
              ,scrollPos: 0
              ,scrollSpeed: scrollSpeed
              ,world: $Maybe.Nothing};
@@ -4994,15 +5002,17 @@ Elm.Main.make = function (_elm) {
                    address,
                    model)]));
    });
-   var JediRequest = F4(function (a,
+   var JediRequest = F5(function (a,
    b,
    c,
-   d) {
+   d,
+   e) {
       return {_: {}
-             ,abort: d
+             ,abort: e
              ,id: a
-             ,insertPos: b
-             ,scrollPos: c};
+             ,insertPos: c
+             ,jediUrl: b
+             ,scrollPos: d};
    });
    var JediUrl = F2(function (a,
    b) {
@@ -5031,7 +5041,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 506 and 512");
+         "between lines 536 and 542");
       }();
    });
    var Jedi = F5(function (a,
@@ -5076,35 +5086,34 @@ Elm.Main.make = function (_elm) {
    decodeJediUrl));
    var fetchJedi = F3(function (model,
    insertPos,
-   _v25) {
+   jediUrl) {
       return function () {
-         return function () {
-            var $ = A2($Http.getWithAbort,
-            decodeJedi,
-            _v25.url),
-            sendTask = $._0,
-            abortTask = $._1;
-            var abortEffect = $Effects.task($Task.map(function (_v27) {
-               return function () {
-                  return NoAction;
-               }();
-            })($Task.toMaybe(abortTask)));
-            var request = {_: {}
-                          ,abort: abortEffect
-                          ,id: model.nextRequestId
-                          ,insertPos: insertPos
-                          ,scrollPos: model.scrollPos};
-            var sendEffect = $Effects.task($Task.map(SetJedi(request))($Task.toMaybe(sendTask)));
-            return {ctor: "_Tuple2"
-                   ,_0: _U.replace([["jediRequests"
-                                    ,A2($List._op["::"],
-                                    request,
-                                    model.jediRequests)]
-                                   ,["nextRequestId"
-                                    ,model.nextRequestId + 1]],
-                   model)
-                   ,_1: sendEffect};
-         }();
+         var $ = A2($Http.getWithAbort,
+         decodeJedi,
+         jediUrl.url),
+         sendTask = $._0,
+         abortTask = $._1;
+         var abortEffect = $Effects.task($Task.map(function (_v28) {
+            return function () {
+               return NoAction;
+            }();
+         })($Task.toMaybe(abortTask)));
+         var request = {_: {}
+                       ,abort: abortEffect
+                       ,id: model.nextRequestId
+                       ,insertPos: insertPos
+                       ,jediUrl: jediUrl
+                       ,scrollPos: model.scrollPos};
+         var sendEffect = $Effects.task($Task.map(SetJedi(request))($Task.toMaybe(sendTask)));
+         return {ctor: "_Tuple2"
+                ,_0: _U.replace([["jediRequests"
+                                 ,A2($List._op["::"],
+                                 request,
+                                 model.jediRequests)]
+                                ,["nextRequestId"
+                                 ,model.nextRequestId + 1]],
+                model)
+                ,_1: sendEffect};
       }();
    });
    var init = F3(function (nbSlots,
@@ -5116,6 +5125,47 @@ Elm.Main.make = function (_elm) {
       scrollSpeed),
       nbSlots / 2 | 0,
       jediUrl);
+   });
+   var retryRequest = F2(function (request,
+   model) {
+      return function () {
+         var model$ = _U.replace([["jediRequests"
+                                  ,A2(removeRequest,
+                                  request,
+                                  model.jediRequests)]],
+         model);
+         var newInsertPos = A3(adjustPos,
+         request.insertPos,
+         request.scrollPos,
+         model$.scrollPos);
+         return A3(fetchJedi,
+         model$,
+         newInsertPos,
+         request.jediUrl);
+      }();
+   });
+   var resumeAllRequests = function (model) {
+      return function () {
+         var model$ = _U.replace([["requestsToResume"
+                                  ,_L.fromArray([])]],
+         model);
+         return A2(sequence,
+         pure(model$),
+         A2($List.map,
+         retryRequest,
+         model.requestsToResume));
+      }();
+   };
+   var setWorld = F2(function (mWorld,
+   model) {
+      return function () {
+         var model$ = _U.replace([["world"
+                                  ,mWorld]],
+         model);
+         return A2(any,
+         A2($Basics.flip,onWorld,mWorld),
+         model$.jediSlots) ? abortAndSaveAllRequests(model$) : resumeAllRequests(model$);
+      }();
    });
    var maybeFetchJedi = F4(function (pos,
    nextPos,
@@ -5139,7 +5189,7 @@ Elm.Main.make = function (_elm) {
                case "Nothing":
                return pure(model);}
             _U.badCase($moduleName,
-            "between lines 315 and 319");
+            "between lines 345 and 349");
          }();
       }();
    });
@@ -5220,7 +5270,7 @@ Elm.Main.make = function (_elm) {
                       ,_1: model.scrollPos - scrollSpeed
                       ,_2: scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 249 and 261");
+            "between lines 265 and 277");
          }(),
          newJedis = $._0,
          newScrollPos = $._1,
@@ -5256,19 +5306,21 @@ Elm.Main.make = function (_elm) {
               action._0,
               model);}
          _U.badCase($moduleName,
-         "between lines 149 and 160");
+         "between lines 153 and 164");
       }();
    });
-   var Model = F6(function (a,
+   var Model = F7(function (a,
    b,
    c,
    d,
    e,
-   f) {
+   f,
+   g) {
       return {_: {}
              ,jediRequests: e
              ,jediSlots: b
-             ,nextRequestId: f
+             ,nextRequestId: g
+             ,requestsToResume: f
              ,scrollPos: c
              ,scrollSpeed: d
              ,world: a};
@@ -5315,9 +5367,11 @@ Elm.Main.make = function (_elm) {
                       ,setWorld: setWorld
                       ,setJedi: setJedi
                       ,abortRequests: abortRequests
-                      ,abortAllRequests: abortAllRequests
+                      ,abortAndSaveAllRequests: abortAndSaveAllRequests
+                      ,resumeAllRequests: resumeAllRequests
                       ,doScroll: doScroll
                       ,fetchJedi: fetchJedi
+                      ,retryRequest: retryRequest
                       ,maybeFetchJedisAround: maybeFetchJedisAround
                       ,maybeFetchJedi: maybeFetchJedi
                       ,adjustPos: adjustPos
@@ -5342,6 +5396,7 @@ Elm.Main.make = function (_elm) {
                       ,mMap2: mMap2
                       ,andThenAndThen: andThenAndThen
                       ,pure: pure
+                      ,sequence: sequence
                       ,aFirst: aFirst
                       ,aLast: aLast};
    return _elm.Main.values;
