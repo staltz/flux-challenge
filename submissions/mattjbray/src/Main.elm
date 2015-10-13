@@ -297,23 +297,33 @@ AND we would have at least one jedi in view after the scroll.
 -}
 canScroll : ScrollDir -> Array (Maybe Jedi) -> Bool
 canScroll upOrDown jediSlots =
-  let loadedJedis = Array.filter notNothing jediSlots
-      (firstOrLast, apprenticeOrMaster) =
+  let loadedJedis =
+        Array.filter notNothing jediSlots
+
+      (getFirstOrLast, apprenticeOrMaster, scrollStart, scrollEnd) =
         case upOrDown of
           Up ->
-            ( Array.get 0
-            , .master)
+            ( aFirst
+            , .master
+            , 0
+            , -scrollSpeed)
           Down ->
-            ( (\jedis -> Array.get (Array.length jedis - 1) jedis)
-            , .apprentice)
-      mJedi = firstOrLast loadedJedis
-      next = mJedi `andThenAndThen` apprenticeOrMaster
-      jediInView = jediSlots
-                     |> (case upOrDown of
-                           Up -> Array.slice 0 -scrollSpeed
-                           Down -> Array.slice scrollSpeed (Array.length jediSlots))
-                     |> any notNothing
-  in notNothing next && jediInView
+            ( aLast
+            , .apprentice
+            , scrollSpeed
+            , Array.length jediSlots)
+
+      next =
+        getFirstOrLast loadedJedis
+          `andThenAndThen` apprenticeOrMaster
+
+      jediInView =
+        jediSlots
+          |> Array.slice scrollStart scrollEnd
+          |> any notNothing
+
+  in
+      notNothing next && jediInView
 
 onWorld : Maybe Jedi -> Maybe World -> Bool
 onWorld mJedi mWorld =
@@ -440,7 +450,6 @@ decodeJediUrl =
 --
 -- Lib
 --
-
 inBounds : Int -> Array x -> Bool
 inBounds pos slots =
   pos >= 0 && pos < Array.length slots
@@ -485,3 +494,10 @@ pure model = (model, Effects.none)
   let (model', effects') = f model
   in
       (model', Effects.batch [effects, effects'])
+
+
+aFirst : Array a -> Maybe a
+aFirst = Array.get 0
+
+aLast : Array a -> Maybe a
+aLast arr = Array.get (Array.length arr - 1) arr

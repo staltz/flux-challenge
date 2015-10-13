@@ -4612,6 +4612,12 @@ Elm.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
+   var aLast = function (arr) {
+      return A2($Array.get,
+      $Array.length(arr) - 1,
+      arr);
+   };
+   var aFirst = $Array.get(0);
    _op[">>="] = F2(function (_v0,
    f) {
       return function () {
@@ -4627,7 +4633,7 @@ Elm.Main.make = function (_elm) {
                                                          ,effects$]))};
               }();}
          _U.badCase($moduleName,
-         "between lines 485 and 487");
+         "between lines 494 and 496");
       }();
    });
    var pure = function (model) {
@@ -4677,7 +4683,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 450 and 452");
+         "between lines 459 and 461");
       }();
    };
    var isNothing = function ($) {
@@ -4703,7 +4709,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 341 and 343");
+         "between lines 351 and 353");
       }()))]));
    };
    var onWorld = F2(function (mJedi,
@@ -4726,7 +4732,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 320 and 323");
+         "between lines 330 and 333");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4750,7 +4756,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 363 and 369");
+         "between lines 373 and 379");
       }());
    });
    var haveJediAt = F2(function (pos,
@@ -4869,7 +4875,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 432 and 438");
+         "between lines 442 and 448");
       }();
    });
    var Jedi = F5(function (a,
@@ -5055,48 +5061,39 @@ Elm.Main.make = function (_elm) {
    var canScroll = F2(function (upOrDown,
    jediSlots) {
       return function () {
-         var jediInView = any(notNothing)(function () {
-            switch (upOrDown.ctor)
-            {case "Down":
-               return A2($Array.slice,
-                 scrollSpeed,
-                 $Array.length(jediSlots));
-               case "Up":
-               return A2($Array.slice,
-                 0,
-                 0 - scrollSpeed);}
-            _U.badCase($moduleName,
-            "between lines 312 and 314");
-         }()(jediSlots));
          var $ = function () {
             switch (upOrDown.ctor)
             {case "Down":
-               return {ctor: "_Tuple2"
-                      ,_0: function (jedis) {
-                         return A2($Array.get,
-                         $Array.length(jedis) - 1,
-                         jedis);
-                      }
+               return {ctor: "_Tuple4"
+                      ,_0: aLast
                       ,_1: function (_) {
                          return _.apprentice;
-                      }};
+                      }
+                      ,_2: scrollSpeed
+                      ,_3: $Array.length(jediSlots)};
                case "Up":
-               return {ctor: "_Tuple2"
-                      ,_0: $Array.get(0)
+               return {ctor: "_Tuple4"
+                      ,_0: aFirst
                       ,_1: function (_) {
                          return _.master;
-                      }};}
+                      }
+                      ,_2: 0
+                      ,_3: 0 - scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 302 and 309");
+            "between lines 304 and 316");
          }(),
-         firstOrLast = $._0,
-         apprenticeOrMaster = $._1;
+         getFirstOrLast = $._0,
+         apprenticeOrMaster = $._1,
+         scrollStart = $._2,
+         scrollEnd = $._3;
+         var jediInView = any(notNothing)(A2($Array.slice,
+         scrollStart,
+         scrollEnd)(jediSlots));
          var loadedJedis = A2($Array.filter,
          notNothing,
          jediSlots);
-         var mJedi = firstOrLast(loadedJedis);
          var next = A2(andThenAndThen,
-         mJedi,
+         getFirstOrLast(loadedJedis),
          apprenticeOrMaster);
          return notNothing(next) && jediInView;
       }();
@@ -5189,7 +5186,7 @@ Elm.Main.make = function (_elm) {
                case "Up":
                return "css-button-up";}
             _U.badCase($moduleName,
-            "between lines 383 and 389");
+            "between lines 393 and 399");
          }();
          var classes = $Html$Attributes.classList(_L.fromArray([{ctor: "_Tuple2"
                                                                 ,_0: className
@@ -5236,15 +5233,15 @@ Elm.Main.make = function (_elm) {
                    mWorld)]));
    });
    var view = F2(function (address,
-   _v38) {
+   _v37) {
       return function () {
          return A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("css-root")]),
-         _L.fromArray([viewPlanetMonitor(_v38.world)
+         _L.fromArray([viewPlanetMonitor(_v37.world)
                       ,A3(viewJediList,
                       address,
-                      _v38.jediSlots,
-                      _v38.world)]));
+                      _v37.jediSlots,
+                      _v37.world)]));
       }();
    });
    var app = $StartApp.start({_: {}
@@ -5304,7 +5301,9 @@ Elm.Main.make = function (_elm) {
                       ,any: any
                       ,mMap2: mMap2
                       ,andThenAndThen: andThenAndThen
-                      ,pure: pure};
+                      ,pure: pure
+                      ,aFirst: aFirst
+                      ,aLast: aLast};
    return _elm.Main.values;
 };
 Elm.Maybe = Elm.Maybe || {};
