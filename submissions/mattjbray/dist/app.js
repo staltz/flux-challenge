@@ -4633,7 +4633,7 @@ Elm.Main.make = function (_elm) {
                                                          ,effects$]))};
               }();}
          _U.badCase($moduleName,
-         "between lines 545 and 547");
+         "between lines 548 and 550");
       }();
    });
    var pure = function (model) {
@@ -4683,7 +4683,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 504 and 506");
+         "between lines 507 and 509");
       }();
    };
    var isNothing = function ($) {
@@ -4709,7 +4709,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 384 and 386");
+         "between lines 387 and 389");
       }()))]));
    };
    var onWorld = F2(function (mJedi,
@@ -4732,7 +4732,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 360 and 363");
+         "between lines 363 and 366");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4756,7 +4756,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 408 and 414");
+         "between lines 411 and 417");
       }());
    });
    var canScroll = F3(function (upOrDown,
@@ -4782,7 +4782,7 @@ Elm.Main.make = function (_elm) {
                       ,_2: 0
                       ,_3: 0 - scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 333 and 345");
+            "between lines 336 and 348");
          }(),
          getFirstOrLast = $._0,
          apprenticeOrMaster = $._1,
@@ -4885,7 +4885,7 @@ Elm.Main.make = function (_elm) {
                case "Up":
                return "css-button-up";}
             _U.badCase($moduleName,
-            "between lines 430 and 436");
+            "between lines 433 and 439");
          }();
          var classes = $Html$Attributes.classList(_L.fromArray([{ctor: "_Tuple2"
                                                                 ,_0: className
@@ -4921,9 +4921,14 @@ Elm.Main.make = function (_elm) {
              ,scrollSpeed: scrollSpeed
              ,world: $Maybe.Nothing};
    });
-   var darthSidious = {_: {}
-                      ,id: 3616
-                      ,url: "http://localhost:3000/dark-jedis/3616"};
+   var mkJediUrl = function (id) {
+      return {_: {}
+             ,id: id
+             ,url: A2($Basics._op["++"],
+             "http://localhost:3000/dark-jedis/",
+             $Basics.toString(id))};
+   };
+   var darthSidious = mkJediUrl(3616);
    var Down = {ctor: "Down"};
    var Up = {ctor: "Up"};
    var viewScrollButtons = F2(function (address,
@@ -5004,7 +5009,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 483 and 489");
+         "between lines 486 and 492");
       }();
    });
    var Jedi = F5(function (a,
@@ -5112,7 +5117,7 @@ Elm.Main.make = function (_elm) {
                case "Nothing":
                return pure(model);}
             _U.badCase($moduleName,
-            "between lines 292 and 296");
+            "between lines 295 and 299");
          }();
       }();
    });
@@ -5193,7 +5198,7 @@ Elm.Main.make = function (_elm) {
                       ,_1: model.scrollPos - scrollSpeed
                       ,_2: scrollSpeed};}
             _U.badCase($moduleName,
-            "between lines 226 and 238");
+            "between lines 229 and 241");
          }(),
          newJedis = $._0,
          newScrollPos = $._1,
@@ -5229,7 +5234,7 @@ Elm.Main.make = function (_elm) {
                                     ,action._0]],
               model));}
          _U.badCase($moduleName,
-         "between lines 146 and 157");
+         "between lines 149 and 160");
       }();
    });
    var Model = F6(function (a,
@@ -5276,6 +5281,7 @@ Elm.Main.make = function (_elm) {
                       ,JediRequest: JediRequest
                       ,Up: Up
                       ,Down: Down
+                      ,mkJediUrl: mkJediUrl
                       ,darthSidious: darthSidious
                       ,init: init
                       ,initModel: initModel

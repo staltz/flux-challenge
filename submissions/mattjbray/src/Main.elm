@@ -100,11 +100,14 @@ type ScrollDir
   | Down
 
 
-darthSidious : JediUrl
-darthSidious =
-  { id=3616
-  , url="http://localhost:3000/dark-jedis/3616"
+mkJediUrl : Int -> JediUrl
+mkJediUrl id =
+  { id=id
+  , url="http://localhost:3000/dark-jedis/" ++ toString id
   }
+
+darthSidious : JediUrl
+darthSidious = mkJediUrl 3616
 
 
 init : Int -> Int -> JediUrl -> (Model, Effects Action)
