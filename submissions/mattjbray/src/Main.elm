@@ -204,41 +204,32 @@ doScroll model dir =
           emptySlots =
             Array.repeat scrollSpeed Nothing
 
-          (newJedis, firstOrLastJediIndex, newScrollPos, getNextUrl, insertPos) =
+          (newJedis, newScrollPos, endJediPos) =
             case dir of
               Up ->
                 ( Array.append emptySlots (Array.slice 0 (slotsLength - scrollSpeed) model.jediSlots)
-                , 0
                 , model.scrollPos - scrollSpeed
-                , .master
-                , scrollSpeed - 1
+                , scrollSpeed
                 )
               Down ->
                 ( Array.append (Array.slice scrollSpeed slotsLength model.jediSlots) emptySlots
-                , slotsLength - 1
                 , model.scrollPos + scrollSpeed
-                , .apprentice
-                , slotsLength - scrollSpeed
+                , slotsLength - scrollSpeed - 1
                 )
 
       in
-        let mJedi = Array.get firstOrLastJediIndex model.jediSlots
+        let model' =
+              { model | jediSlots <- newJedis
+                      , scrollPos <- newScrollPos }
 
-            model' = { model | jediSlots <- newJedis
-                             , scrollPos <- newScrollPos }
+            (model'', aborts) =
+              abortRequests model'
 
-            (model'', aborts) = abortRequests model'
+            (model''', sends) =
+              maybeFetchJedisAround model'' endJediPos
+
         in
-            case mJedi `andThenAndThen` getNextUrl of
-              Nothing ->
-                (model'', aborts)
-              Just nextUrl ->
-                let (model''', send) =
-                      fetchJedi model'' insertPos nextUrl
-                in
-                    ( model'''
-                    , Effects.batch [aborts, send]
-                    )
+            (model''', Effects.batch [aborts, sends])
 
 fetchJedi : Model -> Int -> JediUrl -> (Model, Effects Action)
 fetchJedi model insertPos {url} =
