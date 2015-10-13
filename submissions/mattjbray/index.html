@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <script src="dist/app.js"></script>
+    <script>
+      var app = Elm.fullscreen(Elm.Main, {currentWorld: null});
+      var ws = new WebSocket('ws://localhost:4000');
+      ws.onmessage = function (event) {
+        app.ports.currentWorld.send(JSON.parse(event.data));
+      };
+    </script>
+  </body>
+</html>
