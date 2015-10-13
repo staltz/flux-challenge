@@ -13,22 +13,15 @@ import Task
 
 
 --
--- Config
---
-
-
-scrollSpeed = 2
-nbSlots = 5
-
-
---
 -- Wiring
 --
 
 
 app =
   StartApp.start
-    { init = init darthSidious
+    { init = init 5             -- nbSlots
+                  2             -- scrollSpeed
+                  darthSidious  -- first jedi to fetch
     , update = update
     , view = view
     , inputs = [Signal.map SetWorld currentWorld]
@@ -65,6 +58,7 @@ type alias Model =
     -- index is adjusted for any scrolling which happened since the request
     -- started.
   , scrollPos:Int
+  , scrollSpeed:Int
     -- List of HTTP requests that have been made for jedis. When a request
     -- completes, it is removed from the list. On scrolling, requests for
     -- out-of-view jedis are aborted and removed from this list.
@@ -113,16 +107,17 @@ darthSidious =
   }
 
 
-init : JediUrl -> (Model, Effects Action)
-init jediUrl =
-  fetchJedi initModel (nbSlots // 2) jediUrl
+init : Int -> Int -> JediUrl -> (Model, Effects Action)
+init nbSlots scrollSpeed jediUrl =
+  fetchJedi (initModel nbSlots scrollSpeed) (nbSlots // 2) jediUrl
 
 
-initModel : Model
-initModel =
+initModel : Int -> Int -> Model
+initModel nbSlots scrollSpeed =
   { world = Nothing
   , jediSlots = Array.repeat nbSlots Nothing
   , scrollPos = 0
+  , scrollSpeed = scrollSpeed
   , jediRequests = []
   , nextRequestId = 0
   }
@@ -137,7 +132,7 @@ type Action
   = SetWorld (Maybe World)
   | SetJedi JediRequest
             (Maybe Jedi)
-  | Scroll ScrollDir
+  | Scroll ScrollDir Int
   | NoAction
 
 
@@ -155,8 +150,8 @@ update action model =
     SetWorld mWorld ->
       pure { model | world <- mWorld }
 
-    Scroll dir ->
-      doScroll model dir
+    Scroll dir scrollSpeed ->
+      doScroll model dir scrollSpeed
 
     NoAction ->
       pure model
@@ -216,9 +211,9 @@ abortRequests model =
 * if the first (last) jedi has a master (an apprentice), fire off a new jedi
   request.
 -}
-doScroll : Model -> ScrollDir -> (Model, Effects Action)
-doScroll model dir =
-  if not (canScroll dir model.jediSlots)
+doScroll : Model -> ScrollDir -> Int -> (Model, Effects Action)
+doScroll model dir scrollSpeed =
+  if not (canScroll dir scrollSpeed model.jediSlots)
     then pure model
     else
       let slotsLength =
@@ -329,8 +324,8 @@ needJediAt pos model =
 {-| Return True if the first (last) jedi in the list has an apprentice (master)
 AND we would have at least one jedi in view after the scroll.
 -}
-canScroll : ScrollDir -> Array (Maybe Jedi) -> Bool
-canScroll upOrDown jediSlots =
+canScroll : ScrollDir -> Int -> Array (Maybe Jedi) -> Bool
+canScroll upOrDown scrollSpeed jediSlots =
   let loadedJedis =
         Array.filter notNothing jediSlots
 
@@ -374,10 +369,10 @@ onWorld mJedi mWorld =
 
 
 view : Signal.Address Action -> Model -> Html
-view address {world, jediSlots} =
+view address model =
   div [ class "css-root" ]
-    [ viewPlanetMonitor world
-    , viewJediList address jediSlots world
+    [ viewPlanetMonitor model.world
+    , viewJediList address model
     ]
 
 
@@ -392,13 +387,13 @@ viewPlanetMonitor mWorld =
     ]
 
 
-viewJediList : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
-viewJediList address jediSlots mWorld =
+viewJediList : Signal.Address Action -> Model -> Html
+viewJediList address model =
     div [ class "css-scrollable-list" ]
       [ ul [ class "css-slots" ]
-          (List.map (viewJedi mWorld)
-                    (Array.toList jediSlots))
-      , viewScrollButtons address jediSlots mWorld
+          (List.map (viewJedi model.world)
+                    (Array.toList model.jediSlots))
+      , viewScrollButtons address model
       ]
 
 
@@ -419,18 +414,18 @@ viewJedi mWorld mJedi =
     )
 
 
-viewScrollButtons : Signal.Address Action -> Array (Maybe Jedi) -> Maybe World -> Html
-viewScrollButtons address jediSlots mWorld =
-  let scrollDisabled = any (flip onWorld mWorld) jediSlots
+viewScrollButtons : Signal.Address Action -> Model -> Html
+viewScrollButtons address model =
+  let scrollDisabled = any (flip onWorld model.world) model.jediSlots
   in
     div [ class "css-scroll-buttons" ]
       (List.map
-         (viewScrollButton address scrollDisabled jediSlots)
+         (viewScrollButton address scrollDisabled model.jediSlots model.scrollSpeed)
          [ Up, Down ])
 
 
-viewScrollButton : Signal.Address Action -> Bool -> Array (Maybe Jedi) -> ScrollDir -> Html
-viewScrollButton address scrollDisabled jediSlots dir =
+viewScrollButton : Signal.Address Action -> Bool -> Array (Maybe Jedi) -> Int -> ScrollDir -> Html
+viewScrollButton address scrollDisabled jediSlots scrollSpeed dir =
   let className =
         case dir of
           Up ->
@@ -438,13 +433,13 @@ viewScrollButton address scrollDisabled jediSlots dir =
           Down ->
             "css-button-down"
 
-      enabled = not scrollDisabled && canScroll dir jediSlots
+      enabled = not scrollDisabled && canScroll dir scrollSpeed jediSlots
 
       classes = classList [ (className, True)
                           , ("css-button-disabled", not enabled)
                           ]
 
-      clickHandler = onClick address (Scroll dir)
+      clickHandler = onClick address (Scroll dir scrollSpeed)
   in
       button
         (if enabled
