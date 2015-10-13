@@ -56,6 +56,9 @@ type alias Model =
     -- index is adjusted for any scrolling which happened since the request
     -- started.
   , scrollPos:Int
+    -- List of HTTP requests that have been made for jedis. When a request
+    -- completes, it is removed from the list. On scrolling, requests for
+    -- out-of-view jedis are aborted and removed from this list.
   , jediRequests:List JediRequest
   , nextRequestId:Int
   }
@@ -131,24 +134,33 @@ removeRequest : JediRequest -> List JediRequest -> List JediRequest
 removeRequest request requests =
   List.filter (\ r -> r /= request) requests
 
+{- Set the jedi at request.insertPos, adjusting for scrolling, remove the
+completed request from the list, and fetch the jedis before/after the new jedi
+if required -}
+setJedi : JediRequest -> Maybe Jedi -> Model -> (Model, Effects Action)
+setJedi request newMJedi model =
+  -- We adjust the position in which to inject the new jedi to account for
+  -- any scrolling since the jedi was requested.
+  let adjustedPos =
+        adjustPos request.insertPos
+                  request.scrollPos
+                  model.scrollPos
+      newJediSlots =
+        if inBounds adjustedPos model.jediSlots
+          then Array.set adjustedPos newMJedi model.jediSlots
+          -- Don't update the model if this jedi has been scrolled off-screen.
+          else model.jediSlots
+      model' = { model | jediRequests <- removeRequest request model.jediRequests
+                       , jediSlots <- newJediSlots }
+  in
+      maybeFetchJedisAround model' adjustedPos
+
+
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     SetJedi request newJedi ->
-      -- We adjust the position in which to inject the new jedi to account for
-      -- any scrolling that's been done since the jedi was requested.
-      let adjustedPos =
-            adjustPos request.insertPos
-                      request.scrollPos
-                      model.scrollPos
-          newJediSlots =
-            if inBounds adjustedPos model.jediSlots
-              then Array.set adjustedPos newJedi model.jediSlots
-              -- Don't update the model if this jedi has been scrolled off-screen.
-              else model.jediSlots
-          model' = { model | jediRequests <- removeRequest request model.jediRequests
-                           , jediSlots <- newJediSlots }
-      in maybeFetchJedisAround model' adjustedPos
+      setJedi request newJedi model
 
     SetWorld mWorld ->
       ( { model | world <- mWorld }

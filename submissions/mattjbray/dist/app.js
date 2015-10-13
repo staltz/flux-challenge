@@ -4626,7 +4626,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return "in transit";}
          _U.badCase($moduleName,
-         "between lines 351 and 353");
+         "between lines 363 and 365");
       }()))]));
    };
    var haveJediAt = F2(function (pos,
@@ -4679,7 +4679,7 @@ Elm.Main.make = function (_elm) {
               break;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 330 and 333");
+         "between lines 342 and 345");
       }();
    });
    var viewJedi = F2(function (mWorld,
@@ -4703,7 +4703,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 373 and 379");
+         "between lines 385 and 391");
       }());
    });
    var any = F2(function (pred,
@@ -4719,7 +4719,7 @@ Elm.Main.make = function (_elm) {
          {case "Just": return true;
             case "Nothing": return false;}
          _U.badCase($moduleName,
-         "between lines 226 and 228");
+         "between lines 238 and 240");
       }();
    };
    var isNothing = function ($) {
@@ -4778,7 +4778,7 @@ Elm.Main.make = function (_elm) {
               Scroll(_v17._0))]) : _L.fromArray([])),
               _L.fromArray([]));}
          _U.badCase($moduleName,
-         "between lines 393 and 400");
+         "between lines 405 and 412");
       }();
    });
    var SetJedi = F2(function (a,
@@ -4833,7 +4833,7 @@ Elm.Main.make = function (_elm) {
             case "Nothing":
             return $Json$Decode.succeed($Maybe.Nothing);}
          _U.badCase($moduleName,
-         "between lines 430 and 436");
+         "between lines 442 and 448");
       }();
    });
    var Jedi = F5(function (a,
@@ -4935,7 +4935,7 @@ Elm.Main.make = function (_elm) {
                       ,_0: model
                       ,_1: $Effects.none};}
             _U.badCase($moduleName,
-            "between lines 300 and 304");
+            "between lines 312 and 316");
          }();
       }();
    });
@@ -4964,6 +4964,31 @@ Elm.Main.make = function (_elm) {
                 ,_0: model$$
                 ,_1: $Effects.batch(_L.fromArray([effects
                                                  ,effects$]))};
+      }();
+   });
+   var setJedi = F3(function (request,
+   newMJedi,
+   model) {
+      return function () {
+         var adjustedPos = A3(adjustPos,
+         request.insertPos,
+         request.scrollPos,
+         model.scrollPos);
+         var newJediSlots = A2(inBounds,
+         adjustedPos,
+         model.jediSlots) ? A3($Array.set,
+         adjustedPos,
+         newMJedi,
+         model.jediSlots) : model.jediSlots;
+         var model$ = _U.replace([["jediRequests"
+                                  ,A2(removeRequest,
+                                  request,
+                                  model.jediRequests)]
+                                 ,["jediSlots",newJediSlots]],
+         model);
+         return A2(maybeFetchJedisAround,
+         model$,
+         adjustedPos);
       }();
    });
    var Model = F5(function (a,
@@ -5018,7 +5043,7 @@ Elm.Main.make = function (_elm) {
                  0,
                  0 - scrollSpeed);}
             _U.badCase($moduleName,
-            "between lines 322 and 324");
+            "between lines 334 and 336");
          }()(jediSlots));
          var $ = function () {
             switch (upOrDown.ctor)
@@ -5039,7 +5064,7 @@ Elm.Main.make = function (_elm) {
                          return _.master;
                       }};}
             _U.badCase($moduleName,
-            "between lines 312 and 319");
+            "between lines 324 and 331");
          }(),
          firstOrLast = $._0,
          apprenticeOrMaster = $._1;
@@ -5140,7 +5165,7 @@ Elm.Main.make = function (_elm) {
                                          ,_0: model$
                                          ,_1: $Effects.none};}
                                _U.badCase($moduleName,
-                               "between lines 203 and 214");
+                               "between lines 215 and 226");
                             }();
                          }();
                        case "Up": return function () {
@@ -5195,35 +5220,18 @@ Elm.Main.make = function (_elm) {
                                          ,_0: model$
                                          ,_1: $Effects.none};}
                                _U.badCase($moduleName,
-                               "between lines 182 and 194");
+                               "between lines 194 and 206");
                             }();
                          }();}
                     _U.badCase($moduleName,
-                    "between lines 172 and 214");
+                    "between lines 184 and 226");
                  }();
               }();
             case "SetJedi":
-            return function () {
-                 var adjustedPos = A3(adjustPos,
-                 action._0.insertPos,
-                 action._0.scrollPos,
-                 model.scrollPos);
-                 var newJediSlots = A2(inBounds,
-                 adjustedPos,
-                 model.jediSlots) ? A3($Array.set,
-                 adjustedPos,
-                 action._1,
-                 model.jediSlots) : model.jediSlots;
-                 var model$ = _U.replace([["jediRequests"
-                                          ,A2(removeRequest,
-                                          action._0,
-                                          model.jediRequests)]
-                                         ,["jediSlots",newJediSlots]],
-                 model);
-                 return A2(maybeFetchJedisAround,
-                 model$,
-                 adjustedPos);
-              }();
+            return A3(setJedi,
+              action._0,
+              action._1,
+              model);
             case "SetWorld":
             return {ctor: "_Tuple2"
                    ,_0: _U.replace([["world"
@@ -5231,7 +5239,7 @@ Elm.Main.make = function (_elm) {
                    model)
                    ,_1: $Effects.none};}
          _U.badCase($moduleName,
-         "between lines 136 and 214");
+         "between lines 161 and 226");
       }();
    });
    var viewScrollButtons = F3(function (address,
@@ -5317,6 +5325,7 @@ Elm.Main.make = function (_elm) {
                       ,NoAction: NoAction
                       ,adjustPos: adjustPos
                       ,removeRequest: removeRequest
+                      ,setJedi: setJedi
                       ,update: update
                       ,inBounds: inBounds
                       ,notNothing: notNothing
