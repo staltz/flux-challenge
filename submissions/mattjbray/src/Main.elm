@@ -151,7 +151,7 @@ update action model =
       setJedi request newJedi model
 
     SetWorld mWorld ->
-      pure { model | world <- mWorld }
+      setWorld mWorld model
 
     Scroll dir scrollSpeed ->
       doScroll model dir scrollSpeed
@@ -163,6 +163,18 @@ update action model =
 --
 -- Business logic
 --
+
+{-| Set Obi-Wan's current world.
+If any of the dark jedis in view are on the same world, abort all outstanding
+jedi requests.
+-}
+setWorld : Maybe World -> Model -> (Model, Effects Action)
+setWorld mWorld model =
+  let model' = { model | world <- mWorld }
+  in
+      if any (flip onWorld mWorld) model'.jediSlots
+        then abortAllRequests model'
+        else pure model'
 
 
 {-| Set the jedi at request.insertPos, adjusting for scrolling, remove the
@@ -205,6 +217,14 @@ abortRequests model =
   in
       ( { model | jediRequests <- newRequests }
       , Effects.batch aborts )
+
+
+{-| Abort all outstanding requests.
+-}
+abortAllRequests : Model -> (Model, Effects Action)
+abortAllRequests model =
+  ( { model | jediRequests <- [] }
+  , Effects.batch (List.map .abort model.jediRequests) )
 
 
 {-|  Scrolling logic. If we can scroll (see `canScroll`):
