@@ -5,11 +5,15 @@
   </head>
   <body>
     <script src="dist/app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
     <script>
       var app = Elm.fullscreen(Elm.Main, {currentWorld: null});
-      var ws = new WebSocket('ws://localhost:4000');
+      var ws = new ReconnectingWebSocket('ws://localhost:4000');
       ws.onmessage = function (event) {
         app.ports.currentWorld.send(JSON.parse(event.data));
+      };
+      ws.onclose = function (event) {
+        app.ports.currentWorld.send(null);
       };
     </script>
   </body>
