@@ -201,7 +201,10 @@ setJedi request newMJedi model =
       model' = { model | jediRequests <- removeRequest request model.jediRequests
                        , jediSlots <- newJediSlots }
   in
-      maybeFetchJedisAround adjustedPos model'
+      maybeFetchJedisAround adjustedPos model' `bindAll`
+        if (newMJedi `onWorld` model.world)
+          then [abortAndSaveAllRequests]
+          else []
 
 
 {-| Extract requests for jedis that are no longer in view and need to be
