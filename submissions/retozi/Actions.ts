@@ -1,6 +1,7 @@
 import {Action, RequestAction} from './Flux';
 import {AllState} from './state/AllState';
 import * as SithLordsState from './state/SithLordsState';
+import * as ObiWanWorldState from './state/ObiWanWorldState';
 import * as Flux from './Flux';
 
 function makePendingSithLord(res: Flux.Request): SithLordsState.SithLord {
@@ -29,6 +30,15 @@ function parseSithLordFromRequest(res: Flux.Request): SithLordsState.SithLord {
     return (res.pending) ? makePendingSithLord(res) : makeSithLord(res);
 }
 
+
+function onReceiveSithOrReceiveObiWanWorld(state: AllState) {
+    for (const l of state.sithLords.v) {
+        if (l.homeworldId === state.obiWanWorld.v.id) {
+            ;
+        }
+    }
+}
+
 export class GET_SIDIOUS extends RequestAction {
     constructor() {
         super('http://localhost:3000/dark-jedis/3616');
@@ -37,6 +47,7 @@ export class GET_SIDIOUS extends RequestAction {
     write(state: AllState) {
         const sidious = parseSithLordFromRequest(this.req);
         state.sithLords = SithLordsState.writeSidious(state.sithLords, sidious);
+        state.obiWanWorld = ObiWanWorldState.writeSithPresent(state.obiWanWorld, state.sithLords.v);
     }
 }
 
@@ -52,6 +63,7 @@ export class GET_SITH_APPRENTICE extends RequestAction {
     write(state: AllState) {
         const lord = parseSithLordFromRequest(this.req);
         state.sithLords = SithLordsState.writeApprentice(state.sithLords, lord, this.masterId);
+        state.obiWanWorld = ObiWanWorldState.writeSithPresent(state.obiWanWorld, state.sithLords.v);
     }
 }
 
@@ -66,6 +78,7 @@ export class GET_SITH_MASTER extends RequestAction {
     write(state: AllState) {
         const lord = parseSithLordFromRequest(this.req);
         state.sithLords = SithLordsState.writeMaster(state.sithLords, lord, this.apprenticeId);
+        state.obiWanWorld = ObiWanWorldState.writeSithPresent(state.obiWanWorld, state.sithLords.v);
     }
 }
 
@@ -80,7 +93,7 @@ export class RECEIVE_OBI_WORLD extends Action {
     }
 
     write(state: AllState) {
-        state.obiWanWorld = new Flux.Immutable({id: this.worldId, name: this.worldName});
+        state.obiWanWorld = ObiWanWorldState.writeWorld(this.worldId, this.worldName, state.sithLords.v);
     }
 }
 
