@@ -8,7 +8,5 @@ coverage
 .lock-wscript
 build/Release
 node_modules
-dist/
 tmp/
-build/
 npm-debug.log
