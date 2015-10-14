@@ -10,17 +10,10 @@ export const ABORT_REQUEST = 'ABORT_REQUEST';
 export const SITH_LOADED = 'SITH_LOADED';
 const ABORT_MSG = 'Internally aborted request';
 
-export function isHomeworldFound(state) {
-  return R.containsWith(
-    (planet, sith) => planet.id == sith.homeworld.id,
-     state.currentPlanet, state.list.siths
-  );
-}
-
 function getRequest(sithId) {
-  let rawRequest;
-  const promiseRequest = new Promise((resolve, reject) => {
-    rawRequest = xhr({uri: `${SITHS_API}/${sithId}`}, (err, resp, body) => {
+  let request;
+  const promise = new Promise((resolve, reject) => {
+    request = xhr({uri: `${SITHS_API}/${sithId}`}, (err, resp, body) => {
       if(err) {
         reject(resp.statusCode === 0 ? new Error(ABORT_MSG) : err);
       } else if(resp.statusCode !== 200) {
@@ -33,7 +26,7 @@ function getRequest(sithId) {
     });
   });
 
-  return { id: sithId, rawRequest, promiseRequest };
+  return { request, promise };
 }
 
 function getOppositeDirection(direction) {
@@ -47,12 +40,14 @@ function getAvailableSpots(state, direction) {
 }
 
 function getNextSith(siths, direction) {
-  return siths.length > 0 &&
-    (direction === UP ? R.head(siths).master : R.last(siths).apprentice);
+  return (
+    siths.length > 0 &&
+    (direction === UP ? R.head(siths).master : R.last(siths).apprentice)
+  ) || (siths.length === 0 && { id: INITIAL_SITH_ID });
 }
 
 function getNextSithToLoad(state, direction) {
-  return !isHomeworldFound(state) &&
+  return !state.redMatch &&
     getAvailableSpots(state, direction) > 0 &&
     R.isNil(state.onGoingRequests[direction]) &&
     getNextSith(state.list.siths, direction);
@@ -64,13 +59,22 @@ function loadSiths(directions) {
       const nextSith = getNextSithToLoad(getState(), direction);
 
       if(nextSith && !R.isNil(nextSith.id)) {
-        const request = getRequest(nextSith.id);
+        const requestWrap = getRequest(nextSith.id);
 
-        dispatch({ type: LOADING_SITH, direction, request });
-        request.promiseRequest.then((sith) => {
-          dispatch({ type: SITH_LOADED, direction, sith });
+        dispatch({
+          type: LOADING_SITH,
+          direction,
+          request: requestWrap.request
+        });
+
+        requestWrap.promise.then((sith) => {
+          dispatch({
+            type: SITH_LOADED,
+            direction,
+            sith
+          });
           dispatch(
-            isHomeworldFound(getState()) ?
+            getState().redMatch ?
               cancelUnnecessaryRequests([UP, DOWN]) :
               loadSiths([direction])
           );
@@ -85,33 +89,30 @@ function loadSiths(directions) {
 function cancelUnnecessaryRequests(directions) {
   return (dispatch, getState) => {
     const state = getState();
-    const homeworldFound = isHomeworldFound(state);
 
     directions.forEach((direction) => {
       const requestToCancel =
-        (homeworldFound || getAvailableSpots(state, direction) === 0) &&
+        (state.redMatch || getAvailableSpots(state, direction) === 0) &&
         state.onGoingRequests[direction];
 
       if(requestToCancel) {
-        requestToCancel.rawRequest.abort();
-        dispatch({ type: ABORT_REQUEST, direction });
+        requestToCancel.abort();
+        dispatch({
+          type: ABORT_REQUEST,
+          direction
+        });
       }
     });
   }
 }
 
 export function initialRequest() {
-  return (dispatch, getState) => {
-    getRequest(INITIAL_SITH_ID).promiseRequest.then((sith) => {
-      dispatch({ type: SITH_LOADED, direction : DOWN, sith });
-      dispatch(loadSiths([UP, DOWN]));
-    });
-  }
+  return (dispatch) => dispatch(loadSiths([DOWN]));
 }
 
 export function scroll(direction) {
   return (dispatch) => {
-    dispatch({type: direction});
+    dispatch({ type: direction });
     dispatch(cancelUnnecessaryRequests([getOppositeDirection(direction)]));
     dispatch(loadSiths([direction]));
   }
@@ -119,9 +120,12 @@ export function scroll(direction) {
 
 export function obiWanMoved(planet) {
   return (dispatch, getState) => {
-    const homeworldFoundPrev = isHomeworldFound(getState());
-    dispatch({ type: OBI_WAN_MOVED, planet });
-    const homeworldFoundPost = isHomeworldFound(getState());
+    const homeworldFoundPrev = getState().redMatch;
+    dispatch({
+      type: OBI_WAN_MOVED,
+      planet
+    });
+    const homeworldFoundPost = getState().redMatch;
 
     if(homeworldFoundPrev !== homeworldFoundPost) {
       const action = homeworldFoundPost ? cancelUnnecessaryRequests : loadSiths;

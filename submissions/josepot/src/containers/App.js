@@ -5,7 +5,7 @@ import PlanetMonitor from '../components/PlanetMonitor';
 import Siths from '../components/Siths';
 import ScrollButtons from '../components/ScrollButtons';
 import {
-  initialRequest, obiWanMoved, isHomeworldFound,
+  initialRequest, obiWanMoved,
   scroll, UP, DOWN
 } from '../actions';
 import { MAX_VISIBLE_SITHS, OBI_WS } from '../config';
@@ -78,7 +78,7 @@ function mapStateToProps(state) {
   let isScrollUpDisabled = true;
   let isScrollDownDisabled = true;
 
-  if(siths.length > 0  && !isHomeworldFound(state)) {
+  if(siths.length > 0  && !state.redMatch) {
     isScrollUpDisabled =
       paddingTop === MAX_VISIBLE_SITHS - 1 ||
       R.isNil(R.head(siths).master.id);
