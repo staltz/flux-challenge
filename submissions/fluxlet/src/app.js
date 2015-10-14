@@ -1,6 +1,6 @@
 import fluxlet from "fluxlet"
 import { update } from "fluxlet-immutable/update"
-import { freeze, deepFreeze } from "fluxlet-immutable/freeze"
+import { deepFreeze } from "fluxlet-immutable/freeze"
 import { chain } from "fluxlet-immutable/chain"
 import { mapIf, mapFrom } from "fluxlet-immutable/map"
 import $ from "jquery"
@@ -11,12 +11,12 @@ export function setup() {
   return fluxlet("challenge")
 
     .logging({
-        register: true,
-        dispatch: true,
-        call: true,
-        args: false,
-        state: true,
-        timing: false
+      register: true,
+      dispatch: true,
+      call: true,
+      args: false,
+      state: true,
+      timing: false
     })
 
     .state(deepFreeze(initialState))
@@ -78,7 +78,6 @@ const upperSlice = siths => siths.slice(0,SLOTS-SHIFT)
 
 const identity = v => v
 const isEmptySlot = slot => !slot.load && !slot.id
-const isLoadingSlot = slot => !!slot.load
 const isLoadedSlot = slot => !!slot.id
 
 const createEmptySlots = (count) => Array(count).fill(EMPTY_SLOT)
@@ -208,7 +207,6 @@ const allowShiftModified = (state, prev) => state.view.allowShift !== prev.view.
 
 const anyOf = (...predicates) => (...args) => predicates.some(when => when(...args))
 const allOf = (...predicates) => (...args) => predicates.every(when => when(...args))
-const not = (predicate) => (...args) => !predicate(...args)
 
 
 // ## Calculations
