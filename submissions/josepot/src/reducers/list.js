@@ -8,7 +8,7 @@ import {
 
 const initialState = {
   siths: [],
-  paddingTop : Math.trunc(MAX_VISIBLE_SITHS / 2)
+  paddingTop : 0
 };
 
 export default function list(state = initialState, action) {

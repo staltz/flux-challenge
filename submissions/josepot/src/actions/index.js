@@ -40,8 +40,10 @@ function getAvailableSpots(state, direction) {
 }
 
 function getNextSith(siths, direction) {
-  return siths.length > 0 &&
-    (direction === UP ? R.head(siths).master : R.last(siths).apprentice);
+  return (
+    siths.length > 0 &&
+    (direction === UP ? R.head(siths).master : R.last(siths).apprentice)
+  ) || (siths.length === 0 && { id: INITIAL_SITH_ID });
 }
 
 function getNextSithToLoad(state, direction) {
@@ -66,13 +68,11 @@ function loadSiths(directions) {
         });
 
         requestWrap.promise.then((sith) => {
-
           dispatch({
             type: SITH_LOADED,
             direction,
             sith
           });
-
           dispatch(
             getState().redMatch ?
               cancelUnnecessaryRequests([UP, DOWN]) :
@@ -107,16 +107,7 @@ function cancelUnnecessaryRequests(directions) {
 }
 
 export function initialRequest() {
-  return (dispatch, getState) => {
-    getRequest(INITIAL_SITH_ID).promise.then((sith) => {
-      dispatch({
-        type: SITH_LOADED,
-        direction : DOWN,
-        sith
-      });
-      dispatch(loadSiths([UP, DOWN]));
-    });
-  }
+  return (dispatch) => dispatch(loadSiths([DOWN]));
 }
 
 export function scroll(direction) {

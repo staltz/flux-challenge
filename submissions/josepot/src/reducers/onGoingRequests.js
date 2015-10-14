@@ -6,11 +6,7 @@ import { INITIAL_SITH_ID } from '../config';
 
 const initialState = {
   UP: null,
-  DOWN: {
-    id: INITIAL_SITH_ID,
-    rawRequest: null,
-    promiseRequest: null
-  }
+  DOWN: null
 };
 
 export default function onGoingRequests(state = initialState, action) {
