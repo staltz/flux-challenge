@@ -10,13 +10,6 @@ export const ABORT_REQUEST = 'ABORT_REQUEST';
 export const SITH_LOADED = 'SITH_LOADED';
 const ABORT_MSG = 'Internally aborted request';
 
-export function isHomeworldFound(state) {
-  return R.containsWith(
-    (planet, sith) => planet.id == sith.homeworld.id,
-     state.currentPlanet, state.list.siths
-  );
-}
-
 function getRequest(sithId) {
   let rawRequest;
   const promiseRequest = new Promise((resolve, reject) => {
@@ -52,7 +45,7 @@ function getNextSith(siths, direction) {
 }
 
 function getNextSithToLoad(state, direction) {
-  return !isHomeworldFound(state) &&
+  return !state.redMatch &&
     getAvailableSpots(state, direction) > 0 &&
     R.isNil(state.onGoingRequests[direction]) &&
     getNextSith(state.list.siths, direction);
@@ -70,7 +63,7 @@ function loadSiths(directions) {
         request.promiseRequest.then((sith) => {
           dispatch({ type: SITH_LOADED, direction, sith });
           dispatch(
-            isHomeworldFound(getState()) ?
+            getState().redMatch ?
               cancelUnnecessaryRequests([UP, DOWN]) :
               loadSiths([direction])
           );
@@ -85,11 +78,10 @@ function loadSiths(directions) {
 function cancelUnnecessaryRequests(directions) {
   return (dispatch, getState) => {
     const state = getState();
-    const homeworldFound = isHomeworldFound(state);
 
     directions.forEach((direction) => {
       const requestToCancel =
-        (homeworldFound || getAvailableSpots(state, direction) === 0) &&
+        (state.redMatch || getAvailableSpots(state, direction) === 0) &&
         state.onGoingRequests[direction];
 
       if(requestToCancel) {
@@ -119,9 +111,9 @@ export function scroll(direction) {
 
 export function obiWanMoved(planet) {
   return (dispatch, getState) => {
-    const homeworldFoundPrev = isHomeworldFound(getState());
+    const homeworldFoundPrev = getState().redMatch;
     dispatch({ type: OBI_WAN_MOVED, planet });
-    const homeworldFoundPost = isHomeworldFound(getState());
+    const homeworldFoundPost = getState().redMatch;
 
     if(homeworldFoundPrev !== homeworldFoundPost) {
       const action = homeworldFoundPost ? cancelUnnecessaryRequests : loadSiths;

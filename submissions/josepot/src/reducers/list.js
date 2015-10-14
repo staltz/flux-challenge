@@ -12,15 +12,14 @@ const initialState = {
 };
 
 export default function list(state = initialState, action) {
-  const direction = action.direction;
 
   switch (action.type) {
 
     case SITH_LOADED: {
-      const siths = direction === UP ?
+      const siths = action.direction === UP ?
         [action.sith, ...state.siths] :
         [...state.siths, action.sith];
-      const paddingTop = direction == UP ?
+      const paddingTop = action.direction == UP ?
         state.paddingTop - 1:
         state.paddingTop;
 
