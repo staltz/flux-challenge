@@ -11,9 +11,9 @@ export const SITH_LOADED = 'SITH_LOADED';
 const ABORT_MSG = 'Internally aborted request';
 
 function getRequest(sithId) {
-  let rawRequest;
-  const promiseRequest = new Promise((resolve, reject) => {
-    rawRequest = xhr({uri: `${SITHS_API}/${sithId}`}, (err, resp, body) => {
+  let request;
+  const promise = new Promise((resolve, reject) => {
+    request = xhr({uri: `${SITHS_API}/${sithId}`}, (err, resp, body) => {
       if(err) {
         reject(resp.statusCode === 0 ? new Error(ABORT_MSG) : err);
       } else if(resp.statusCode !== 200) {
@@ -26,7 +26,7 @@ function getRequest(sithId) {
     });
   });
 
-  return { id: sithId, rawRequest, promiseRequest };
+  return { request, promise };
 }
 
 function getOppositeDirection(direction) {
@@ -57,11 +57,22 @@ function loadSiths(directions) {
       const nextSith = getNextSithToLoad(getState(), direction);
 
       if(nextSith && !R.isNil(nextSith.id)) {
-        const request = getRequest(nextSith.id);
+        const requestWrap = getRequest(nextSith.id);
 
-        dispatch({ type: LOADING_SITH, direction, request });
-        request.promiseRequest.then((sith) => {
-          dispatch({ type: SITH_LOADED, direction, sith });
+        dispatch({
+          type: LOADING_SITH,
+          direction,
+          request: requestWrap.request
+        });
+
+        requestWrap.promise.then((sith) => {
+
+          dispatch({
+            type: SITH_LOADED,
+            direction,
+            sith
+          });
+
           dispatch(
             getState().redMatch ?
               cancelUnnecessaryRequests([UP, DOWN]) :
@@ -85,8 +96,11 @@ function cancelUnnecessaryRequests(directions) {
         state.onGoingRequests[direction];
 
       if(requestToCancel) {
-        requestToCancel.rawRequest.abort();
-        dispatch({ type: ABORT_REQUEST, direction });
+        requestToCancel.abort();
+        dispatch({
+          type: ABORT_REQUEST,
+          direction
+        });
       }
     });
   }
@@ -94,8 +108,12 @@ function cancelUnnecessaryRequests(directions) {
 
 export function initialRequest() {
   return (dispatch, getState) => {
-    getRequest(INITIAL_SITH_ID).promiseRequest.then((sith) => {
-      dispatch({ type: SITH_LOADED, direction : DOWN, sith });
+    getRequest(INITIAL_SITH_ID).promise.then((sith) => {
+      dispatch({
+        type: SITH_LOADED,
+        direction : DOWN,
+        sith
+      });
       dispatch(loadSiths([UP, DOWN]));
     });
   }
@@ -103,7 +121,7 @@ export function initialRequest() {
 
 export function scroll(direction) {
   return (dispatch) => {
-    dispatch({type: direction});
+    dispatch({ type: direction });
     dispatch(cancelUnnecessaryRequests([getOppositeDirection(direction)]));
     dispatch(loadSiths([direction]));
   }
@@ -112,7 +130,10 @@ export function scroll(direction) {
 export function obiWanMoved(planet) {
   return (dispatch, getState) => {
     const homeworldFoundPrev = getState().redMatch;
-    dispatch({ type: OBI_WAN_MOVED, planet });
+    dispatch({
+      type: OBI_WAN_MOVED,
+      planet
+    });
     const homeworldFoundPost = getState().redMatch;
 
     if(homeworldFoundPrev !== homeworldFoundPost) {
