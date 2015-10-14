@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>flux-challenge</title>
+    <meta name="viewport" content="initial-scale=1">
+
+    <!-- application styles -->
+    <link rel="stylesheet" href="../../styles.css" type="text/css">
+
+    <!-- 3rd party libraries: react.js, reflux, lodash, ... -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react-with-addons.js"></script>
+    <script src="https://cdn.jsdelivr.net/refluxjs/0.2.11/reflux.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.18.4/system.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+</head>
+<body>
+
+<script>
+    System.config({
+        transpiler: 'babel',
+        baseURL: 'src'
+    });
+    System.import('application.js');
+</script>
+
+<div class="app-container">
+    <div class="css-root">
+        <div id="spacecraft-monitor"></div>
+        <div id="sithlords-list"></div>
+    </div>
+</div>
+
+</body>
+</html>
