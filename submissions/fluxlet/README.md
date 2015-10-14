@@ -22,8 +22,8 @@ This uses a single minified build.js which is created by jspm...
 
 ## Run in development mode
 
-The application code is in app.js, an ES6 module.
-main.js is just to bootstrap the call to setup() from the app module.
+The application code is in [app.js](src/app.js), an ES6 module.
+[main.js](src/main.js) is just to bootstrap the call to setup() from the app module.
 
 I've been using browser-sync for development.
 
@@ -34,7 +34,7 @@ I've been using browser-sync for development.
 
 ## Bundling for production
 
-(from the src dir, and after npm install)
+(from the [src](src) dir, and after npm install)
 
     $ npm run bundle
 
