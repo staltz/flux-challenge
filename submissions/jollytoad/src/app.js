@@ -135,15 +135,17 @@ function bindButtons(dispatch) {
 // received a message
 function planetMonitor(dispatch) {
   if (!URL_PARAMS.disableWebSocket) {
+    window.setTimeout(() => {
     new WebSocket("ws://localhost:4000").onmessage = (event) => {
       dispatch.setObiWansLocation(JSON.parse(event.data))
     }
+    }, URL_PARAMS.delayWebSocket || 0)
   }
 }
 
 // ### testVisit
 // If visitId & visitName is set in the url params, the set Obi-Wan to this
-// after a delay in visitDelay (defaults to 500ms)
+// after a delay in delayVisit (defaults to 500ms)
 function testVisit(dispatch) {
   if (URL_PARAMS.visitId && URL_PARAMS.visitName) {
     window.setTimeout(() => {
@@ -151,7 +153,7 @@ function testVisit(dispatch) {
         id: +URL_PARAMS.visitId,
         name: URL_PARAMS.visitName
       })
-    }, URL_PARAMS.visitDelay || 500)
+    }, URL_PARAMS.delayVisit || 500)
   }
 }
 
