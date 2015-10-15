@@ -64,6 +64,7 @@ const SLOTS = 5
 // The number of slots that the buttons shift by
 const SHIFT = 2
 const SITH_BASE_URL = 'http://localhost:3000/dark-jedis/'
+const OBI_WAN_WS_URL = 'ws://localhost:4000'
 const INITIAL_SITH_ID = 3616
 const INITIAL_SITH_URL = SITH_BASE_URL + INITIAL_SITH_ID
 // The challenge doesn't state into which slot the initial Sith must be loaded,
@@ -136,7 +137,7 @@ function bindButtons(dispatch) {
 function planetMonitor(dispatch) {
   if (!URL_PARAMS.disableWebSocket) {
     window.setTimeout(() => {
-      new WebSocket("ws://localhost:4000").onmessage = (event) => {
+      new WebSocket(OBI_WAN_WS_URL).onmessage = (event) => {
         dispatch.setObiWansLocation(JSON.parse(event.data))
       }
     }, URL_PARAMS.delayWebSocket || 0)
