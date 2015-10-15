@@ -52,7 +52,11 @@ export class SithLordsDataBase {
         var newRequests = _.filter(state.nextRequests, url => {
           return !_.find(this.requestsQueue, {url: url});
         });
-        _.each(newRequests, this.load.bind(this));
+        if (!_.isEmpty(newRequests)) {
+          _.each(newRequests, this.load.bind(this));
+        } else {
+          this.startLoading();
+        }
       }
     });
   }
