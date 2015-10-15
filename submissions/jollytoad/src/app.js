@@ -52,7 +52,8 @@ export function setup() {
     .init(
       bindReady,
       bindButtons,
-      planetMonitor
+      planetMonitor,
+      testVisit
     )
 }
 
@@ -69,6 +70,13 @@ const INITIAL_SITH_URL = SITH_BASE_URL + INITIAL_SITH_ID
 // so lets make it interesting and start in the middle
 const INITIAL_SLOT = Math.floor(SLOTS/2)
 const EMPTY_SLOT = {}
+
+// Extract URL parameters, used for testing purposes
+const URL_PARAMS = location.search.replace(/^\?/,'').split('&').reduce((ret, param) => {
+  const kv = param.split('=',2)
+  ret[kv[0]] = kv[1]
+  return ret
+}, {})
 
 
 // ## Utility functions
@@ -126,11 +134,26 @@ function bindButtons(dispatch) {
 // Open the WebSocket and dispatch an action to set Obi-Wans location when we
 // received a message
 function planetMonitor(dispatch) {
-  new WebSocket("ws://localhost:4000").onmessage = (event) => {
-    dispatch.setObiWansLocation(JSON.parse(event.data))
+  if (!URL_PARAMS.disableWebSocket) {
+    new WebSocket("ws://localhost:4000").onmessage = (event) => {
+      dispatch.setObiWansLocation(JSON.parse(event.data))
+    }
   }
 }
 
+// ### testVisit
+// If visitId & visitName is set in the url params, the set Obi-Wan to this
+// after a delay in visitDelay (defaults to 500ms)
+function testVisit(dispatch) {
+  if (URL_PARAMS.visitId && URL_PARAMS.visitName) {
+    window.setTimeout(() => {
+      dispatch.setObiWansLocation({
+        id: +URL_PARAMS.visitId,
+        name: URL_PARAMS.visitName
+      })
+    }, URL_PARAMS.visitDelay || 500)
+  }
+}
 
 // ## Guards
 // For use in _when_ clauses of actions
