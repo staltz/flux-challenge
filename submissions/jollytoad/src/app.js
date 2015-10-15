@@ -136,9 +136,9 @@ function bindButtons(dispatch) {
 function planetMonitor(dispatch) {
   if (!URL_PARAMS.disableWebSocket) {
     window.setTimeout(() => {
-    new WebSocket("ws://localhost:4000").onmessage = (event) => {
-      dispatch.setObiWansLocation(JSON.parse(event.data))
-    }
+      new WebSocket("ws://localhost:4000").onmessage = (event) => {
+        dispatch.setObiWansLocation(JSON.parse(event.data))
+      }
     }, URL_PARAMS.delayWebSocket || 0)
   }
 }
@@ -232,6 +232,7 @@ const allowShiftModified = (state, prev) => state.view.allowShift !== prev.view.
 
 const anyOf = (...predicates) => (...args) => predicates.some(when => when(...args))
 const allOf = (...predicates) => (...args) => predicates.every(when => when(...args))
+const not = (predicate) => (...args) => !predicate(...args)
 
 
 // ## Calculations
@@ -349,7 +350,7 @@ const abortObsoleteRequests = {
 // ### requestSith
 // Initiate a request for any loading slot that isn't already being requested
 const requestSith = {
-  when: anyOf(sithsModified, visitingOver),
+  when: allOf(anyOf(sithsModified, visitingOver), not(aSlotIsVisited)),
 
   then: ({model:{siths}}, x, dispatch) => {
     siths.forEach(slot => {
