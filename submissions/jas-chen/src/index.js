@@ -52,12 +52,11 @@ function setupApp(initState) {
 
     store.subscribe(() => states.push(store.getState()));
 
-    const darkJediFetcher = new DarkJediFetcher();
-    const darkJedi$ = store.state$.flatMap(darkJediFetcher.handle);
+    const darkJediFetcher = new DarkJediFetcher(store.state$);
 
     const action$ = Observable.merge(
       obiWanLocation$.map(actions.nextPlanet),
-      darkJedi$.map(actions.nextDarkJedi),
+      darkJediFetcher.darkJedi$.map(actions.nextDarkJedi),
       upClick$.map(actions.scrollUp),
       downClick$.map(actions.scrollDown)
     );

@@ -1,16 +1,9 @@
 import { TOTAL_SLOT_COUNT, MOVE_SLOT_COUNT } from '../constants.js';
 import { NEXT_DARK_JEDI, SCROLL_UP, SCROLL_DOWN } from '../actions.js';
-import { allEmpty } from '../utils.js';
+import { createNullArray, allEmpty } from '../utils.js';
 
-const defaultSlots = [];
-for ( let i = 0 ; i < TOTAL_SLOT_COUNT ; i += 1) {
-  defaultSlots.push(null);
-}
-
-const emptySlots = [];
-for ( let i = 0 ; i < MOVE_SLOT_COUNT ; i += 1) {
-  emptySlots.push(null);
-}
+const defaultSlots = createNullArray(TOTAL_SLOT_COUNT);
+const emptySlots = createNullArray(MOVE_SLOT_COUNT);
 
 export default function(state = defaultSlots, action) {
   switch (action.type) {
@@ -35,15 +28,12 @@ export default function(state = defaultSlots, action) {
     });
   }
   case SCROLL_UP: {
-    const sliced = state
-      .slice(0, TOTAL_SLOT_COUNT - MOVE_SLOT_COUNT);
-    const nextState = emptySlots.concat(sliced);
-    return nextState;
+    const sliced = state.slice(0, TOTAL_SLOT_COUNT - MOVE_SLOT_COUNT);
+    return emptySlots.concat(sliced);
   }
   case SCROLL_DOWN: {
     const sliced = state.slice(MOVE_SLOT_COUNT);
-    const nextState = sliced.concat(emptySlots);
-    return nextState;
+    return sliced.concat(emptySlots);
   }
   default:
     return state;

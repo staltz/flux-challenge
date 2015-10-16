@@ -64,7 +64,8 @@ function upButton(state$) {
         || (slots[slots.length - 1] && !slots[slots.length - 2])
         || (slots[slots.length - 2] && !slots[slots.length - 3])
     );
-  });
+  })
+  .distinctUntilChanged();
 
   const className$ = disabled$.map((disabled) => {
     return disabled
@@ -94,7 +95,8 @@ function downButton(state$) {
         || (slots[0] && !slots[1])
         || (slots[1] && !slots[2])
     );
-  });
+  })
+  .distinctUntilChanged();
 
   const className$ = disabled$.map((disabled) => {
     return disabled
@@ -136,7 +138,7 @@ function dashboard(state$) {
       <H1 className="css-planet-monitor">{planetMonitorText$}</H1>
       <section className="css-scrollable-list">
         <ul className="css-slots">
-          {slots(state$)}
+          { slots$ }
         </ul>
         <div className="css-scroll-buttons">
           { UpButton }
