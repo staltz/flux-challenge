@@ -1,6 +1,7 @@
-import { SITHS_API, INITIAL_SITH_ID, MAX_VISIBLE_SITHS } from '../config';
+import { SITHS_API } from '../config';
 import R from 'ramda';
 import xhr from 'xhr';
+import { redMatch, getAvailableSpots, getNextSithToLoad } from '../selectors';
 
 export const OBI_WAN_MOVED = 'OBI_WAN_MOVED';
 export const UP = 'UP';
@@ -33,30 +34,10 @@ function getOppositeDirection(direction) {
   return direction === UP ? DOWN : UP;
 }
 
-function getAvailableSpots(state, direction) {
-  return direction === UP ?
-    state.list.paddingTop :
-    MAX_VISIBLE_SITHS - state.list.siths.length - state.list.paddingTop;
-}
-
-function getNextSith(siths, direction) {
-  return (
-    siths.length > 0 &&
-    (direction === UP ? R.head(siths).master : R.last(siths).apprentice)
-  ) || (siths.length === 0 && { id: INITIAL_SITH_ID });
-}
-
-function getNextSithToLoad(state, direction) {
-  return !state.redMatch &&
-    getAvailableSpots(state, direction) > 0 &&
-    R.isNil(state.onGoingRequests[direction]) &&
-    getNextSith(state.list.siths, direction);
-}
-
 function loadSiths(directions) {
   return (dispatch, getState) => {
     directions.forEach((direction) => {
-      const nextSith = getNextSithToLoad(getState(), direction);
+      const nextSith = getNextSithToLoad(getState())(direction);
 
       if(nextSith && !R.isNil(nextSith.id)) {
         const requestWrap = getRequest(nextSith.id);
@@ -74,7 +55,7 @@ function loadSiths(directions) {
             sith
           });
           dispatch(
-            getState().redMatch ?
+            redMatch(getState()) ?
               cancelUnnecessaryRequests([UP, DOWN]) :
               loadSiths([direction])
           );
@@ -92,7 +73,7 @@ function cancelUnnecessaryRequests(directions) {
 
     directions.forEach((direction) => {
       const requestToCancel =
-        (state.redMatch || getAvailableSpots(state, direction) === 0) &&
+        (redMatch(state) || getAvailableSpots(state)(direction) === 0) &&
         state.onGoingRequests[direction];
 
       if(requestToCancel) {
@@ -120,12 +101,12 @@ export function scroll(direction) {
 
 export function obiWanMoved(planet) {
   return (dispatch, getState) => {
-    const homeworldFoundPrev = getState().redMatch;
+    const homeworldFoundPrev = redMatch(getState());
     dispatch({
       type: OBI_WAN_MOVED,
       planet
     });
-    const homeworldFoundPost = getState().redMatch;
+    const homeworldFoundPost = redMatch(getState());
 
     if(homeworldFoundPrev !== homeworldFoundPost) {
       const action = homeworldFoundPost ? cancelUnnecessaryRequests : loadSiths;
