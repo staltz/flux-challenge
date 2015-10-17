@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "semi": [ 2, "never" ]
+  },
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "ecmaFeatures": {
+    "modules": true
+  },
+  "extends": "eslint:recommended"
+}
