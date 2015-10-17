@@ -1,6 +1,7 @@
-import { SITHS_API, INITIAL_SITH_ID, MAX_VISIBLE_SITHS } from '../config';
+import { SITHS_API } from '../config';
 import R from 'ramda';
 import xhr from 'xhr';
+import { redMatch, sithsToLoad, requestsToCancel } from '../selectors';
 
 export const OBI_WAN_MOVED = 'OBI_WAN_MOVED';
 export const UP = 'UP';
@@ -29,79 +30,42 @@ function getRequest(sithId) {
   return { request, promise };
 }
 
-function getOppositeDirection(direction) {
-  return direction === UP ? DOWN : UP;
-}
-
-function getAvailableSpots(state, direction) {
-  return direction === UP ?
-    state.list.paddingTop :
-    MAX_VISIBLE_SITHS - state.list.siths.length - state.list.paddingTop;
-}
-
-function getNextSith(siths, direction) {
-  return (
-    siths.length > 0 &&
-    (direction === UP ? R.head(siths).master : R.last(siths).apprentice)
-  ) || (siths.length === 0 && { id: INITIAL_SITH_ID });
-}
-
-function getNextSithToLoad(state, direction) {
-  return !state.redMatch &&
-    getAvailableSpots(state, direction) > 0 &&
-    R.isNil(state.onGoingRequests[direction]) &&
-    getNextSith(state.list.siths, direction);
-}
-
-function loadSiths(directions) {
+function loadSiths() {
   return (dispatch, getState) => {
-    directions.forEach((direction) => {
-      const nextSith = getNextSithToLoad(getState(), direction);
+    sithsToLoad(getState())
+    .map((sithToLoad) => {
+      return {
+        direction: sithToLoad.direction,
+        req: getRequest(sithToLoad.id)
+      };
+    })
+    .forEach(({ direction, req }) => {
+      dispatch({
+        type: LOADING_SITH,
+        direction,
+        request: req.request
+      });
 
-      if(nextSith && !R.isNil(nextSith.id)) {
-        const requestWrap = getRequest(nextSith.id);
+      req.promise.then((sith) => {
+        dispatch({ type: SITH_LOADED, direction, sith });
 
-        dispatch({
-          type: LOADING_SITH,
-          direction,
-          request: requestWrap.request
-        });
-
-        requestWrap.promise.then((sith) => {
-          dispatch({
-            type: SITH_LOADED,
-            direction,
-            sith
-          });
-          dispatch(
-            getState().redMatch ?
-              cancelUnnecessaryRequests([UP, DOWN]) :
-              loadSiths([direction])
-          );
-        }, (err) => {
-          if(err.message !== ABORT_MSG) throw err;
-        });
-      }
+        const dispatchNext = redMatch(getState()) ?
+          cancelUnnecessaryRequests :
+          loadSiths;
+        R.compose(dispatch, dispatchNext)();
+      },
+      (err) => {
+        if(err.message !== ABORT_MSG) throw err
+      });
     });
   }
 }
 
-function cancelUnnecessaryRequests(directions) {
+function cancelUnnecessaryRequests() {
   return (dispatch, getState) => {
-    const state = getState();
-
-    directions.forEach((direction) => {
-      const requestToCancel =
-        (state.redMatch || getAvailableSpots(state, direction) === 0) &&
-        state.onGoingRequests[direction];
-
-      if(requestToCancel) {
-        requestToCancel.abort();
-        dispatch({
-          type: ABORT_REQUEST,
-          direction
-        });
-      }
+    requestsToCancel(getState()).forEach(({ request, direction }) => {
+      request.abort();
+      dispatch({ type: ABORT_REQUEST, direction });
     });
   }
 }
@@ -113,23 +77,23 @@ export function initialRequest() {
 export function scroll(direction) {
   return (dispatch) => {
     dispatch({ type: direction });
-    dispatch(cancelUnnecessaryRequests([getOppositeDirection(direction)]));
-    dispatch(loadSiths([direction]));
+    dispatch(cancelUnnecessaryRequests());
+    dispatch(loadSiths());
   }
 }
 
 export function obiWanMoved(planet) {
   return (dispatch, getState) => {
-    const homeworldFoundPrev = getState().redMatch;
+    const redMatchBefore = redMatch(getState());
     dispatch({
       type: OBI_WAN_MOVED,
       planet
     });
-    const homeworldFoundPost = getState().redMatch;
+    const redMatchAfter = redMatch(getState());
 
-    if(homeworldFoundPrev !== homeworldFoundPost) {
-      const action = homeworldFoundPost ? cancelUnnecessaryRequests : loadSiths;
-      R.compose(dispatch, R.partial(action, [UP, DOWN]))();
+    if(redMatchBefore !== redMatchAfter) {
+      const action = redMatchAfter ? cancelUnnecessaryRequests : loadSiths;
+      R.compose(dispatch, action)();
     }
   }
 }

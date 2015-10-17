@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import R from 'ramda';
 import { connect } from 'react-redux';
+import { ui } from '../selectors';
 import PlanetMonitor from '../components/PlanetMonitor';
 import Siths from '../components/Siths';
 import ScrollButtons from '../components/ScrollButtons';
@@ -8,7 +9,7 @@ import {
   initialRequest, obiWanMoved,
   scroll, UP, DOWN
 } from '../actions';
-import { MAX_VISIBLE_SITHS, OBI_WS } from '../config';
+import { OBI_WS } from '../config';
 
 class App extends Component {
   constructor(props) {
@@ -71,31 +72,4 @@ App.propTypes = {
   isScrollDownDisabled: PropTypes.bool.isRequired
 };
 
-function mapStateToProps(state) {
-  const { currentPlanet, list } = state;
-  const { siths, paddingTop } = list;
-  const paddingBottom = MAX_VISIBLE_SITHS - paddingTop - siths.length;
-  let isScrollUpDisabled = true;
-  let isScrollDownDisabled = true;
-
-  if(siths.length > 0  && !state.redMatch) {
-    isScrollUpDisabled =
-      paddingTop === MAX_VISIBLE_SITHS - 1 ||
-      R.isNil(R.head(siths).master.id);
-
-    isScrollDownDisabled =
-      paddingBottom === MAX_VISIBLE_SITHS - 1 ||
-      R.isNil(R.last(siths).apprentice.id);
-  }
-
-  return {
-    currentPlanet,
-    siths,
-    paddingTop,
-    paddingBottom,
-    isScrollUpDisabled,
-    isScrollDownDisabled
-  };
-}
-
-export default connect(mapStateToProps)(App);
+export default connect(ui)(App);
