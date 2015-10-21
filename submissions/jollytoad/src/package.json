@@ -1,0 +1,28 @@
+{
+  "name": "flux-challenge-using-fluxlet",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "postinstall": "jspm install -y",
+    "start": "browser-sync start --server --port 3030 --files '*.html,*.js,*.css'",
+    "bundle": "jspm bundle-sfx main ../build.js --minify"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.9.10",
+    "jspm": "^0.16.11"
+  },
+  "jspm": {
+    "dependencies": {
+      "fluxlet": "github:fluxlet/fluxlet@master",
+      "fluxlet-immutable": "github:fluxlet/fluxlet-immutable@master",
+      "jquery": "github:components/jquery@^2.1.4"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+      "core-js": "npm:core-js@^1.1.4"
+    }
+  },
+  "author": "Mark Gibson",
+  "license": "MIT"
+}

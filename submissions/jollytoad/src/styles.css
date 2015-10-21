@@ -1,0 +1,102 @@
+body {
+  font-family: Lucida Console, Monaco5, monospace;
+  height: 100vh;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#1b3061+0,192b55+100 */
+  background: #1b3061; /* Old browsers */
+  background: -moz-linear-gradient(top,  #1b3061 0%, #192b55 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#1b3061), color-stop(100%,#192b55)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #1b3061 0%,#192b55 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #1b3061 0%,#192b55 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #1b3061 0%,#192b55 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  #1b3061 0%,#192b55 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1b3061', endColorstr='#192b55',GradientType=0 ); /* IE6-9 */
+}
+
+.css-root {
+  margin: 36px auto 0;
+  max-width: 800px;
+  min-width: 640px;
+  border-radius: 2px;
+  border: 3px solid #35769A;
+  box-shadow: 0px 0px 10px 1px rgba(53,118,154,0.5), inset 0px 0px 10px 1px rgba(53,118,154,0.5);
+  padding: 5px;
+}
+
+.css-planet-monitor {
+  margin-top: 0;
+  border: 5px solid #87AFE7;
+  border-radius: 2px;
+  box-shadow: 0px 0px 10px 1px rgba(135,175,231,0.5), inset 0px 0px 10px 1px rgba(135,175,231,0.5);
+  padding: 16px;
+  background-color: #2F5093;
+  color: #EDE66A;
+  text-shadow: 0px 0px 10px rgba(237, 230, 106, 0.6);
+}
+
+.css-scrollable-list {
+  display: flex
+}
+
+.css-slots {
+  flex: 1 80%;
+  padding: 0;
+  list-style-type: none;
+  margin: 0 7px 0 0;
+}
+
+.css-slot {
+  padding: 16px;
+  border: 5px solid hsla(167, 82%, 68%, 1);
+  border-radius: 2px;
+  box-shadow: 0px 0px 10px 1px rgba(105, 240, 210, 0.45), inset 0px 0px 10px 1px rgba(105, 240, 210, 0.45);
+  color: #69F0D2;
+  font-size: 18px;
+  height: 1.7em;
+}
+
+.css-slot h3, .css-slot h4, .css-slot h5, .css-slot h6 {
+  margin: 0;
+}
+
+.css-slot + .css-slot {
+  margin-top: 7px;
+}
+
+.css-scroll-buttons {
+  flex: 1 20%;
+  display: flex;
+  flex-direction: column;
+}
+
+.css-scroll-buttons button {
+  flex: 1;
+  border: 5px solid #69F0D2;
+  border-radius: 2px;
+  box-shadow: 0px 0px 10px 1px #69F0D2, inset 0px 0px 10px 1px #69F0D2;
+  background: #39697A;
+}
+
+.css-button-down {
+  margin-top: 7px;
+}
+
+.css-button-up::after {
+  content: '\21D1';
+  display: block;
+  color: #69F0D2;
+  font-size: 30px;
+  text-shadow: 0px 0px 10px #69F0D2;
+}
+
+.css-button-down::after {
+  content: '\21D3';
+  display: block;
+  color: #69F0D2;
+  font-size: 30px;
+  text-shadow: 0px 0px 10px #69F0D2;
+}
+
+.css-button-disabled {
+  opacity: 0.5;
+}
+

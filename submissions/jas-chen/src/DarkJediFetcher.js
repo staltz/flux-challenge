@@ -1,4 +1,4 @@
-import { Observable } from 'rx';
+import { Observable, DOM } from 'rx-dom';
 import { isMatchCurrentPlanet, allEmpty } from './utils.js';
 
 function getFirstMasterUrl(slots) {
@@ -17,110 +17,88 @@ function getLastApprenticeUrl(slots) {
   }
 }
 
-function fetchDarkJedi(url) {
-  const xhr = new XMLHttpRequest();
-
-  const darkJedi$ = Observable.create(observer => {
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4 && xhr.status === 200) {
-        observer.onNext(JSON.parse(xhr.response));
-      }
-    };
-
-    xhr.onloadend = () => observer.onCompleted();
-    xhr.open("GET", url, true);
-    xhr.send();
-
-    return function dispose() {
-      xhr.abort();
-    };
+function fetchDarkJedi(fetcher, observer, url, request) {
+  const ajax$ = DOM.ajax({
+    url,
+    responseType: 'json',
+    crossDomain: true
   });
 
-  return { xhr, darkJedi$: darkJedi$.share() };
+  fetcher[request] = ajax$.subscribe(
+    function success(data) {
+      observer.onNext(data.response);
+    },
+    function error() {
+      console.error('fetch failed', arguments);
+    },
+    function completed() {
+      fetcher[request] = null;
+    }
+  );
 }
 
-function abort(fetcher, request) {
+function abortDarkJedi(fetcher, request) {
   if (fetcher[request]) {
-    fetcher[request].abort();
+    fetcher[request].dispose();
     fetcher[request] = null;
   }
 }
 
+function handle(fetcher, state, observer) {
+  const fetch = fetchDarkJedi.bind(null, fetcher, observer);
+  const abort = abortDarkJedi.bind(null, fetcher);
+  const { slots } = state;
+
+  if (allEmpty(slots)) {
+    if (!fetcher.initRequest) {
+      fetch(
+        'http://localhost:3000/dark-jedis/3616',
+        'initRequest'
+      );
+    }
+
+    return;
+  }
+
+
+  if (isMatchCurrentPlanet(state)) {
+    abort('masterRequest');
+    abort('apprenticeRequest');
+    return;
+  }
+
+  if (slots[0]) {
+    // first slot has Dark Jedi, abort master request.
+    abort('masterRequest');
+  } else {
+    // first slot is empty, make master request.
+    const url = getFirstMasterUrl(slots);
+
+    if (!fetcher.masterRequest && url) {
+      fetch(url, 'masterRequest');
+    }
+  }
+
+  const lastSlot = slots[slots.length - 1];
+  if (lastSlot) {
+    // last slot has Dark Jedi, abort apprentice request.
+    abort('apprenticeRequest');
+  } else {
+    // last slot is empty, make apprentice request.
+    const url = getLastApprenticeUrl(slots);
+
+    if (!fetcher.apprenticeRequest && url) {
+      fetch(url, 'apprenticeRequest');
+    }
+  }
+
+}
+
 class DarkJediFetcher {
-  handle(state) {
-    const { slots } = state;
-
-    if (allEmpty(slots)) {
-      if (!this.initRequest) {
-        const {
-          xhr, darkJedi$
-        } = fetchDarkJedi('http://localhost:3000/dark-jedis/3616');
-
-        this.initRequest = xhr;
-        darkJedi$.subscribeOnCompleted(() => {
-          this.initRequest = null
-        });
-
-        return darkJedi$;
-      } else {
-        return Observable.empty();
-      }
-    }
-
-
-    if (isMatchCurrentPlanet(state)) {
-      abort(this, 'masterRequest');
-      abort(this, 'apprenticeRequest');
-      return Observable.empty();
-    }
-
-
-    const darkJediStreams = [];
-
-    if (slots[0]) {
-      // first slot has Dark Jedi, abort master request.
-      abort(this, 'masterRequest');
-    } else {
-      // first slot is empty, make master request.
-      const url = getFirstMasterUrl(slots);
-
-      if (!this.masterRequest && url) {
-        const {
-          xhr, darkJedi$
-        } = fetchDarkJedi(url);
-
-        this.masterRequest = xhr;
-        darkJedi$.subscribeOnCompleted(() => {
-          this.masterRequest = null
-        });
-
-        darkJediStreams.push(darkJedi$);
-      }
-    }
-
-    const lastSlot = slots[slots.length - 1];
-    if (lastSlot) {
-      // last slot has Dark Jedi, abort apprentice request.
-      abort(this, 'apprenticeRequest');
-    } else {
-      // last slot is empty, make apprentice request.
-      const url = getLastApprenticeUrl(slots);
-
-      if (!this.apprenticeRequest && url) {
-        const {
-          xhr, darkJedi$
-        } = fetchDarkJedi(url);
-
-        this.apprenticeRequest = xhr;
-        darkJedi$.subscribeOnCompleted(() => {
-          this.apprenticeRequest = null
-        });
-
-        darkJediStreams.push(darkJedi$);
-      }
-    }
-
-    return darkJediStreams.length ? Observable.merge(darkJediStreams) : Observable.empty();
+  constructor(state$) {
+    this.darkJedi$ = Observable.create(observer => {
+      state$.subscribe(state => handle(this, state, observer));
+    });
   }
 }
 
