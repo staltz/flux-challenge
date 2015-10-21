@@ -1,0 +1,24 @@
+{
+  "name": "cyclejs-flux-challenge",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "browserify": "browserify src/main.js --full-paths -t babelify --outfile dist/index.js"
+  },
+  "author": "Andre Staltz",
+  "license": "MIT",
+  "dependencies": {
+    "@cycle/core": "5.0.x",
+    "@cycle/dom": "7.1.x",
+    "@cycle/http": "6.0.x",
+    "hyperscript-helpers": "^2.0.1",
+    "immutable": "^3.7.5",
+    "rx": "^4.0.6"
+  },
+  "devDependencies": {
+    "browserify": "^10.2.4",
+    "babel": "5.6.x",
+    "babelify": "6.1.x"
+  }
+}
