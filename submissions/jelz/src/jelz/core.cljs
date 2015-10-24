@@ -35,6 +35,17 @@
     db))
 
 (register-handler
+  :jedi-request-next
+  (fn [db _]
+    (let [slots      (:slots db)
+          master     (h/find-master-to-load slots)
+          apprentice (h/find-apprentice-to-load slots)
+          to-load    (or master apprentice)]
+      (when (and to-load (not (:xhr to-load)) (not (:danger db)))
+        (dispatch [:jedi-request (:req-id to-load) (:id to-load)]))
+      db)))
+
+(register-handler
   :jedi-loading
   (fn [db [_ req-id xhr]]
     (let [slots   (:slots db)
@@ -42,20 +53,12 @@
           updated (h/extend-slot slots req-id ext)]
       (assoc db :slots updated))))
 
-(defn request-next [slots]
-  (let [master     (h/find-master-to-load slots)
-        apprentice (h/find-apprentice-to-load slots)
-        to-load    (or master apprentice)]
-    (when (and to-load (not (:xhr to-load)))
-      (dispatch [:jedi-request (:req-id to-load) (:id to-load)]))))
-
 (register-handler
   :jedi-loaded
   (fn [db [_ req-id jedi]]
     (let [slots   (:slots db)
           ext     (merge jedi {:pending? false})
           updated (h/extend-slot slots req-id ext)]
-      (request-next updated)
       (dispatch [:danger-check])
       (assoc db :slots updated))))
 
@@ -63,10 +66,9 @@
   :scroll
   (fn [db [_ dir]]
     (let [current (:slots db)
-          aborted (h/cancel-pending current)
-          updated (h/scroll aborted dir)]
-      (request-next updated)
-      (assoc db :slots updated))))
+          aborted (h/cancel-pending current)]
+      (dispatch [:jedi-request-next])
+      (assoc db :slots (h/scroll aborted dir)))))
 
 (register-handler
   :danger-check
@@ -76,10 +78,9 @@
           planets-eq    (fn [slot] (= (get-in slot [:homeworld :id]) planet-id))
           in-danger?    (not (empty? (filter planets-eq slots)))
           updated-slots (if in-danger? (h/cancel-pending slots) slots)]
-      (when (not in-danger?) (request-next updated-slots))
-      (assoc db
-        :danger (if in-danger? planet-id false)
-        :slots updated-slots))))
+      (when (not in-danger?) (dispatch [:jedi-request-next]))
+      (merge db {:danger (if in-danger? planet-id false)
+                 :slots  updated-slots}))))
 
 
 ;;-- Subscribers ---------------------------------------------------------------
