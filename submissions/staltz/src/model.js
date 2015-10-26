@@ -56,13 +56,13 @@ function makeUpdate$(planet$, sithResponse$, actions) {
       if (thereIsAMatch(oldState.toJS())) {
         return oldState
       }
-      const amount = Math.abs(delta)
-      if (delta > 0) {
+      const amount = Math.abs(delta);
+      if (delta > 0 && firstSithHasMaster(oldState.toJS())) {
         return oldState.update('list', list =>
           list.unshift(...Array(amount)).skipLast(amount).map(x => x ? x : null)
         )
       }
-      if (delta < 0) {
+      if (delta < 0 && lastSithHasApprentice(oldState.toJS())) {
         return oldState.update('list', list =>
           list.push(...Array(amount)).skip(amount).map(x => x ? x : null)
         )
