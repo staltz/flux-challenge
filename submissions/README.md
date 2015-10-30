@@ -8,7 +8,7 @@
 - jas-chen -     React, Redux, RxJS, thisless-react
 - jollytoad -    Jquery, Fluxlet
 - josepot -      React, Redux
-- kyldvs -       React, Flux, Immutable
+- kyldvs -       React, Flux, Immutable, Flow
 - leoasis -      React, Redux
 - mattjbray -    Elm
 - milankinen -   React, Baconjs
