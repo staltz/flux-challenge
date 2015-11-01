@@ -1,0 +1,21 @@
+{
+  "name": "fluxChallange",
+  "authors": [
+    "Karolis Masiulis"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "watch": "watchify -v -t [ babelify --stage 0 ] src/main.js -o dist/bundle.js"
+  },
+  "dependencies": {
+    "classnames": "^2.2.0",
+    "ramda": "^0.18.0",
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0",
+    "superagent": "^1.4.0"
+  },
+  "devDependencies": {
+    "babelify": "^6.4.0",
+    "watchify": "^3.5.0"
+  }
+}
