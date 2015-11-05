@@ -33,11 +33,10 @@
              {:id "release"
               :source-paths ["src"]
 
-              :compiler {:main kauko.core
-                         :asset-path "js/compiled/out"
-                         :output-to "js/compiled/kauko.js"
-                         :output-dir "js/compiled/out"
-                         :source-map-timestamp true }}
+              :compiler {:output-to "resources/public/js/compiled/kauko.js"
+                         :main kauko.core
+                         :optimizations :advanced
+                         :pretty-print false }}
 
              {:id "min"
               :source-paths ["src"]
