@@ -13,6 +13,3 @@ pom.xml
 .nrepl-port
 *.idea*
 kauko.iml
-css/
-index.html
-js/
