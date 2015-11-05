@@ -82,7 +82,7 @@ The Jedi Master requested you to make a dashboard-like UI showing a list of Sith
 - Run the server like this: `cd server` then `npm install` (just once) then `npm start`.
 - Remember to use `styles.css` in your `index.html` solution.
 - Your solution should be executable by opening `submissions/username/index.html` in the browser with no build steps.
-- Send a pull request
+- Send a pull request only when you consider it done. Don't submit Work-In-Progress PRs.
 
 ### Criteria
 
