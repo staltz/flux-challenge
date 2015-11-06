@@ -8,4 +8,4 @@ import JediActions from './actions/JediActions'
 
 ReactDom.render(<App/>, document.getElementById('app'));
 webApi.openWs();
-webApi.getJedi('http://localhost:3000/dark-jedis/3616');
+webApi.getOne('http://localhost:3000/dark-jedis/3616');

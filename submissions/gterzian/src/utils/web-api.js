@@ -41,6 +41,12 @@ module.exports = {
     return deferred.promise;
   },
 
+  getOne(url) {
+    $.getJSON(url).done(first => {
+      JediActions.newJedi(first);
+    });
+  },
+
   cancelRequests() {
     Immutable.List([lastRequest, lastSecondRequest]).forEach(req => {
       if (req) {
