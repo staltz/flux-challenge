@@ -46,6 +46,9 @@ class JediStore extends ReduceStore {
         });
 
       case 'NEW_JEDI':
+        if (this.hasJediAtHome()) {
+          return state;
+        }
         const currentWorld = WorldStore.getState().get('id');
         const jedi = this.checkJediHome(currentWorld)(action.jedi);
         if (state.isEmpty()) {
