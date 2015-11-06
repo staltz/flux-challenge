@@ -337,15 +337,16 @@ describe('Stores: JediStore', () => {
       expect(JediStore.hasJediAtHome()).toEqual(true);
     });
 
-    it('Should also work with undefined jedis', () => {
+    it('Should not add Jedis when one is home already', () => {
+      Dispatcher.dispatch({type: 'NEW_WORLD', id: 1000, name: 'UNKNWOWN'});
       Dispatcher.dispatch({type: 'NEW_JEDI', jedi: jediFromEarth});
       Dispatcher.dispatch({type: 'NEW_JEDI', jedi: jediFromMars});
       Dispatcher.dispatch({type: 'NEW_JEDI', jedi: jediFromNeptune});
+      expect(JediStore.realJedis().count()).toEqual(3)
+      Dispatcher.dispatch({type: 'NEW_WORLD', id: 12, name: 'earth'});
       Dispatcher.dispatch({type: 'NEW_JEDI', jedi: jediFromPluto});
       Dispatcher.dispatch({type: 'NEW_JEDI', jedi: jediFromTheMoon});
-      Dispatcher.dispatch({type: 'SEEK_APPRENTICES'});
-      Dispatcher.dispatch({type: 'NEW_WORLD', id: 12, name: 'earth'});
-      expect(JediStore.hasJediAtHome()).toEqual(false);
+      expect(JediStore.realJedis().count()).toEqual(3)
     });
   });
 
