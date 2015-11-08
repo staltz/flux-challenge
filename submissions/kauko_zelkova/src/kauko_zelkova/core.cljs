@@ -1,12 +1,12 @@
 (ns ^:figwheel-always kauko-zelkova.core
-    (:require
-        [reagent.core :refer [atom] :as reagent]
-        [jamesmacaulay.zelkova.signal :as z]
-        [jamesmacaulay.zelkova.impl.signal :as zimpl]
-        [cljs.core.async :as async]
+  (:require
+    [reagent.core :refer [atom] :as reagent]
+    [jamesmacaulay.zelkova.signal :as z]
+    [jamesmacaulay.zelkova.impl.signal :as zimpl]
+    [cljs.core.async :as async]
 
-        [kauko-zelkova.requests :as r]
-        [kauko-zelkova.websockets :as ws]))
+    [kauko-zelkova.requests :as r]
+    [kauko-zelkova.websockets :as ws]))
 
 (enable-console-print!)
 
@@ -15,10 +15,20 @@
 
 ;;; MODEL ;;;
 
-(defn new-sith-request [id request]
-  {id {:ready? false :body request}})
+(def state-pending :pending)
+(def state-empty :empty)
+(def state-sith :sith)
 
-(def empty-model {:sith (into [] (take num-of-sith (repeat nil)))
+(defn empty-slot [id]
+  {:id (str "gen_id_" id) :state state-empty :body nil})
+
+(defn pending-request-slot [id request]
+  {:id id :state state-pending :body request})
+
+(defn sith-slot [sith]
+  {:id (:id sith) :state state-sith :body sith})
+
+(def empty-model {:sith             (mapv empty-slot (range num-of-sith))
                   :obi-wan-location nil})
 
 (def local-storage-key "kauko-zelkova-flux-challenge-state")
@@ -28,7 +38,7 @@
     (when-not (nil? data)
       (-> data (js/JSON.parse) (js->clj :keywordize-keys true)))))
 
-(def initial-model (or (get-state) empty-model))
+(def initial-model empty-model #_(or (get-state) empty-model)) ;; ;; Get state from localstorage. Not useful during dev.
 
 ;;; UPDATE ;;;
 
@@ -41,17 +51,38 @@
 
 ;;; VIEW ;;;
 
+(defn sith-slot-component [thing obi-wan-location]
+  (let [sith (:body thing)
+        homeworld (get-in sith [:homeworld :name])]
+    [:li (cond-> {:class "css-slot"}
+                 (= homeworld obi-wan-location) (merge {:style {:color "red"}}))
+     [:h3 (:name sith)]
+     [:h6 homeworld]]))
+
+(defn empty-slot-component [thing]
+  [:li {:class "css-slot"}])
+
+(defn sith-slots-component [slots obi]
+  (let [obi-wan-location (get obi "name")]
+    [:ul.css-slots
+     (doall (for [thing slots]
+                (if (= (:state thing) state-sith)
+                  ^{:key (:id thing)}
+                  [sith-slot-component thing obi-wan-location]
+
+                  ^{:key (:id thing)}
+                  [empty-slot-component thing])))]))
+
+(defn obi-wan-location-component [obi-wan-location]
+  [:h1.css-planet-monitor (str "Obi-Wan currently on " (or (get obi-wan-location "name") "..."))])
+
 (defn main-view [model]
   [:div.app-container
    [:div.css-root
-    [:h1.css-planet-monitor "Obi-Wan currently on Tatooine"]
+    (print (pr-str model))
+    [obi-wan-location-component (:obi-wan-location model)]
     [:section.css-scrollable-list
-     [:ul.css-slots
-      [:li.css-slot [:h3 "Jorak Uln"] [:h6 "Homeworld: Korriban"]]
-      [:li.css-slot [:h3 "Skere Kaan"] [:h6 "Homeworld: Coruscant"]]
-      [:li.css-slot [:h3 "Na'daz"] [:h6 "Homeworld: Ryloth"]]
-      [:li.css-slot [:h3 "Kas'im"] [:h6 "Homeworld: Nal Hutta"]]
-      [:li.css-slot [:h3 "Darth Bane"] [:h6 "Homeworld: Apatros"]]]
+     [sith-slots-component (:sith model) (:obi-wan-location model)]
      [:div.css-scroll-buttons
       [:button.css-button-up]
       [:button.css-button-down]]]]])
