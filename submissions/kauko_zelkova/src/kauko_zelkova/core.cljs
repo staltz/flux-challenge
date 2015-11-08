@@ -48,6 +48,9 @@
   [f & args]
   (async/put! updates (fn [model] (apply f model args))))
 
+(defn move-list-up [list])
+
+(defn move-list-down [list])
 
 ;;; VIEW ;;;
 
@@ -62,30 +65,41 @@
 (defn empty-slot-component [thing]
   [:li {:class "css-slot"}])
 
-(defn sith-slots-component [slots obi]
-  (let [obi-wan-location (get obi "name")]
-    [:ul.css-slots
-     (doall (for [thing slots]
-                (if (= (:state thing) state-sith)
-                  ^{:key (:id thing)}
-                  [sith-slot-component thing obi-wan-location]
+(defn sith-slots-component [slots obi-wan-location]
+  [:ul.css-slots
+   (doall (for [thing slots]
+            (if (= (:state thing) state-sith)
+              ^{:key (:id thing)}
+              [sith-slot-component thing obi-wan-location]
 
-                  ^{:key (:id thing)}
-                  [empty-slot-component thing])))]))
+              ^{:key (:id thing)}
+              [empty-slot-component thing])))])
 
 (defn obi-wan-location-component [obi-wan-location]
-  [:h1.css-planet-monitor (str "Obi-Wan currently on " (or (get obi-wan-location "name") "..."))])
+  [:h1.css-planet-monitor (str "Obi-Wan currently on " (or obi-wan-location "..."))])
+
+(defn up-button [list]
+  (let [enabled? true]
+    [:button.css-button-up
+     {:on-click #(send-action! move-list-up list)
+      :class    (str "css-button-up" (when-not enabled? " css-button-disabled"))}]))
+
+(defn down-button [list obi-wan-location]
+  (let [enabled? true]
+    [:button.css-button-down
+     {:on-click #(send-action! move-list-down list)
+      :class    (str "css-button-down" (when-not enabled? " css-button-disabled"))}]))
 
 (defn main-view [model]
   [:div.app-container
    [:div.css-root
     (print (pr-str model))
-    [obi-wan-location-component (:obi-wan-location model)]
+    [obi-wan-location-component (get-in model [:obi-wan-location :name])]
     [:section.css-scrollable-list
-     [sith-slots-component (:sith model) (:obi-wan-location model)]
+     [sith-slots-component (:sith model) (get-in model [:obi-wan-location :name])]
      [:div.css-scroll-buttons
-      [:button.css-button-up]
-      [:button.css-button-down]]]]])
+      [up-button (:sith model) (get-in model [:obi-wan-location :name])]
+      [down-button (:sith model) (get-in model [:obi-wan-location :name])]]]]])
 
 ;;; INPUTS ;;;
 
