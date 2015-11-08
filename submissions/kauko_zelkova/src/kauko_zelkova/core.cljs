@@ -1,18 +1,47 @@
 (ns ^:figwheel-always kauko-zelkova.core
     (:require
         [reagent.core :refer [atom] :as reagent]
+        [jamesmacaulay.zelkova.signal :as z]
+        [jamesmacaulay.zelkova.impl.signal :as zimpl]
+        [cljs.core.async :as async]
+
         [kauko-zelkova.requests :as r]
         [kauko-zelkova.websockets :as ws]))
 
 (enable-console-print!)
 
-(println "Edits to this text should show up in your developer console.")
+(def num-of-sith 5)
+(def num-of-steps 2)
 
-;; define your app data so that it doesn't get over-written on reload
+;;; MODEL ;;;
 
-(defonce app-state (atom {:text "Hello world!"}))
+(defn new-sith-request [id request]
+  {id {:ready? false :body request}})
 
-(defn main-view []
+(def empty-model {:sith (into [] (take num-of-sith (repeat nil)))
+                  :obi-wan-location nil})
+
+(def local-storage-key "kauko-zelkova-flux-challenge-state")
+
+(defn get-state []
+  (let [data (.getItem js/localStorage local-storage-key)]
+    (when-not (nil? data)
+      (-> data (js/JSON.parse) (js->clj :keywordize-keys true)))))
+
+(def initial-model (or (get-state) empty-model))
+
+;;; UPDATE ;;;
+
+(declare updates)
+
+(defn send-action!
+  [f & args]
+  (async/put! updates (fn [model] (apply f model args))))
+
+
+;;; VIEW ;;;
+
+(defn main-view [model]
   [:div.app-container
    [:div.css-root
     [:h1.css-planet-monitor "Obi-Wan currently on Tatooine"]
@@ -27,13 +56,32 @@
       [:button.css-button-up]
       [:button.css-button-down]]]]])
 
-(reagent/render-component [main-view]
+;;; INPUTS ;;;
+
+(def updates (async/chan))
+
+(def model (z/foldp (fn [action state] (action state))
+                    initial-model
+                    (z/input identity ::updates updates)))
+
+(defn store-state!
+  [model]
+  (let [data (-> model (clj->js) (js/JSON.stringify))]
+    (.setItem js/localStorage local-storage-key data)))
+
+(def main-signal (z/map (fn [m]
+                          ; (store-state! m) ;; Store state to localstorage. Not useful during dev.
+                          (main-view m))
+                        model))
+
+(def dom-atom
+  (let [live-graph (z/spawn main-signal)]
+    (z/pipe-to-atom live-graph
+                    (atom (zimpl/init live-graph)))))
+
+(defn root-component [] @dom-atom)
+
+
+;;; Initialize the app ;;;
+(reagent/render-component [root-component]
                           (. js/document (getElementById "app")))
-
-
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
-
