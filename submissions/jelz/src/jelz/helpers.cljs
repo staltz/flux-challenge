@@ -1,12 +1,10 @@
-(ns jelz.helpers)
+(ns jelz.helpers
+  (:require [cljs-uuid-utils.core :as uuid]))
 
 ;;-- Creating/updating slots ---------------------------------------------------
 
-(defn create-slot []
-  {:req-id (-> js/Math .random (.toString 36) (.substring 7))})
-
-(defn get-empty-slots []
-  (vec (repeatedly 5 create-slot)))
+(defn create-slot [] {:req-id (uuid/make-random-uuid)})
+(defn get-empty-slots [] (vec (repeatedly 5 create-slot)))
 
 (defn extend-slot [slots req-id ext]
   (let [req-id-eq #(= req-id (:req-id %))

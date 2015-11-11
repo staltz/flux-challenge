@@ -1,10 +1,11 @@
-(defproject jelz-submission "0.1.0-SNAPSHOT"
+(defproject jelz-submission "0.1.0"
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.122"]
+                 [org.clojure/clojurescript "1.7.145"]
                  [reagent "0.5.1"]
-                 [re-frame "0.4.1"]
+                 [re-frame "0.5.0"]
                  [jarohen/chord "0.6.0"]
-                 [cljs-ajax "0.5.0"]]
+                 [cljs-ajax "0.5.1"]
+                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]]
 
   :plugins [[lein-cljsbuild "1.1.0"]
             [lein-figwheel "0.4.1"]]
