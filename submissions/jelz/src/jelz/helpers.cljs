@@ -6,18 +6,18 @@
   {:req-id (-> js/Math .random (.toString 36) (.substring 7))})
 
 (defn get-empty-slots []
-  (vec (map create-slot (repeat 5 nil))))
+  (vec (repeatedly 5 create-slot)))
 
 (defn extend-slot [slots req-id ext]
-  (let [req-id-eq (fn [slot] (= req-id (:req-id slot)))
-        extend    (fn [slot] (if (req-id-eq slot) (merge slot ext) slot))]
-    (vec (map extend slots))))
+  (let [req-id-eq #(= req-id (:req-id %))
+        extend    #(if (req-id-eq %) (merge % ext) %)]
+    (mapv extend slots)))
 
 
 ;;-- Finding slots -------------------------------------------------------------
 
 (defn first-known [slots]
-  (count (take-while (fn [slot] (not (:id slot))) slots)))
+  (count (take-while #(not (:id %)) slots)))
 
 (defn last-known [slots]
   (- 4 (first-known (reverse slots))))
@@ -46,12 +46,8 @@
 
 (defn scroll [slots dir]
   (case dir
-    :up (into
-          [(create-slot) (create-slot)]
-          (subvec slots 0 3))
-    :down (into
-            (subvec slots 2 5)
-            [(create-slot) (create-slot)])))
+    :up (into (vec (repeatedly 2 create-slot)) (subvec slots 0 3))
+    :down (into (subvec slots 2 5) (repeatedly 2 create-slot))))
 
 
 ;;-- Aborting requests ---------------------------------------------------------
@@ -61,4 +57,4 @@
   (assoc slot :pending? false :xhr nil))
 
 (defn cancel-pending [slots]
-  (vec (map canceler slots)))
+  (mapv canceler slots))

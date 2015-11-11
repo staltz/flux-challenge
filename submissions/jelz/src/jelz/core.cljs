@@ -25,7 +25,7 @@
 (register-handler
   :jedi-request-first
   (fn [db _]
-    (dispatch [:jedi-request (:req-id (first (:slots db))) 3616])
+    (dispatch [:jedi-request (-> db :slots first :req-id) 3616])
     db))
 
 (register-handler
@@ -48,37 +48,31 @@
 (register-handler
   :jedi-loading
   (fn [db [_ req-id xhr]]
-    (let [slots   (:slots db)
-          ext     {:xhr xhr :pending? true}
-          updated (h/extend-slot slots req-id ext)]
-      (assoc db :slots updated))))
+    (let [ext {:xhr xhr :pending? true}]
+      (update-in db [:slots] #(h/extend-slot % req-id ext)))))
 
 (register-handler
   :jedi-loaded
   (fn [db [_ req-id jedi]]
-    (let [slots   (:slots db)
-          ext     (merge jedi {:pending? false})
-          updated (h/extend-slot slots req-id ext)]
+    (let [ext (merge jedi {:pending? false})]
       (dispatch [:danger-check])
-      (assoc db :slots updated))))
+      (update-in db [:slots] #(h/extend-slot % req-id ext)))))
 
 (register-handler
   :scroll
   (fn [db [_ dir]]
-    (let [current (:slots db)
-          aborted (h/cancel-pending current)]
-      (dispatch [:jedi-request-next])
-      (assoc db :slots (h/scroll aborted dir)))))
+    (dispatch [:jedi-request-next])
+    (update-in db [:slots] #(-> % h/cancel-pending (h/scroll dir)))))
 
 (register-handler
   :danger-check
   (fn [db _]
     (let [slots         (:slots db)
           planet-id     (get-in db [:planet :id])
-          planets-eq    (fn [slot] (= (get-in slot [:homeworld :id]) planet-id))
-          in-danger?    (not (empty? (filter planets-eq slots)))
+          planets-eq    #(= (get-in % [:homeworld :id]) planet-id)
+          in-danger?    (some planets-eq slots)
           updated-slots (if in-danger? (h/cancel-pending slots) slots)]
-      (when (not in-danger?) (dispatch [:jedi-request-next]))
+      (when-not in-danger? (dispatch [:jedi-request-next]))
       (merge db {:danger (if in-danger? planet-id false)
                  :slots  updated-slots}))))
 
@@ -100,11 +94,10 @@
     (reaction
       (let [slots      (:slots @db)
             danger     (:danger @db)
-            master     (h/find-master-to-load slots true)
             apprentice (h/find-apprentice-to-load slots true)
-            can?       (fn [& c] (every? identity (conj c (not danger))))]
-        {:up   (can? (h/can-scroll-up? slots) (:id master))
-         :down (can? (h/can-scroll-down? slots) (:id apprentice))}))))
+            master     (h/find-master-to-load slots true)]
+        {:down (and (not danger) (h/can-scroll-down? slots) (:id apprentice))
+         :up   (and (not danger) (h/can-scroll-up? slots) (:id master))}))))
 
 
 ;;-- Run app! ------------------------------------------------------------------

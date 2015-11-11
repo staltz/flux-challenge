@@ -9,7 +9,7 @@
         danger (subscribe [:danger])]
     (fn render-header []
       [:h1.css-planet-monitor
-       (if @danger txt-danger {})
+       (when @danger txt-danger)
        (str "Obi-Wan currently on " (:name @planet))])))
 
 (defn single-slot [item]
@@ -17,7 +17,7 @@
     (fn render-single-slot [item]
       (if (:id item)
         [:li.css-slot
-         (if (= @danger (get-in item [:homeworld :id])) txt-danger {})
+         (when (= @danger (get-in item [:homeworld :id])) txt-danger)
          [:h3 (:name item)]
          [:h6 (str "Homeworld: " (get-in item [:homeworld :name]))]]
         [:li.css-slot]))))

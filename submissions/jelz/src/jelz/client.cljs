@@ -22,11 +22,11 @@
   (when-not (:listening? @ws)
     (go (let [{:keys [ws-channel]} (<! (:connection @ws))]
           (listen ws-channel)
-          (swap! ws (fn [ws] (assoc ws :listening? true)))))))
+          (swap! ws assoc :listening? true)))))
 
 (defn fetch-dark-jedi [req-id id]
   (let [url     (str (:jedi endpoints) id)
-        handler (fn [res] (dispatch [:jedi-loaded req-id res]))
+        handler #(dispatch [:jedi-loaded req-id %])
         xhr     (GET url {:response-format :json
                           :keywords?       true
                           :handler         handler})]
