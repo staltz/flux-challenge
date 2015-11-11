@@ -6,21 +6,26 @@
     [jelz.client :as client]
     [jelz.helpers :as h]
     [reagent.core :as reagent]
-    [re-frame.core :refer [register-handler register-sub dispatch]]))
+    [re-frame.core :refer [register-handler register-sub dispatch path trim-v]]))
 
 ;;-- Handlers ------------------------------------------------------------------
 
+(defn trim-v-and-path [path-kw]
+  [trim-v (path path-kw)])
+
 (register-handler
   :planet-change
-  (fn [db [_ planet]]
+  (trim-v-and-path :planet)
+  (fn [_ [planet]]
     (dispatch [:danger-check])
-    (assoc db :planet planet)))
+    planet))
 
 (register-handler
   :jedi-reset
-  (fn [db _]
+  (path :slots)
+  (fn [_ _]
     (dispatch [:danger-check])
-    (assoc db :slots (h/get-empty-slots))))
+    (h/get-empty-slots)))
 
 (register-handler
   :jedi-request-first
@@ -30,7 +35,8 @@
 
 (register-handler
   :jedi-request
-  (fn [db [_ req-id id]]
+  trim-v
+  (fn [db [req-id id]]
     (client/fetch-dark-jedi req-id id)
     db))
 
@@ -47,22 +53,23 @@
 
 (register-handler
   :jedi-loading
-  (fn [db [_ req-id xhr]]
-    (let [ext {:xhr xhr :pending? true}]
-      (update-in db [:slots] #(h/extend-slot % req-id ext)))))
+  (trim-v-and-path :slots)
+  (fn [slots [req-id xhr]]
+    (h/extend-slot slots req-id {:xhr xhr :pending? true})))
 
 (register-handler
   :jedi-loaded
-  (fn [db [_ req-id jedi]]
-    (let [ext (merge jedi {:pending? false})]
-      (dispatch [:danger-check])
-      (update-in db [:slots] #(h/extend-slot % req-id ext)))))
+  (trim-v-and-path :slots)
+  (fn [slots [req-id jedi]]
+    (dispatch [:danger-check])
+    (h/extend-slot slots req-id (merge jedi {:pending? false}))))
 
 (register-handler
   :scroll
-  (fn [db [_ dir]]
+  (trim-v-and-path :slots)
+  (fn [slots [dir]]
     (dispatch [:jedi-request-next])
-    (update-in db [:slots] #(-> % h/cancel-pending (h/scroll dir)))))
+    (-> slots h/cancel-pending (h/scroll dir))))
 
 (register-handler
   :danger-check
