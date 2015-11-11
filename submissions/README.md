@@ -6,6 +6,7 @@
 - fab1an -       React, Redux
 - heperturtle -  React, Redux
 - jas-chen -     React, Redux, RxJS, thisless-react
+- jelz -         ClojureScript, re-frame
 - jollytoad -    Jquery, Fluxlet
 - josepot -      React, Redux
 - kyldvs -       React, Flux, Immutable, Flow
