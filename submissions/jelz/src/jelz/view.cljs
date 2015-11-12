@@ -23,7 +23,7 @@
         [:li.css-slot]))))
 
 (defn btn-attrs [kw enabled?]
-  (let [base {:on-click (fn [] (dispatch [:scroll kw]))}]
+  (let [base {:on-click #(dispatch [:scroll kw])}]
     (if (kw enabled?) base (merge base btn-disabled))))
 
 (defn buttons []

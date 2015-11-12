@@ -29,9 +29,10 @@
 
 (register-handler
   :jedi-request-first
-  (fn [db _]
-    (dispatch [:jedi-request (-> db :slots first :req-id) 3616])
-    db))
+  (path :slots)
+  (fn [slots _]
+    (dispatch [:jedi-request (-> slots first :req-id) 3616])
+    slots))
 
 (register-handler
   :jedi-request
