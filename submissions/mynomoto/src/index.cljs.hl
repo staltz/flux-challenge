@@ -1,0 +1,25 @@
+(page "index.html"
+  (:require
+    [mynomoto.view :as view]
+    [mynomoto.actions :as actions]
+    [mynomoto.state :as state]))
+
+(with-init!
+  (actions/request-sith 3616 2 state/error))
+
+(html
+  (head
+    (title "Hoplon solution for the Flux Challenge")
+    (link :href "../../styles.css" :rel "stylesheet"))
+  (body
+    (div :class "app-container"
+      (div :class "css-root"
+        (view/planet-header state/current-planet)
+        (section :class "css-scrollable-list"
+          (view/siths-list
+            state/siths
+            state/current-planet)
+          (view/action-buttons
+            state/sith-planet?
+            state/no-master-first?
+            state/no-apprentice-last?))))))

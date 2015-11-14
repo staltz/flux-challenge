@@ -1,0 +1,21 @@
+(ns mynomoto.state
+  (:require
+    [mynomoto.logic :as logic]))
+
+(defc current-planet
+  nil)
+
+(defc error
+  nil)
+
+(defc siths
+  [nil nil nil nil nil])
+
+(defc= sith-planet?
+  (logic/sith-planet? current-planet siths))
+
+(defc= no-master-first?
+  (logic/no-master-first? siths))
+
+(defc= no-apprentice-last?
+  (logic/no-apprentice-last? siths))
