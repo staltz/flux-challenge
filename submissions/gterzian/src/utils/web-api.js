@@ -42,9 +42,12 @@ module.exports = {
   },
 
   getOne(url) {
+    let deferred = Q.defer();
     $.getJSON(url).done(first => {
+      deferred.resolve(first);
       JediActions.newJedi(first);
     });
+    return deferred.promise;
   },
 
   cancelRequests() {

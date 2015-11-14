@@ -8,4 +8,6 @@ import JediActions from './actions/JediActions'
 
 ReactDom.render(<App/>, document.getElementById('app'));
 webApi.openWs();
-webApi.getOne('http://localhost:3000/dark-jedis/3616');
+webApi.getOne('http://localhost:3000/dark-jedis/3616').then((first) =>{
+  webApi.getJedi(first.apprentice.url);
+});
