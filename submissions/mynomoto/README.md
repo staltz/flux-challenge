@@ -33,6 +33,9 @@ A [Hoplon][3] solution to the Flux Challenge.
 2. The compiled files will be on the `target/` directory. This will use
    advanced compilation and prerender the html.
 
+## Credits
+The `first-known` and `last-known` functions on `mynomoto.logic` namespace were lifted from `@jelz` submission. Thanks @jelz!
+
 ## License
 
 Copyright © 2015, Marcelo Nomoto
