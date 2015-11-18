@@ -1,0 +1,39 @@
+(ns mynomoto.view
+  (:require
+    [mynomoto.actions :as actions]))
+
+(defn planet-header [current-planet]
+  (h1 :class "css-planet-monitor"
+    (text "Obi-Wan currently on ~(:name current-planet)")))
+
+(defn action-buttons [sith-planet? no-master-first? no-apprentice-last?]
+  (div :class "css-scroll-buttons"
+    (button
+      :click actions/go-up
+      :class (cell= {"css-button-up" true
+                     "css-button-disabled" (or sith-planet?
+                                               no-master-first?)}))
+    (button
+      :click actions/go-down
+      :class (cell= {"css-button-down" true
+                     "css-button-disabled" (or sith-planet?
+                                               no-apprentice-last?)}))))
+
+(defn sith-info [sith current-planet]
+  (li
+    :class "css-slot"
+    :css (cell= {:color (when (= (-> sith :homeworld :id)
+                                 (:id current-planet))
+                          "red")})
+    (h3
+      (text "~(:name sith)"))
+    (h6
+      (text "~(some->> sith
+                       :homeworld
+                       :name
+                       (str \"Homeworld: \"))"))))
+
+(defn siths-list [siths current-planet]
+  (ul :class "css-slots"
+    (loop-tpl :bindings [sith siths]
+      (sith-info sith current-planet))))

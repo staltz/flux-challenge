@@ -1,0 +1,113 @@
+(ns mynomoto.actions
+  (:require
+    [clojure.string :as str]
+    [mynomoto.logic :as logic]
+    [mynomoto.state :as state]))
+
+(defn abort-request [request]
+  (.abort request)
+  nil)
+
+(defn cancel-ongoing-request [sith]
+  (if-let [req (:ongoing-request sith)]
+    (abort-request req)
+    sith))
+
+(defn red-alert [siths]
+  (swap! siths #(mapv cancel-ongoing-request %)))
+
+(add-watch state/sith-planet? :red-alert
+  (fn [k r o n]
+    (when n
+      (red-alert state/siths))))
+
+(defn parse-planet [e]
+  (-> (.-data e)
+      JSON.parse
+      (js->clj :keywordize-keys true)))
+
+(aset (js/WebSocket. "ws://localhost:4000") "onmessage"
+  (fn [e]
+    (reset! state/current-planet (parse-planet e))))
+
+(defn parse-json [response]
+  (js->clj (js/JSON.parse (if (str/blank? response)
+                            "{}"
+                            response))
+           :keywordize-keys true))
+
+(defn request-sith
+  ([id position error]
+   (swap! state/siths assoc position
+     {:temp-id id
+      :ongoing-request
+      (let [options (clj->js {:type "GET"
+                              :url (str "http://localhost:3000/dark-jedis/" id)
+                              :dataType "text"
+                              :contentType "application/json"
+                              :headers {:accept "application/json"}})]
+        (.. js/jQuery
+          (ajax options)
+          (done (fn [_ _ x]
+                  (reset! error nil)
+                  (let [response (aget x "responseText")]
+                    (swap! state/siths #(if-let [i (->> %
+                                                  (map-indexed (fn [idx itm]
+                                                                 (when (and (:temp-id itm) (= id (:temp-id itm)))
+                                                                   idx)))
+                                                  (some identity))] (assoc % i (parse-json response))
+                                    %)))))
+          (fail (fn [x _ _]
+                  (reset! error {:data (try
+                                         (let [response (aget x "responseText")]
+                                           (parse-json response))
+                                         (catch js/Error _ (aget x "responseText")))
+                                 :status (aget x "status")})))))})))
+
+(defn get-next-sith [siths]
+  (let [[fk lk] ((juxt logic/first-known logic/last-known) siths)]
+    (when-not (some :ongoing-request siths)
+      (cond
+        (and (<= 0 lk 3) (-> siths (nth lk) :apprentice :id))
+        (-> siths (nth lk) :apprentice :id (request-sith (inc lk) state/error))
+
+        (<= 1 fk 4)
+        (some-> siths (nth fk) :master :id (request-sith (dec fk) state/error))))))
+
+(defc= process-siths
+  (when-not state/sith-planet?
+    (get-next-sith state/siths)))
+
+(defn go-up [_]
+  (when-not (or @state/sith-planet? @state/no-master-first?)
+    (let [[s0 s1 s2 s3 s4] @state/siths]
+      (cond
+        (or s0 s1 s2)
+        (do
+          (doseq [sith (take-last 2 @state/siths)]
+            (when-let [req (:ongoing-request sith)]
+              (abort-request req)))
+          (swap! state/siths #(vec (concat [nil nil] (drop-last 2 %)))))
+        s3
+        (do
+          (doseq [sith (take-last 1 @state/siths)]
+            (when-let [req (:ongoing-request sith)]
+              (abort-request req)))
+          (swap! state/siths #(vec (concat [nil] (drop-last 1 %))))))) ))
+
+(defn go-down [_]
+  (when-not (or @state/sith-planet? @state/no-apprentice-last?)
+    (let [[s0 s1 s2 s3 s4] @state/siths]
+      (cond
+        (or s2 s3 s4)
+        (do
+          (doseq [sith (take 2 @state/siths)]
+            (when-let [req (:ongoing-request sith)]
+              (abort-request req)))
+          (swap! state/siths #(vec (concat (drop 2 %) [nil nil]))))
+        s1
+        (do
+          (doseq [sith (take 1 @state/siths)]
+            (when-let [req (:ongoing-request sith)]
+              (abort-request req)))
+          (swap! state/siths #(vec (concat (drop 1 %) [nil]))))))))
