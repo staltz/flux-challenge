@@ -66,11 +66,17 @@ export default class SithList extends Component {
 
   handleUp() {
     let sith = _.assign({}, this.topSith.master, {apprentice: {id: this.topSith.id, url: this.topSith.url}});
+    if (_.keys(this.state.siths).length === MAX_ITEMS) {
+      SithActions.deleteSith(this.lastSith.id);
+    }
     SithActions.requestSith(sith);
   }
 
   handleDown() {
     let sith = _.assign({}, this.lastSith.apprentice, {master: {id: this.lastSith.id, url: this.lastSith.url}});
+    if (_.keys(this.state.siths).length === MAX_ITEMS) {
+      SithActions.deleteSith(this.topSith.id);
+    }
     SithActions.requestSith(sith);
   }
 
