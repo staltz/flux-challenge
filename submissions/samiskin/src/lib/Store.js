@@ -4,6 +4,8 @@ import createLogger from 'redux-logger';
 import thunk from 'redux-thunk';
 // import {devTools} from 'redux-devtools';
 
+import AppStore from 'stores/AppStore';
+
 /*
    This class stores the main Redux Store and provides a wrapper
    class to it.  All app state is stored here, and each immediate
@@ -20,6 +22,7 @@ import thunk from 'redux-thunk';
  */
 
 let stateStoreMap = {
+  app: AppStore
 };
 
 class Store {

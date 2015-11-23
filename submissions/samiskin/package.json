@@ -25,7 +25,8 @@
     "redux": "^3.0.4",
     "redux-logger": "^2.0.4",
     "redux-promise": "^0.5.0",
-    "redux-thunk": "^1.0.0"
+    "redux-thunk": "^1.0.0",
+    "rx": "^4.0.7"
   },
   "devDependencies": {
     "autoprefixer": "^6.1.0",
