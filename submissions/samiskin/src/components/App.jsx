@@ -5,7 +5,6 @@ import Component from 'Component';
 import AppActions from 'actions/AppActions';
 import TitleDisplay from './TitleDisplay.jsx';
 import SithList from './SithList.jsx';
-import SithScrollButtons from './SithScrollButtons.jsx';
 
 const WEBSOCKET_URL = 'ws://localhost:4000';
 
@@ -32,10 +31,7 @@ export default class App extends Component {
       <div className={css.base}>
         <div className={css.border}>
           <TitleDisplay/>
-          <section className={css.sithDisplayArea}>
-            <SithList/>
-            <SithScrollButtons/>
-          </section>
+          <SithList/>
         </div>
       </div>
     );

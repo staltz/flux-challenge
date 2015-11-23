@@ -3,6 +3,7 @@ import _ from 'lodash';
 import React from 'react';
 import Component from 'Component';
 import SithStore from 'stores/SithStore';
+import SithActions from 'actions/SithActions';
 
 import css from './styles/SithList.css';
 
@@ -23,12 +24,21 @@ export default class SithList extends Component {
     }
   }
 
+  handleUp() {
+    SithActions.setCurrentSithRequests();
+  }
+
+  handleDown() {
+    SithActions.setCurrentSithRequests();
+  }
+
   render() {
     let {siths} = this.state;
 
     let topMaster = this.getHighestMaster(_.keys(siths)[0]);
     let sithItems = [];
     let sith = topMaster;
+    let firstApprentice = topMaster.master.id ? false : true;
     let lastApprentice = false;
     while (sith) {
       sithItems.push((
@@ -42,9 +52,15 @@ export default class SithList extends Component {
     }
 
     return (
-      <ul className={css.base}>
-        {sithItems}
-      </ul>
+      <section className={css.base}>
+        <ul className={css.sithSlots}>
+          {sithItems}
+        </ul>
+        <div className={css.buttons}>
+          <button className={css.buttonUp} disabled={firstApprentice} onClick={this.handleUp.bind(this)}/>
+          <button className={css.buttonDown} disabled={lastApprentice} onClick={this.handleDown.bind(this)}/>
+        </div>
+      </section>
     );
   }
 
