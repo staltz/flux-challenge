@@ -29,24 +29,22 @@ class SithActions {
   }
 
   deleteSith(sithId) {
-    Dispatcher.dispatch({type: DELETE_SITH, data: sithId});
     if (this.requests[sithId]) {
       this.requests[sithId].abort();
       delete this.requests[sithId];
+    } else {
+      Dispatcher.dispatch({type: DELETE_SITH, data: sithId});
     }
   }
 
 
-  requestSith(partialSith) {
-    partialSith = _.extend({}, {master: {id: null, url: null}, apprentice: {id: null, url: null}}, partialSith, {name: '', homeworld: {name: ''}});
-    Dispatcher.dispatch({type: ADD_SITH, data: partialSith});
-
-    let payload = get(`${API_PATH}/dark-jedis/${partialSith.id}`);
+  requestSith(sithId) {
+    let payload = get(`${API_PATH}/dark-jedis/${sithId}`);
     payload.promise.then((response) => {
       Dispatcher.dispatch({type: ADD_SITH, data: JSON.parse(response)});
-      delete this.requests[partialSith.id];
+      delete this.requests[sithId];
     });
-    this.requests[partialSith.id] = payload;
+    this.requests[sithId] = payload;
   }
 
 }

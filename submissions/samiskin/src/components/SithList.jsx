@@ -9,6 +9,15 @@ import css from './styles/SithList.css';
 
 const MAX_ITEMS = 5;
 
+
+/*
+
+Need something more formal around pending sith requests,
+in order to be able to cancel from the top on up-down
+
+*/
+
+
 export default class SithList extends Component {
 
   constructor(props) {
@@ -16,35 +25,60 @@ export default class SithList extends Component {
   }
 
   componentDidMount() {
-    if (!_.isEmpty(this.state.siths)) {
-      this.topSith = this.getHighestMaster();
-      this.lastSith = this.getLowestApprentice();
-    } else {
-      SithActions.requestSith({id: 3616, url: 'http://localhost:3000/dark-jedis/3616'});
-    }
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-    if (nextState.siths !== this.state.siths) {
-      this.topSith = this.getHighestMaster(nextState.siths);
-      this.lastSith = this.getLowestApprentice(nextState.siths);
-    }
-  }
-
-  componentDidUpdate() {
-    if (this.lastSith && this.lastSith.apprentice.id && _.keys(this.state.siths).length < MAX_ITEMS - 1) {
-      SithActions.requestSith(this.lastSith.apprentice);
-    }
+    this.componentDidUpdate({}, {});
   }
 
   syncState() {
-    return {
-      siths: SithStore.getSiths()
-    };
+    this.state = this.state || {};
+    let siths = SithStore.getSiths();
+    let topSith = this.getHighestMaster(siths);
+    let lastSith = this.getLowestApprentice(siths);
+
+    let topRequests = _.clone(this.state.topRequests || {currRequest: null, requestCount: 0});
+
+    let bottomRequests = _.clone(this.state.bottomRequests || {currRequest: 3616, requestCount: MAX_ITEMS});
+
+    if (topSith !== null) {
+      if (topSith.id === topRequests.currRequest) {
+        topRequests.requestCount--;
+        if (topRequests.requestCount > 0) {
+          topRequests.currRequest = topSith.master.id;
+        } else {
+          topRequests.currRequest = null;
+        }
+      }
+      if (lastSith.id === bottomRequests.currRequest) {
+        bottomRequests.requestCount--;
+        if (bottomRequests.requestCount > 0) {
+          bottomRequests.currRequest = lastSith.apprentice.id;
+        } else {
+          bottomRequests.currRequest = null;
+        }
+      }
+    }
+
+    return { siths, topSith, lastSith, topRequests, bottomRequests };
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log(this.state);
+
+    let currTopRequest = _.get(this.state, 'topRequests.currRequest');
+    let prevTopRequest = _.get(prevState, 'topRequests.currRequest');
+    let currBottomRequest = _.get(this.state, 'bottomRequests.currRequest');
+    let prevBottomRequest = _.get(prevState, 'bottomRequests.currRequest');
+
+    if (currTopRequest !== prevTopRequest && currTopRequest !== null) {
+      SithActions.requestSith(currTopRequest);
+    }
+
+    if (currBottomRequest !== prevBottomRequest && currBottomRequest !== null) {
+      SithActions.requestSith(currBottomRequest);
+    }
   }
 
   getHighestMaster(siths = this.state.siths, sithId) {
-    console.log("GETTING HIGHEST MASTER", siths, sithId);
+    if (_.isEmpty(siths)) return null;
     if (sithId === undefined) sithId = _.keys(siths)[0];
     let sith = siths[sithId];
     if (sith && sith.master && siths[sith.master.id]) {
@@ -55,6 +89,7 @@ export default class SithList extends Component {
   }
 
   getLowestApprentice(siths = this.state.siths, sithId) {
+    if (_.isEmpty(siths)) return null;
     if (sithId === undefined) sithId = _.keys(siths)[0];
     let sith = siths[sithId];
     if (sith && sith.apprentice && siths[sith.apprentice.id]) {
@@ -65,28 +100,54 @@ export default class SithList extends Component {
   }
 
   handleUp() {
-    let sith = _.assign({}, this.topSith.master, {apprentice: {id: this.topSith.id, url: this.topSith.url}});
-    if (_.keys(this.state.siths).length === MAX_ITEMS) {
-      SithActions.deleteSith(this.lastSith.id);
+    // let sith = _.assign({}, this.topSith.master, {apprentice: {id: this.topSith.id, url: this.topSith.url}});
+    let {topRequests, bottomRequests, topSith, lastSith} = this.state;
+    if (topRequests.currRequest === null) {
+      topRequests = _.assign({}, topRequests, {currRequest: topSith.master.id});
     }
-    SithActions.requestSith(sith);
+    topRequests = _.assign({}, topRequests, {requestCount: topRequests.requestCount + 1});
+
+    if (bottomRequests.requestCount > 0) {
+      bottomRequests = _.assign({}, bottomRequests, {requestCount: bottomRequests.requestCount - 1});
+    } else {
+      SithActions.deleteSith(lastSith.id);
+      bottomRequests = {currRequest: null, requestCount: 0};
+    }
+
+    this.setState({topRequests, bottomRequests});
   }
 
+
   handleDown() {
-    let sith = _.assign({}, this.lastSith.apprentice, {master: {id: this.lastSith.id, url: this.lastSith.url}});
-    if (_.keys(this.state.siths).length === MAX_ITEMS) {
-      SithActions.deleteSith(this.topSith.id);
+    let {topRequests, bottomRequests, topSith, lastSith} = this.state;
+    if (bottomRequests.currRequest === null) {
+      bottomRequests = _.assign({}, bottomRequests, {currRequest: lastSith.apprentice.id});
     }
-    SithActions.requestSith(sith);
+    bottomRequests = _.assign({}, bottomRequests, {requestCount: bottomRequests.requestCount + 1});
+
+    if (topRequests.requestCount > 0) {
+      topRequests = _.assign({}, topRequests, {requestCount: topRequests.requestCount - 1});
+    } else {
+      SithActions.deleteSith(topSith.id);
+      topRequests = {currRequest: null, requestCount: 0};
+    }
+
+    this.setState({topRequests, bottomRequests});
   }
 
   render() {
-    let {siths} = this.state;
-    console.log("RENDERING WITH ", siths, this.topSith, this.lastSith);
     let sithItems = [];
+    let canGoUp = false;
+    let canGoDown = false;
 
-    if (this.topSith) {
-      let sith = this.topSith;
+    for (let i = 0; i < this.state.topRequests.requestCount; i++) {
+      sithItems.push((
+        <li className={css.sithSlot} key={-sithItems.length}/>
+      ));
+    }
+
+    if (this.state.topSith) {
+      let sith = this.state.topSith;
       while (sith) {
         let homeworldText = sith.homeworld.name ? `Homeworld: ${sith.homeworld.name}` : ``;
         sithItems.push((
@@ -97,16 +158,16 @@ export default class SithList extends Component {
         ));
         sith = this.state.siths[sith.apprentice.id];
       }
+
+      canGoUp = this.state.topSith.master.id !== null;
+      canGoDown = this.state.lastSith.apprentice.id !== null;
     }
 
-    while (sithItems.length < MAX_ITEMS) {
+    for (let i = 0; i < this.state.bottomRequests.requestCount; i++) {
       sithItems.push((
         <li className={css.sithSlot} key={-sithItems.length}/>
       ));
     }
-
-    let canGoUp = this.topSith && this.topSith.master.id;
-    let canGoDown = this.lastSith && this.lastSith.apprentice.id;
 
     return (
       <section className={css.base}>

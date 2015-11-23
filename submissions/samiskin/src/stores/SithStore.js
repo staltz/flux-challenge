@@ -31,18 +31,7 @@ class SithStore {
     return Store.getState().siths;
   }
 
-  // initialState = [
-  //   {name: 'Skeere Khan', homeworld: 'Coruscant', id: 0},
-  //   {name: 'Skeere Khan', homeworld: 'Coruscant', id: 1},
-  //   {name: 'Skeere Khan', homeworld: 'Coruscant', id: 2},
-  //   {name: 'Skeere Khan', homeworld: 'Coruscant', id: 3},
-  //   {name: 'Skeere Khan', homeworld: 'Coruscant', id: 4},
-  // ]
-
-  initialState = {
-  }
-
-  reduce(siths = this.initialState, action) {
+  reduce(siths = {}, action) {
     switch (action.type) {
     case ADD_SITH:
       let update = {}; update[action.data.id] = action.data;

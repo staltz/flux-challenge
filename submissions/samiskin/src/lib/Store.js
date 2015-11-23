@@ -36,7 +36,8 @@ class Store {
       duration: true,
       actionTransformer: (action) => _.assign({}, action, {type: action.type.toString()})
     });
-    let createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore);
+    let createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
+    // let createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore);
     this.store = createStoreWithMiddleware(this.reducer.bind(this));
   }
 
