@@ -59,8 +59,9 @@ class AppStore {
     apprenticeRequests.requestCount++;
 
     let masterRequests = _.assign({}, state.masterRequests);
-    if (masterRequests.requestCount > 0)
+    if (masterRequests.requestCount > 0) {
       this._lowerRequests(masterRequests);
+    }
 
     return _.assign({}, state, {masterRequests, apprenticeRequests});
   }
@@ -70,20 +71,25 @@ class AppStore {
     let apprenticeRequests = _.assign({}, state.apprenticeRequests);
     if (sith.id === masterRequests.currentRequest) {
       this._lowerRequests(masterRequests);
-      if (masterRequests.requestCount > 0)
+      if (masterRequests.requestCount > 0) {
         masterRequests.currentRequest = sith.master.id;
+      }
     }
     if (sith.id === apprenticeRequests.currentRequest) {
       this._lowerRequests(apprenticeRequests);
-      if (apprenticeRequests.requestCount > 0)
+      if (apprenticeRequests.requestCount > 0) {
         apprenticeRequests.currentRequest = sith.apprentice.id;
+      }
     }
 
     return _.assign({}, state, {masterRequests, apprenticeRequests});
   }
 
   initialState = {
-    currentPlanet: 'Coruscant',
+    currentPlanet: {
+      name: 'Coruscant',
+      id: 58
+    },
     masterRequests: {
       currentRequest: null,
       requestCount: 0

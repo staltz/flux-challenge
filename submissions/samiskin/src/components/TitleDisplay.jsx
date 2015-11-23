@@ -15,7 +15,7 @@ export default class TitleDisplay extends Component {
   render() {
     return (
       <h1 className={css.base}>
-        Obi-Wan currently on {this.state.currentPlanet}
+        Obi-Wan currently on {this.state.currentPlanet.name}
       </h1>
     );
   }

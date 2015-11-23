@@ -32,7 +32,8 @@ export default class SithList extends Component {
       highestMaster: SithStore.getHighestMaster(),
       lowestApprentice: SithStore.getLowestApprentice(),
       masterRequests: AppStore.getMasterRequests(),
-      apprenticeRequests: AppStore.getApprenticeRequests()
+      apprenticeRequests: AppStore.getApprenticeRequests(),
+      currentPlanet: AppStore.getCurrentPlanet()
     };
   }
 
@@ -71,7 +72,7 @@ export default class SithList extends Component {
   }
 
   render() {
-    let {highestMaster, lowestApprentice, siths, masterRequests, apprenticeRequests} = this.state;
+    let {currentPlanet, highestMaster, lowestApprentice, siths, masterRequests, apprenticeRequests} = this.state;
     let sithItems = [];
     let canGoUp = false;
     let canGoDown = false;
@@ -86,8 +87,9 @@ export default class SithList extends Component {
       let sith = highestMaster;
       while (sith) {
         let homeworldText = sith.homeworld.name ? `Homeworld: ${sith.homeworld.name}` : ``;
+        let style = currentPlanet.id === sith.homeworld.id ? {color: 'red'} : {};
         sithItems.push((
-          <li className={css.sithSlot} key={sith.id}>
+          <li className={css.sithSlot} style={style} key={sith.id}>
             <h3>{sith.name}</h3>
             <h6>{homeworldText}</h6>
           </li>
