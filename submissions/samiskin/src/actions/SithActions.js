@@ -28,12 +28,10 @@ class SithActions {
     this.requests = {}; // sithId -> {promise, abort()}
   }
 
-  deleteSith(sithId) {
+  cancelSithRequest(sithId) {
     if (this.requests[sithId]) {
       this.requests[sithId].abort();
       delete this.requests[sithId];
-    } else {
-      Dispatcher.dispatch({type: DELETE_SITH, data: sithId});
     }
   }
 

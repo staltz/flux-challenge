@@ -51,8 +51,8 @@ class Store {
     _.forEach(stateStoreMap, (store) => waitingSet.add(store));
 
     let assignStore = (store) => {
-      if (this.storeMap.has(store)) return;
-      if (store === undefined || !waitingSet.has(store)) {
+      if (store === undefined || this.storeMap.has(store)) return;
+      if (!waitingSet.has(store)) {
         throw new Error('Undefined store, check for circular dependencies in storeDependencies');
       }
 
