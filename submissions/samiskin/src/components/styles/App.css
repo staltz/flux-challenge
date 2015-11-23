@@ -3,6 +3,7 @@
   top: 0;
   left: 0;
   width: 100%;
+  overflow: scroll;
   height: 100%;
 
   font-family: Lucida Console, Monaco5, monospace;

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/samiskin/ReactBase",
   "dependencies": {
+    "babel-polyfill": "^6.2.0",
     "lodash": "^3.10.1",
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
