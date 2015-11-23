@@ -65,11 +65,13 @@ export default class SithList extends Component {
   }
 
   handleUp() {
-    SithActions.requestSith(this.topSith.master);
+    let sith = _.assign({}, this.topSith.master, {apprentice: {id: this.topSith.id, url: this.topSith.url}});
+    SithActions.requestSith(sith);
   }
 
   handleDown() {
-    SithActions.requestSith(this.lastSith.apprentice);
+    let sith = _.assign({}, this.lastSith.apprentice, {master: {id: this.lastSith.id, url: this.lastSith.url}});
+    SithActions.requestSith(sith);
   }
 
   render() {

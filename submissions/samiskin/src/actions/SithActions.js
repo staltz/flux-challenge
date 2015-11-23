@@ -38,7 +38,7 @@ class SithActions {
 
 
   requestSith(partialSith) {
-    _.extend(partialSith, {name: '', homeworld: {name: ''}, master: {id: null, url: null}, apprentice: {id: null, url: null}});
+    partialSith = _.extend({}, {master: {id: null, url: null}, apprentice: {id: null, url: null}}, partialSith, {name: '', homeworld: {name: ''}});
     Dispatcher.dispatch({type: ADD_SITH, data: partialSith});
 
     let payload = get(`${API_PATH}/dark-jedis/${partialSith.id}`);
