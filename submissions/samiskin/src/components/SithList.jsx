@@ -13,10 +13,27 @@ export default class SithList extends Component {
 
   constructor(props) {
     super(props);
-    this.nextMaster = null;
-    this.nextApprentice = null;
-    if (_.keys(this.state.siths).length === 0) {
+  }
+
+  componentDidMount() {
+    if (!_.isEmpty(this.state.siths)) {
+      this.topSith = this.getHighestMaster();
+      this.lastSith = this.getLowestApprentice();
+    } else {
       SithActions.requestSith({id: 3616, url: 'http://localhost:3000/dark-jedis/3616'});
+    }
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (nextState.siths !== this.state.siths) {
+      this.topSith = this.getHighestMaster(nextState.siths);
+      this.lastSith = this.getLowestApprentice(nextState.siths);
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.lastSith && this.lastSith.apprentice.id && _.keys(this.state.siths).length < MAX_ITEMS - 1) {
+      SithActions.requestSith(this.lastSith.apprentice);
     }
   }
 
@@ -26,49 +43,62 @@ export default class SithList extends Component {
     };
   }
 
-  getHighestMaster(sithId) {
-    let sith = this.state.siths[sithId];
-    console.log(sith);
-    if (sith && sith.master && this.state.siths[sith.master.id]) {
-      return this.getHighestMaster(sith.master.id);
+  getHighestMaster(siths = this.state.siths, sithId) {
+    console.log("GETTING HIGHEST MASTER", siths, sithId);
+    if (sithId === undefined) sithId = _.keys(siths)[0];
+    let sith = siths[sithId];
+    if (sith && sith.master && siths[sith.master.id]) {
+      return this.getHighestMaster(siths, sith.master.id);
+    } else {
+      return sith;
+    }
+  }
+
+  getLowestApprentice(siths = this.state.siths, sithId) {
+    if (sithId === undefined) sithId = _.keys(siths)[0];
+    let sith = siths[sithId];
+    if (sith && sith.apprentice && siths[sith.apprentice.id]) {
+      return this.getLowestApprentice(siths, sith.apprentice.id);
     } else {
       return sith;
     }
   }
 
   handleUp() {
-    SithActions.requestSith(this.nextMaster);
+    SithActions.requestSith(this.topSith.master);
   }
 
   handleDown() {
-    SithActions.requestSith(this.nextApprentice);
+    SithActions.requestSith(this.lastSith.apprentice);
   }
 
   render() {
     let {siths} = this.state;
-    console.log(siths);
-
-    let topMaster = this.getHighestMaster(_.keys(siths)[0]);
+    console.log("RENDERING WITH ", siths, this.topSith, this.lastSith);
     let sithItems = [];
-    let sith = topMaster;
-    this.nextMaster = topMaster ? topMaster.master : null;
-    this.nextApprentice = null;
-    while (sith) {
-      sithItems.push((
-        <li className={css.sithSlot} key={sith.id}>
-          <h3>{sith.name}</h3>
-          <h6>{sith.homeworld.name ? `Homeworld: ${sith.homeworld.name}` : ``}</h6>
-        </li>
-      ));
-      this.nextApprentice = sith.apprentice;
-      sith = this.state.siths[sith.apprentice.id];
+
+    if (this.topSith) {
+      let sith = this.topSith;
+      while (sith) {
+        let homeworldText = sith.homeworld.name ? `Homeworld: ${sith.homeworld.name}` : ``;
+        sithItems.push((
+          <li className={css.sithSlot} key={sith.id}>
+            <h3>{sith.name}</h3>
+            <h6>{homeworldText}</h6>
+          </li>
+        ));
+        sith = this.state.siths[sith.apprentice.id];
+      }
     }
 
     while (sithItems.length < MAX_ITEMS) {
       sithItems.push((
-        <li className={css.sithSlot} key={sithItems.length * 10000}/>
-      ))
+        <li className={css.sithSlot} key={-sithItems.length}/>
+      ));
     }
+
+    let canGoUp = this.topSith && this.topSith.master.id;
+    let canGoDown = this.lastSith && this.lastSith.apprentice.id;
 
     return (
       <section className={css.base}>
@@ -76,8 +106,8 @@ export default class SithList extends Component {
           {sithItems}
         </ul>
         <div className={css.buttons}>
-          <button className={css.buttonUp} disabled={!this.nextMaster} onClick={this.handleUp.bind(this)}/>
-          <button className={css.buttonDown} disabled={!this.nextApprentice} onClick={this.handleDown.bind(this)}/>
+          <button className={css.buttonUp} disabled={!canGoUp} onClick={this.handleUp.bind(this)}/>
+          <button className={css.buttonDown} disabled={!canGoDown} onClick={this.handleDown.bind(this)}/>
         </div>
       </section>
     );
