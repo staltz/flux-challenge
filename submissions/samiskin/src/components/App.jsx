@@ -15,7 +15,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.wsObservable = this.createWsObservable(WEBSOCKET_URL);
-    this.wsObservable.subscribe((msg) => AppActions.setCurrentPlanet(JSON.parse(msg.data).name));
+    // this.wsObservable.subscribe((msg) => AppActions.setCurrentPlanet(JSON.parse(msg.data).name));
   }
 
   createWsObservable(url) {

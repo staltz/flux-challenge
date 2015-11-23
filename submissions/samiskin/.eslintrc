@@ -8,6 +8,7 @@
     "func-names": 0,
     "no-param-reassign": 0,
     "no-loop-func": 0,
-    "react/sort-comp": 0
+    "react/sort-comp": 0,
+    "no-else-return": 0
   }
 }

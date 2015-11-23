@@ -3,6 +3,9 @@ import Dispatcher from 'Dispatcher';
 
 const API_PATH = 'http://localhost:3000';
 
+export const ADD_SITH = Symbol('ADD_SITH');
+export const DELETE_SITH = Symbol('DELETE_SITH');
+
 function get(url) {
   let req = new XMLHttpRequest();
   return {
@@ -22,43 +25,28 @@ function get(url) {
 class SithActions {
 
   constructor() {
-    this.requestingSiths = new Set();
     this.requests = {}; // sithId -> {promise, abort()}
   }
 
-  setCurrentSithRequests(siths = []) {
-    if (siths.length === 0) {
-      siths = [{id: 3616}];
-    }
-    let requestingSiths = new Set(this.requestingSiths);
-    let newSithRequests = new Set();
-    _.forEach(siths, (sith) => {
-      if (requestingSiths.has(sith.id)) {
-        requestingSiths.delete(sith.id);
-      } else {
-        newSithRequests.add(sith.id);
-      }
-    });
-
-    // Any siths not being requested anymore need to have their requests cancelled
-    for (let sithId of requestingSiths) {
-      this.requestingSiths.delete(sithId);
+  deleteSith(sithId) {
+    Dispatcher.dispatch({type: DELETE_SITH, data: sithId});
+    if (this.requests[sithId]) {
       this.requests[sithId].abort();
+      delete this.requests[sithId];
     }
+  }
 
-    for (let sithId of newSithRequests) {
-      let payload = get(`${API_PATH}/dark-jedis/${sithId}`);
-      payload.promise.then((response) => {
-        console.log(response);
-        this.requestingSiths.delete(sithId);
-        delete this.requests[sithId];
-      });
-      this.requestingSiths.add(sithId);
-      this.requests[sithId] = payload;
-    }
 
-    // let {promise, abort} = get(`${API_PATH}/dark-jedis/3616`);
-    // let response = await promise;
+  requestSith(partialSith) {
+    _.extend(partialSith, {name: '', homeworld: {name: ''}, master: {id: null, url: null}, apprentice: {id: null, url: null}});
+    Dispatcher.dispatch({type: ADD_SITH, data: partialSith});
+
+    let payload = get(`${API_PATH}/dark-jedis/${partialSith.id}`);
+    payload.promise.then((response) => {
+      Dispatcher.dispatch({type: ADD_SITH, data: JSON.parse(response)});
+      delete this.requests[partialSith.id];
+    });
+    this.requests[partialSith.id] = payload;
   }
 
 }
