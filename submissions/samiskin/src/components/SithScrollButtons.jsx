@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import Component from 'Component';
+
 import css from './styles/SithScrollButtons.css';
 
 export default class SithScrollButtons extends Component {

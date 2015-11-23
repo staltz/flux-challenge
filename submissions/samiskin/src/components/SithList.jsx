@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 import React from 'react';
 import Component from 'Component';
+import SithStore from 'stores/SithStore';
 
 import css from './styles/SithList.css';
 
@@ -9,13 +10,7 @@ export default class SithList extends Component {
 
   syncState() {
     return {
-      siths: [
-        {name: 'Skeere Khan', homeworld: 'Coruscant'},
-        {name: 'Skeere Khan', homeworld: 'Coruscant'},
-        {name: 'Skeere Khan', homeworld: 'Coruscant'},
-        {name: 'Skeere Khan', homeworld: 'Coruscant'},
-        {name: 'Skeere Khan', homeworld: 'Coruscant'},
-      ]
+      siths: SithStore.getSiths()
     };
   }
 
@@ -24,7 +19,7 @@ export default class SithList extends Component {
 
     let sithItems = _.map(siths, (sith) => {
       return (
-        <li className={css.sithSlot}>
+        <li className={css.sithSlot} key={sith.id}>
           <h3>{sith.name}</h3>
           <h6>Homeworld: {sith.homeworld}</h6>
         </li>

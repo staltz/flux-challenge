@@ -5,6 +5,7 @@ import thunk from 'redux-thunk';
 // import {devTools} from 'redux-devtools';
 
 import AppStore from 'stores/AppStore';
+import SithStore from 'stores/SithStore';
 
 /*
    This class stores the main Redux Store and provides a wrapper
@@ -22,7 +23,8 @@ import AppStore from 'stores/AppStore';
  */
 
 let stateStoreMap = {
-  app: AppStore
+  app: AppStore,
+  siths: SithStore
 };
 
 class Store {
