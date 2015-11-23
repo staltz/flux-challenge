@@ -44,7 +44,7 @@ module.exports = {
     loaders: [
       {test: /\.jsx?$/, loaders: ['react-hot', 'babel'], exclude: /node_modules/},
       {test: /\.json$/, loader: 'json'},
-      {test: /\.css$/, loaders: ['style', 'css?modules', 'postcss']}
+      {test: /\.css$/, loaders: ['style?sourceMap', 'css?sourceMap&modules', 'postcss?sourceMap']}
     ]
   },
 

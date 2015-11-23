@@ -3,9 +3,13 @@ import rx from 'rx';
 import React from 'react';
 import Component from 'Component';
 import AppActions from 'actions/AppActions';
-import AppStore from 'stores/AppStore';
+import TitleDisplay from './TitleDisplay.jsx';
+import SithList from './SithList.jsx';
+import SithScrollButtons from './SithScrollButtons.jsx';
 
 const WEBSOCKET_URL = 'ws://localhost:4000';
+
+import css from './styles/App.css';
 
 export default class App extends Component {
 
@@ -13,12 +17,6 @@ export default class App extends Component {
     super(props);
     this.wsObservable = this.createWsObservable(WEBSOCKET_URL);
     this.wsObservable.subscribe((msg) => AppActions.setCurrentPlanet(JSON.parse(msg.data).name));
-  }
-
-  syncState() {
-    return {
-      currentPlanet: AppStore.getCurrentPlanet()
-    };
   }
 
   createWsObservable(url) {
@@ -31,7 +29,15 @@ export default class App extends Component {
 
   render() {
     return (
-      <div> Current Planet: {this.state.currentPlanet} </div>
+      <div className={css.base}>
+        <div className={css.border}>
+          <TitleDisplay/>
+          <section className={css.sithDisplayArea}>
+            <SithList/>
+            <SithScrollButtons/>
+          </section>
+        </div>
+      </div>
     );
   }
 
