@@ -107,8 +107,11 @@ export default class SithList extends Component {
     }
     topRequests = _.assign({}, topRequests, {requestCount: topRequests.requestCount + 1});
 
-    if (bottomRequests.requestCount > 0) {
+    if (bottomRequests.requestCount > 1) {
       bottomRequests = _.assign({}, bottomRequests, {requestCount: bottomRequests.requestCount - 1});
+    } else if (bottomRequests.requestCount > 0) {
+      SithActions.deleteSith(bottomRequests.currRequest);
+      bottomRequests = {currRequest: null, requestCount: 0};
     } else {
       SithActions.deleteSith(lastSith.id);
       bottomRequests = {currRequest: null, requestCount: 0};
@@ -125,8 +128,11 @@ export default class SithList extends Component {
     }
     bottomRequests = _.assign({}, bottomRequests, {requestCount: bottomRequests.requestCount + 1});
 
-    if (topRequests.requestCount > 0) {
+    if (topRequests.requestCount > 1) {
       topRequests = _.assign({}, topRequests, {requestCount: topRequests.requestCount - 1});
+    } else if (topRequests.requestCount > 0) {
+      SithActions.deleteSith(topRequests.currRequest);
+      topRequests = {currRequest: null, requestCount: 0};
     } else {
       SithActions.deleteSith(topSith.id);
       topRequests = {currRequest: null, requestCount: 0};
