@@ -1,0 +1,10 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb",
+  "rules": {
+    "comma-dangle": 0,
+    "prefer-const": 0,
+    "strict": 0,
+    "func-names": 0
+  }
+}

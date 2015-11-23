@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+
+*.hot-update.*
+
+.idea
+*.swp
+*.swo
+*.swn
+*.swm
+
+./bundle.js
+
+bundle.js
