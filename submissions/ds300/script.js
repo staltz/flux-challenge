@@ -6794,7 +6794,6 @@ function sithRequest(id) {
 },{"./mutations":7,"./state":9,"immutable":4}],9:[function(require,module,exports){
 var derivable_1 = require('derivable');
 var immutable_1 = require('immutable');
-derivable_1.setDebugMode(true);
 exports.$AppState = derivable_1.atom({
     world: null,
     sithIDs: immutable_1.List([

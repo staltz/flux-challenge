@@ -3,9 +3,7 @@ import { Atom, atom, destruct, Derivable, setDebugMode } from 'derivable'
 import { List, Map, Set } from 'immutable'
 import { AppState, LocalSith } from './model'
 
-setDebugMode(true);
 // ROOT STATE
-
 export const $AppState: Atom<AppState> = atom({
   world:null,
   sithIDs: List([

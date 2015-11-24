@@ -1,4 +1,4 @@
-import { $AppState, $localSiths } from './state'
+import { $AppState } from './state'
 import * as M from './model'
 
 export function up (n: number) {
