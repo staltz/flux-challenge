@@ -82,10 +82,12 @@ export default class SithList extends Component {
 
   handleUp() {
     AppActions.requestMaster();
+    AppActions.requestMaster();
   }
 
 
   handleDown() {
+    AppActions.requestApprentice();
     AppActions.requestApprentice();
   }
 
