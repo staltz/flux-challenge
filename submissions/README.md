@@ -5,7 +5,7 @@ Submitter | Libraries
 [abaran](abaran)             | [React], [Reflux]
 [arqex](arqex)               | [React], [Freezer]
 [fab1an](fab1an)             | [React], [Redux]
-[heperturtle](heperturtle)   | [React], [Redux]
+[hyperturtle](hyperturtle)   | [React], [Redux]
 [jas-chen](jas-chen)         | [React], [Redux], [RxJS], [thisless-react]
 [jelz](jelz)                 | [ClojureScript], [re-frame]
 [jollytoad](jollytoad)       | [jQuery], [Fluxlet]
