@@ -3,7 +3,7 @@ import {
   $sithIDs,
   $localSiths,
   $sithCache,
-  $worldSith,
+  $redAlert,
   $worldName,
   $world
 } from './state'
@@ -24,7 +24,7 @@ const $oneSithAtBottom = $lastSithID.mAnd($oneSith);
 const $firstSithHasNoMaster = $firstSith.mDerive(s => !s.master.url);
 
 const $upDisabled =
-  $worldSith
+  $redAlert
     .or($oneSithAtBottom)
     .or($firstSithHasNoMaster);
 
@@ -33,7 +33,7 @@ const $oneSithAtTop = $firstSithID.mAnd($oneSith);
 const $lastSithHasNoApprentice = $lastSith.mDerive(s => !s.apprentice.url);
 
 const $downDisabled =
-  $worldSith
+  $redAlert
     .or($oneSithAtTop)
     .or($lastSithHasNoApprentice);
 

@@ -6756,7 +6756,7 @@ exports.changeWorld = changeWorld;
 var state_1 = require('./state');
 var mutations_1 = require('./mutations');
 var immutable_1 = require('immutable');
-var $requestingSiths = state_1.$worldSith.then(immutable_1.Set(), state_1.$remoteSiths);
+var $requestingSiths = state_1.$redAlert.then(immutable_1.Set(), state_1.$remoteSiths);
 var activeRequests = {};
 $requestingSiths.reactWhen(state_1.$world, function (siths) {
     var newRequests = {};
@@ -6809,7 +6809,6 @@ exports.$AppState = derivable_1.atom({
 _a = derivable_1.destruct(exports.$AppState, 'world', 'sithIDs', 'sithCache'), exports.$world = _a[0], exports.$sithIDs = _a[1], exports.$sithCache = _a[2];
 _b = derivable_1.destruct(exports.$world, 'id', 'name'), exports.$worldId = _b[0], exports.$worldName = _b[1];
 exports.$localSiths = exports.$sithIDs.derive(function (ids) {
-    console.log('them ids', ids.toJS());
     var cache = exports.$sithCache.get();
     return ids.map(function (id) { return cache.get(id); });
 });
@@ -6817,7 +6816,7 @@ exports.$remoteSiths = exports.$sithIDs.derive(function (ids) {
     var cache = exports.$sithCache.get();
     return immutable_1.Set(ids.filter(function (id) { return id !== null && cache.get(id) == null; }));
 });
-exports.$worldSith = exports.$localSiths.derive(function (siths) {
+exports.$redAlert = exports.$localSiths.derive(function (siths) {
     var worldId = exports.$worldId.get();
     return siths.filter(function (sith) {
         return sith && sith.homeworld.id === worldId;
@@ -6847,12 +6846,12 @@ var $lastSithID = state_1.$sithIDs.derive(util_1.last);
 var $lastSith = state_1.$localSiths.derive(util_1.last);
 var $oneSithAtBottom = $lastSithID.mAnd($oneSith);
 var $firstSithHasNoMaster = $firstSith.mDerive(function (s) { return !s.master.url; });
-var $upDisabled = state_1.$worldSith
+var $upDisabled = state_1.$redAlert
     .or($oneSithAtBottom)
     .or($firstSithHasNoMaster);
 var $oneSithAtTop = $firstSithID.mAnd($oneSith);
 var $lastSithHasNoApprentice = $lastSith.mDerive(function (s) { return !s.apprentice.url; });
-var $downDisabled = state_1.$worldSith
+var $downDisabled = state_1.$redAlert
     .or($oneSithAtTop)
     .or($lastSithHasNoApprentice);
 function scrollButton(klass, $disabled, fn) {

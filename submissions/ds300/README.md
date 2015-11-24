@@ -11,3 +11,8 @@ This uses a novel (and very very young) view rendering library called [ddom](htt
 - Causing state mutations: `mutations.ts`
 - Submitting GET requests for sith details: `request.ts`
 - Pulling it all together: `main.ts`
+
+### Notes
+Ended up using one atom at the top, because it is a very nice and clean design
+when you can get away with it. It would make perfect sense to slip Redux or
+similar in there if this app was going to change over time.
