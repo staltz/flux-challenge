@@ -37,6 +37,7 @@ class SithActions {
 
 
   requestSith(sithId) {
+    if (this.requests[sithId]) return;
     let payload = get(`${API_PATH}/dark-jedis/${sithId}`);
     payload.promise.then((response) => {
       Dispatcher.dispatch({type: ADD_SITH, data: JSON.parse(response)});

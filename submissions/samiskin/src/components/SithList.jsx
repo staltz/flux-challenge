@@ -27,13 +27,18 @@ export default class SithList extends Component {
   }
 
   syncState() {
+    let siths = SithStore.getSiths();
+    let currentPlanet = AppStore.getCurrentPlanet();
+    let isSithOnPlanet = !!_.find(siths, (sith) => sith.homeworld.id === currentPlanet.id);
     return {
-      siths: SithStore.getSiths(),
+      siths: siths,
+      isSithOnPlanet: isSithOnPlanet,
       highestMaster: SithStore.getHighestMaster(),
       lowestApprentice: SithStore.getLowestApprentice(),
       masterRequests: AppStore.getMasterRequests(),
       apprenticeRequests: AppStore.getApprenticeRequests(),
-      currentPlanet: AppStore.getCurrentPlanet()
+      currentPlanet: currentPlanet,
+      maxItems: AppStore.getMaxItems()
     };
   }
 
@@ -42,6 +47,19 @@ export default class SithList extends Component {
     let prevTopRequest = _.get(prevState, 'masterRequests.currentRequest');
     let currBottomRequest = _.get(this.state, 'apprenticeRequests.currentRequest');
     let prevBottomRequest = _.get(prevState, 'apprenticeRequests.currentRequest');
+
+
+    // When planets change, cancel all requests if a sith is shown,
+    // and rerequest both siths if there are no siths shown
+    if (this.state.isSithOnPlanet !== prevState.isSithOnPlanet) {
+      if (this.state.isSithOnPlanet) {
+        if (currTopRequest) SithActions.cancelSithRequest(currTopRequest);
+        if (currBottomRequest) SithActions.cancelSithRequest(currBottomRequest);
+      } else {
+        if (currTopRequest) SithActions.requestSith(currTopRequest);
+        if (currBottomRequest) SithActions.requestSith(currBottomRequest);
+      }
+    }
 
     if (currTopRequest !== prevTopRequest) {
       if (currTopRequest !== null) {
@@ -72,7 +90,7 @@ export default class SithList extends Component {
   }
 
   render() {
-    let {currentPlanet, highestMaster, lowestApprentice, siths, masterRequests, apprenticeRequests} = this.state;
+    let {isSithOnPlanet, currentPlanet, highestMaster, lowestApprentice, siths, masterRequests, apprenticeRequests} = this.state;
     let sithItems = [];
     let canGoUp = false;
     let canGoDown = false;
@@ -97,8 +115,8 @@ export default class SithList extends Component {
         sith = siths[sith.apprentice.id];
       }
 
-      canGoUp = highestMaster.master.id !== null;
-      canGoDown = lowestApprentice.apprentice.id !== null;
+      canGoUp = !isSithOnPlanet && highestMaster.master.id !== null;
+      canGoDown = !isSithOnPlanet && lowestApprentice.apprentice.id !== null;
     }
 
     for (let i = 0; i < apprenticeRequests.requestCount; i++) {
