@@ -22,6 +22,7 @@
     "files": [
         "model.ts",
         "request.ts",
+        "state.ts",
         "util.ts",
         "jedi.tsx"
     ]
