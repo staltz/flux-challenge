@@ -1,4 +1,5 @@
 {
+    "compileOnSave": false,
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
@@ -12,7 +13,8 @@
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "./tsbuild"
     },
     "filesGlob": [
         "**/*.ts",
@@ -20,10 +22,12 @@
         "!node_modules/**"
     ],
     "files": [
-        "model.ts",
-        "request.ts",
-        "state.ts",
-        "util.ts",
-        "jedi.tsx"
+        "src/main.ts",
+        "src/model.ts",
+        "src/mutations.ts",
+        "src/request.ts",
+        "src/state.ts",
+        "src/util.ts",
+        "src/view.tsx"
     ]
 }

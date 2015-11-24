@@ -1,30 +1,48 @@
-export const Request = (() => {
+import {Derivable} from 'derivable'
+import {$world, $worldSith, $remoteSiths} from './state'
+import {completeSithRequest} from './mutations'
+import {Set} from 'immutable'
 
-  let activeRequests = {};
+// only requst siths while not at homeworld of local sith
+const $requestingSiths: Derivable<Set<number>> =
+  $worldSith.then(Set(), $remoteSiths);
 
-  function cancel (url) {
-    let req = activeRequests[url];
+// local childless state, no need to wrap.
+let activeRequests = {};
+
+$requestingSiths.reactWhen($world, siths => {
+  // bring over still valid active requests, while creating new requests
+  let newRequests = {};
+  siths.forEach(id => {
+    let req = activeRequests[id];
     if (req) {
-      delete activeRequests[url];
-      req.abort();
+      delete activeRequests[id];
+    } else {
+      req = sithRequest(id);
     }
-  }
+    newRequests[id] = req;
+  });
 
-  function create (url, cb) {
-    if (!activeRequests[url]) {
-      let req = new XMLHttpRequest();
-      activeRequests[url] = req;
-      req.open('GET', url);
-      req.send();
-      req.onreadystatechange = () => {
-        if (activeRequests[url] && req.readyState === 4) {
-          cb(JSON.parse(req.responseText));
-        }
-      };
+  // abort old requests
+  Object.keys(activeRequests).forEach(id => {
+    let req = activeRequests[id];
+    delete activeRequests[id];
+    req.abort();
+  });
+
+  activeRequests = newRequests;
+});
+
+function sithRequest(id) {
+  const url = `http://localhost:3000/dark-jedis/${id}`;
+  const req = new XMLHttpRequest();
+  req.open('GET', url);
+  req.send();
+  req.onreadystatechange = () => {
+    if (activeRequests[id] && req.readyState === 4) {
+      delete activeRequests[id];
+      completeSithRequest(id, JSON.parse(req.responseText));
     }
-
-    return url;
-  }
-
-  return { cancel, create };
-})();
+  };
+  return req;
+}

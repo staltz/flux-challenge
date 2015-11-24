@@ -1,25 +1,52 @@
+"use strict";
 function bundle(inFile, outFile, done) {
-    var browserify = require('browserify');
-    var fs = require('fs');
-    var b = browserify();
+    console.log("broswerifying", inFile)
+    const browserify = require('browserify');
+    const fs = require('fs');
+    const b = browserify();
     b.add(inFile);
-    b.bundle().pipe(fs.createWriteStream(outFile)).on('close', done);
+    b.bundle()
+     .pipe(fs.createWriteStream(outFile))
+     .on('close', done);
 }
 
-module.exports = function (grunt) {
-  grunt.initConfig({
-    watch: {
-      files: ['src/**/*.js', 'test/test.js', 'todo/todo.js', 'todo/todo.html', 'perf/perf.js'],
-      tasks: ['build'],
-    },
-  });
-  grunt.registerTask('build', function () {
-    var fs = require('fs');
-    if (!fs.existsSync('dist')) {
-      fs.mkdirSync('dist');
+function debounce(f, n) {
+  let timeout = null;
+  const doit = (args) => () => {
+    timeout = null;
+    f.apply(null, args)
+  };
+  return function () {
+    if (timeout !== null) {
+      clearTimeout(timeout);
     }
-    bundle('./src/jedi.js', './dist/jedi.js', this.async());
+    timeout = setTimeout(doit(Array.prototype.slice.call(arguments, 0)), n);
+  }
+}
+
+const doBundle = debounce((done) => {
+    bundle('./tsbuild/main.js', './script.js', done);
+}, 500);
+
+module.exports = function (grunt) {
+  const exec = require('child_process').exec;
+  grunt.registerTask('build', function () {
+    const done = this.async();
+    exec('tsc', function () {
+      doBundle(done);
+    });
   });
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.registerTask('default', ['build', 'watch']);
+
+  const fs = require('fs');
+
+  grunt.registerTask('watch', function () {
+    this.async();
+    exec('tsc --watch').stdout.pipe(require('process').stdout);
+    require('watch').watchTree('./tsbuild', {interval: 400}, () => {
+      doBundle(() => null)
+    });
+  });
+
+
+  grunt.registerTask('default', ['watch']);
 };

@@ -25,7 +25,16 @@ export type AppState = {
   sithIDs: List<number>
 };
 
-function discoverApprentice (state: AppState, i: number) {
+export function newWorld (state: AppState, world: Homeworld): AppState {
+  return assoc(state, {world});
+}
+
+export function newLocalSith (state: AppState, id: number, sith: LocalSith): AppState {
+  let sithCache = state.sithCache.set(id, sith);
+  return discoverSiths(assoc(state, {sithCache}))
+}
+
+function discoverApprentice (state: AppState, i: number): AppState {
   const {sithCache, sithIDs} = state;
   let result = state;
   if (i < sithIDs.size - 1) {
@@ -42,16 +51,18 @@ function discoverApprentice (state: AppState, i: number) {
   return result;
 }
 
-function discoverMaster (state: AppState, i: number) {
-  const {sithCache, sithIDs} = state;
+function discoverMaster (state: AppState, i: number): AppState {
   let result = state;
   if (i > 0) {
+    const {sithCache, sithIDs} = state;
     const sith = sithCache.get(sithIDs.get(i));
-    if (sith.master.id === null) {
-      // first sith but not at top of list
-      result = down(state, i);
-    } else {
-      result = assoc(state, {sithIDs: sithIDs.set(i - 1, sith.master.id)});
+    if (sith) {
+      if (sith.master.id === null) {
+        // first sith but not at top of list
+        result = down(state, i);
+      } else {
+        result = assoc(state, {sithIDs: sithIDs.set(i - 1, sith.master.id)});
+      }
     }
   }
   return result;
@@ -82,7 +93,7 @@ function cleanCache (state: AppState): AppState {
     }
   });
 
-  return assoc(state, {sithCache: newCache});
+  return assoc(state, {sithCache: newCache.asImmutable()});
 }
 
 function _modifySithIDs(state: AppState, n: number, f): AppState {
@@ -95,7 +106,7 @@ function _modifySithIDs(state: AppState, n: number, f): AppState {
 
 // moves list down, siths go up visually
 export function down (state: AppState, n: number): AppState {
-  // preserve the invariant that sithIDs always contains one id
+  // preserve the invariant that sithIDs always contains at least one id
   const lastIDidx = state.sithIDs.reduce((last, id, idx) => {
     return id !== null ? idx : last;
   }, -1);
@@ -118,7 +129,7 @@ export function up (state: AppState, n: number): AppState {
     i++;
   }
 
-  const maxUp = sithIDs.size - i;
+  const maxUp = (sithIDs.size - i) - 1;
 
   return _modifySithIDs(
     state,

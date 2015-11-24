@@ -1,11 +1,12 @@
 
-import { Atom, atom, destruct, lookup, Derivable } from 'derivable'
+import { Atom, atom, destruct, Derivable, setDebugMode } from 'derivable'
 import { List, Map, Set } from 'immutable'
 import { AppState, LocalSith } from './model'
 
+setDebugMode(true);
 // ROOT STATE
 
-const $AppState: Atom<AppState> = atom({
+export const $AppState: Atom<AppState> = atom({
   world:null,
   sithIDs: List([
     null,
@@ -17,20 +18,21 @@ const $AppState: Atom<AppState> = atom({
   sithCache: Map<number, LocalSith>()
 });
 
-const [$world, $sithIDs, $sithCache] =
+export const [$world, $sithIDs, $sithCache] =
   destruct($AppState, 'world', 'sithIDs', 'sithCache');
 
-const [$worldId, $worldName] = destruct($world, 'id', 'name');
+export const [$worldId, $worldName] = destruct($world, 'id', 'name');
 
 
 export const $localSiths: Derivable<List<LocalSith>> = $sithIDs.derive(ids => {
+  console.log('them ids', ids.toJS());
   const cache = $sithCache.get();
   return ids.map(id => cache.get(id));
 });
 
 export const $remoteSiths: Derivable<Set<number>> = $sithIDs.derive(ids => {
   const cache = $sithCache.get();
-  return Set<number>(ids.filter(id => cache.get(id) === null));
+  return Set<number>(ids.filter(id => id !== null && cache.get(id) == null));
 });
 
 /**
