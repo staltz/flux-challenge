@@ -1,7 +1,7 @@
-import {Derivable} from 'derivable'
-import {$world, $redAlert, $remoteSiths} from './state'
-import {completeSithRequest} from './mutations'
-import {Set} from 'immutable'
+import { Derivable } from 'derivable'
+import { $ready, $redAlert, $remoteSiths } from './state'
+import { completeSithRequest } from './mutations'
+import { Set } from 'immutable'
 
 // only requst siths while not at homeworld of local sith
 const $requestingSiths: Derivable<Set<number>> =
@@ -10,9 +10,7 @@ const $requestingSiths: Derivable<Set<number>> =
 // local childless state, no need to wrap.
 let activeRequests = {};
 
-// we depende on the homeworld being non-null, so wait for that to happen
-// before kicking off sith requests.
-$requestingSiths.reactWhen($world, siths => {
+$requestingSiths.reactWhen($ready, siths => {
   // bring over still valid active requests, while creating new requests
   let newRequests = {};
   siths.forEach(id => {

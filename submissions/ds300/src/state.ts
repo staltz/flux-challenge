@@ -51,3 +51,6 @@ export const $redAlert = $localSiths.derive(siths => {
     return sith && sith.homeworld.id === worldId;
   }).first();
 });
+
+// true when page is ready to be used
+export const $ready = $world.is(null).not();

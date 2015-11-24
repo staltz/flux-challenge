@@ -1,11 +1,11 @@
-import { React, root } from 'ddom'
+import { React } from 'ddom'
 import {
+  $ready,
   $sithIDs,
   $localSiths,
   $sithCache,
   $redAlert,
-  $worldName,
-  $world
+  $worldName
 } from './state'
 import { first, last } from './util'
 import { up, down } from './mutations'
@@ -86,11 +86,6 @@ const app = (
     </section>
   </div>
 );
-
-
-// only render it when ready
-const $ready = $world.is(null).not();
-
 
 export const page = (
   <div class="app-container">

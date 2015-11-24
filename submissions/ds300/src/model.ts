@@ -1,5 +1,5 @@
 import { Range, List, Map } from 'immutable'
-import { isString, assoc } from './util'
+import { assoc } from './util'
 
 export type Homeworld = {
   id: number,

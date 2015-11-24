@@ -6758,7 +6758,7 @@ var mutations_1 = require('./mutations');
 var immutable_1 = require('immutable');
 var $requestingSiths = state_1.$redAlert.then(immutable_1.Set(), state_1.$remoteSiths);
 var activeRequests = {};
-$requestingSiths.reactWhen(state_1.$world, function (siths) {
+$requestingSiths.reactWhen(state_1.$ready, function (siths) {
     var newRequests = {};
     siths.forEach(function (id) {
         var req = activeRequests[id];
@@ -6822,10 +6822,10 @@ exports.$redAlert = exports.$localSiths.derive(function (siths) {
         return sith && sith.homeworld.id === worldId;
     }).first();
 });
+exports.$ready = exports.$world.is(null).not();
 var _a, _b;
 
 },{"derivable":3,"immutable":4}],10:[function(require,module,exports){
-exports.isString = function (x) { return typeof x === 'string'; };
 function assoc(obj, other) {
     return Object.assign({}, obj, other);
 }
@@ -6874,7 +6874,6 @@ function renderSith(sith) {
 }
 var sithList = (ddom_1.React.createElement("ul", {"class": "css-slots"}, state_1.$localSiths.derive(function (ss) { return ss.map(renderSith); })));
 var app = (ddom_1.React.createElement("div", {"class": "css-root"}, ddom_1.React.createElement("h1", {"class": "css-planet-monitor"}, "Obi-Wan currently on ", state_1.$worldName), ddom_1.React.createElement("section", {"class": "css-scrollable-list"}, sithList, ddom_1.React.createElement("div", {"class": "css-scroll-buttons"}, " ", [upButton, downButton], " "))));
-var $ready = state_1.$world.is(null).not();
-exports.page = (ddom_1.React.createElement("div", {"class": "app-container"}, $ready.then(app, "loading...")));
+exports.page = (ddom_1.React.createElement("div", {"class": "app-container"}, state_1.$ready.then(app, "loading...")));
 
 },{"./mutations":7,"./state":9,"./util":10,"ddom":1}]},{},[5]);
