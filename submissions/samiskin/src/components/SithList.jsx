@@ -1,45 +1,34 @@
 import _ from 'lodash';
 
-import React from 'react';
-import Component from 'Component';
-import SithStore from 'stores/SithStore';
-import SithActions from 'actions/SithActions';
 import AppActions from 'actions/AppActions';
 import AppStore from 'stores/AppStore';
+import Component from 'Component';
+import React from 'react';
+import SithActions from 'actions/SithActions';
+import SithStore from 'stores/SithStore';
 
 import css from './styles/SithList.css';
 
-/*
-
-Move  top/bottom requests into app state
-
-*/
-
-
 export default class SithList extends Component {
-
-  constructor(props) {
-    super(props);
-  }
-
-  componentDidMount() {
-    this.componentDidUpdate({}, {});
-  }
 
   syncState() {
     let siths = SithStore.getSiths();
     let currentPlanet = AppStore.getCurrentPlanet();
     let isSithOnPlanet = !!_.find(siths, (sith) => sith.homeworld.id === currentPlanet.id);
     return {
-      siths: siths,
-      isSithOnPlanet: isSithOnPlanet,
-      highestMaster: SithStore.getHighestMaster(),
-      lowestApprentice: SithStore.getLowestApprentice(),
-      masterRequests: AppStore.getMasterRequests(),
       apprenticeRequests: AppStore.getApprenticeRequests(),
       currentPlanet: currentPlanet,
-      maxItems: AppStore.getMaxItems()
+      highestMaster: SithStore.getHighestMaster(),
+      isSithOnPlanet: isSithOnPlanet,
+      lowestApprentice: SithStore.getLowestApprentice(),
+      masterRequests: AppStore.getMasterRequests(),
+      maxItems: AppStore.getMaxItems(),
+      siths: siths
     };
+  }
+
+  componentDidMount() {
+    this.componentDidUpdate({}, {});
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -51,20 +40,20 @@ export default class SithList extends Component {
 
     // When planets change, cancel all requests if a sith is shown,
     // and rerequest both siths if there are no siths shown
-    if (this.state.isSithOnPlanet !== prevState.isSithOnPlanet) {
-      if (this.state.isSithOnPlanet) {
-        if (currTopRequest) SithActions.cancelSithRequest(currTopRequest);
-        if (currBottomRequest) SithActions.cancelSithRequest(currBottomRequest);
-      } else {
-        if (currTopRequest) SithActions.requestSith(currTopRequest);
-        if (currBottomRequest) SithActions.requestSith(currBottomRequest);
-      }
+    if (this.state.isSithOnPlanet && !prevState.isSithOnPlanet) {
+      if (currTopRequest) SithActions.cancelSithRequest(currTopRequest);
+      if (currBottomRequest) SithActions.cancelSithRequest(currBottomRequest);
+    } else if (!this.state.isSithOnPlanet && prevState.isSithOnPlanet) {
+      if (currTopRequest) SithActions.requestSith(currTopRequest);
+      if (currBottomRequest) SithActions.requestSith(currBottomRequest);
     }
 
     if (currTopRequest !== prevTopRequest) {
       if (currTopRequest !== null) {
         SithActions.requestSith(currTopRequest);
       }
+
+      // If the bottom request is now null after the top request has changed, it has been cancelled
       if (prevBottomRequest && !currBottomRequest) {
         SithActions.cancelSithRequest(prevBottomRequest);
       }
@@ -74,6 +63,8 @@ export default class SithList extends Component {
       if (currBottomRequest !== null) {
         SithActions.requestSith(currBottomRequest);
       }
+
+      // If the top request is now null after the bottom request has changed, it has been cancelled
       if (prevTopRequest && !currTopRequest) {
         SithActions.cancelSithRequest(prevTopRequest);
       }
@@ -104,17 +95,14 @@ export default class SithList extends Component {
     }
 
     if (highestMaster) {
-      let sith = highestMaster;
-      while (sith) {
-        let homeworldText = sith.homeworld.name ? `Homeworld: ${sith.homeworld.name}` : ``;
+      for (let sith = highestMaster; sith; sith = siths[sith.apprentice.id]) {
         let style = currentPlanet.id === sith.homeworld.id ? {color: 'red'} : {};
         sithItems.push((
           <li className={css.sithSlot} style={style} key={sith.id}>
             <h3>{sith.name}</h3>
-            <h6>{homeworldText}</h6>
+            <h6>Homeworld: {sith.homeworld.name}</h6>
           </li>
         ));
-        sith = siths[sith.apprentice.id];
       }
 
       canGoUp = !isSithOnPlanet && highestMaster.master.id !== null;

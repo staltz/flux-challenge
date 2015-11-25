@@ -1,11 +1,19 @@
-import _ from 'lodash';
 import Dispatcher from 'Dispatcher';
-
-const API_PATH = 'http://localhost:3000';
 
 export const ADD_SITH = Symbol('ADD_SITH');
 export const DELETE_SITH = Symbol('DELETE_SITH');
 
+const API_PATH = 'http://localhost:3000';
+
+// Makes a GET request to a specific url and wraps it up in a promise and an abort function
+// Params:
+//          url: String
+// Returns:
+//          {
+//            promise: Promise - a promise that describes the GET request
+//                               to url, resolving as the request response
+//            abort: Function - A function to abort the request if necessary
+//          }
 function get(url) {
   let req = new XMLHttpRequest();
   return {
@@ -28,14 +36,6 @@ class SithActions {
     this.requests = {}; // sithId -> {promise, abort()}
   }
 
-  cancelSithRequest(sithId) {
-    if (this.requests[sithId]) {
-      this.requests[sithId].abort();
-      delete this.requests[sithId];
-    }
-  }
-
-
   requestSith(sithId) {
     if (this.requests[sithId]) return;
     let payload = get(`${API_PATH}/dark-jedis/${sithId}`);
@@ -44,6 +44,13 @@ class SithActions {
       delete this.requests[sithId];
     });
     this.requests[sithId] = payload;
+  }
+
+  cancelSithRequest(sithId) {
+    if (this.requests[sithId]) {
+      this.requests[sithId].abort();
+      delete this.requests[sithId];
+    }
   }
 
 }

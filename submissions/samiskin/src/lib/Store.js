@@ -10,14 +10,12 @@ import SithStore from 'stores/SithStore';
 /*
    This class stores the main Redux Store and provides a wrapper
    class to it.  All app state is stored here, and each immediate
-   property can be bound to a Store class.  An example of this
-   would be if all user data was stored in a users property.
-   The getStoreMap() function would then be:
+   property can be bound to a Store class.
 
-    getStoreMap() {
-      return {
-        users: UserStore.getUsers()
-      };
+   An example of this would be if all user data was stored in a users property.
+
+    let stateStoreMap = {
+      users: UserStore
     }
 
  */
@@ -36,11 +34,14 @@ class Store {
       duration: true,
       actionTransformer: (action) => _.assign({}, action, {type: action.type.toString()})
     });
-    let createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
-    // let createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore);
+    // let createStoreWithMiddleware = applyMiddleware(thunk)(createStore); // Uncomment to disable logging
+    let createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore); // Comment to disable logging
     this.store = createStoreWithMiddleware(this.reducer.bind(this));
   }
 
+  // Resolve all store dependencies by inserting into this.storeMap in an order
+  // that will ensure that a store dependant on another will have the other store
+  // resolve all actions first
   initializeStoreMap() {
     let invertedMap = _.transform(stateStoreMap, (map, store, prop) => {
       return map.set(store, prop);
@@ -69,6 +70,7 @@ class Store {
     }
   }
 
+  // Redux reducer that passes actions through the store files
   reduceFromStores(state, action) {
     let newState = {};
     this.partiallyReducedState = _.assign({}, state);
@@ -79,8 +81,8 @@ class Store {
 
       if (!store.reduce) throw new Error(`${store.constructor.name} must provide a reduce function`);
       let value = store.reduce.bind(store)(state[key], action);
-      if (!value) throw new Error(`${store.constructor.name}.reduce must provide a default value`);
-      newState[key] = value || state[key]; // Default to old value
+      if (value === undefined) throw new Error(`${store.constructor.name}.reduce must provide a default value`);
+      newState[key] = value; // Default to old value
       this.partiallyReducedState[key] = newState[key];
     }
     this.partiallyReducedState = null;
@@ -88,7 +90,7 @@ class Store {
     return newState;
   }
 
-
+  // Returns the current state, evne when in the middle of a reduction
   getState() {
     return this.partiallyReducedState || this.store.getState();
   }
