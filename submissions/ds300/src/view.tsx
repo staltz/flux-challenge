@@ -20,7 +20,7 @@ const $topSithID = $sithIDs.derive(first);
 const $firstSith = $onlyLocalSiths.derive(first);
 
 const $bottomSithID = $sithIDs.derive(ids => ids.last());
-const $lastSith = $localSiths.derive(ss => ss.filter(identity).last());
+const $lastSith = $onlyLocalSiths.derive(last);
 const $oneSithAtBottom = $bottomSithID.mAnd($oneSith);
 const $firstSithHasNoMaster = $firstSith.mDerive(s => !s.master.url);
 
