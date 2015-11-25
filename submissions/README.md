@@ -4,7 +4,7 @@ Submitter | Libraries
 --- | ---
 [abaran](abaran)             | [React], [Reflux]
 [arqex](arqex)               | [React], [Freezer]
-[ds300](ds300)               | [DDOM], [Derivable], [Immutable], [Redux]
+[ds300](ds300)               | [DDOM], [Derivable], [Immutable], [Redux], [TypeScript]
 [fab1an](fab1an)             | [React], [Redux]
 [hyperturtle](hyperturtle)   | [React], [Redux]
 [jas-chen](jas-chen)         | [React], [Redux], [RxJS], [thisless-react]
