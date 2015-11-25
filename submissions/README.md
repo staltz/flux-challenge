@@ -4,6 +4,7 @@ Submitter | Libraries
 --- | ---
 [abaran](abaran)             | [React], [Reflux]
 [arqex](arqex)               | [React], [Freezer]
+[ds300](ds300)               | [DDOM], [Derivable], [Immutable], [Redux]
 [fab1an](fab1an)             | [React], [Redux]
 [hyperturtle](hyperturtle)   | [React], [Redux]
 [jas-chen](jas-chen)         | [React], [Redux], [RxJS], [thisless-react]
@@ -28,6 +29,8 @@ Submitter | Libraries
 [Baconjs]: https://baconjs.github.io/
 [ClojureScript]: https://github.com/clojure/clojurescript
 [Cycle]: http://cycle.js.org/
+[DDOM]: https://github.com/ds300/ddom
+[Derivable]: https://github.com/ds300/derivablejs
 [Elm]: http://elm-lang.org/
 [Flow]: http://flowtype.org/
 [Flux]: https://facebook.github.io/flux/docs/overview.html
