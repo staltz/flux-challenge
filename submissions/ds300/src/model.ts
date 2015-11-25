@@ -39,13 +39,8 @@ function discoverApprentice (state: AppState, i: number): AppState {
   let result = state;
   if (i < sithIDs.size - 1) {
     const sith = sithCache.get(sithIDs.get(i));
-    if (sith) {
-      if (sith.apprentice.id === null) {
-        // last sith but not at end of list.
-        result = up(state, (sithIDs.size - 1) - i);
-      } else {
-        result = assoc(state, {sithIDs: sithIDs.set(i + 1, sith.apprentice.id)});
-      }
+    if (sith && sith.apprentice.id !== null) {
+      result = assoc(state, {sithIDs: sithIDs.set(i + 1, sith.apprentice.id)});
     }
   }
   return result;
@@ -56,13 +51,8 @@ function discoverMaster (state: AppState, i: number): AppState {
   if (i > 0) {
     const {sithCache, sithIDs} = state;
     const sith = sithCache.get(sithIDs.get(i));
-    if (sith) {
-      if (sith.master.id === null) {
-        // first sith but not at top of list
-        result = down(state, i);
-      } else {
-        result = assoc(state, {sithIDs: sithIDs.set(i - 1, sith.master.id)});
-      }
+    if (sith && sith.master.id !== null) {
+      result = assoc(state, {sithIDs: sithIDs.set(i - 1, sith.master.id)});
     }
   }
   return result;

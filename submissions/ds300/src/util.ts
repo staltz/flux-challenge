@@ -4,3 +4,4 @@ export function assoc<T>(obj: T, other: any): T {
 
 export const first = x => x.first();
 export const last = x => x.last();
+export const identity = x => x

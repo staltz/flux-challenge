@@ -6656,13 +6656,8 @@ function discoverApprentice(state, i) {
     var result = state;
     if (i < sithIDs.size - 1) {
         var sith = sithCache.get(sithIDs.get(i));
-        if (sith) {
-            if (sith.apprentice.id === null) {
-                result = up(state, (sithIDs.size - 1) - i);
-            }
-            else {
-                result = util_1.assoc(state, { sithIDs: sithIDs.set(i + 1, sith.apprentice.id) });
-            }
+        if (sith && sith.apprentice.id !== null) {
+            result = util_1.assoc(state, { sithIDs: sithIDs.set(i + 1, sith.apprentice.id) });
         }
     }
     return result;
@@ -6672,13 +6667,8 @@ function discoverMaster(state, i) {
     if (i > 0) {
         var sithCache = state.sithCache, sithIDs = state.sithIDs;
         var sith = sithCache.get(sithIDs.get(i));
-        if (sith) {
-            if (sith.master.id === null) {
-                result = down(state, i);
-            }
-            else {
-                result = util_1.assoc(state, { sithIDs: sithIDs.set(i - 1, sith.master.id) });
-            }
+        if (sith && sith.master.id !== null) {
+            result = util_1.assoc(state, { sithIDs: sithIDs.set(i - 1, sith.master.id) });
         }
     }
     return result;
@@ -6831,24 +6821,26 @@ function assoc(obj, other) {
 exports.assoc = assoc;
 exports.first = function (x) { return x.first(); };
 exports.last = function (x) { return x.last(); };
+exports.identity = function (x) { return x; };
 
 },{}],11:[function(require,module,exports){
 var ddom_1 = require('ddom');
 var state_1 = require('./state');
 var util_1 = require('./util');
 var mutations_1 = require('./mutations');
-var $numSiths = state_1.$sithIDs.derive(function (ss) { return ss.filter(function (s) { return s !== null; }).count(); });
+var $numSiths = state_1.$sithIDs.derive(function (ss) { return ss.filter(util_1.identity).count(); });
 var $oneSith = $numSiths.is(1);
-var $firstSithID = state_1.$sithIDs.derive(util_1.first);
-var $firstSith = state_1.$localSiths.derive(util_1.first);
-var $lastSithID = state_1.$sithIDs.derive(util_1.last);
-var $lastSith = state_1.$localSiths.derive(util_1.last);
-var $oneSithAtBottom = $lastSithID.mAnd($oneSith);
+var $onlyLocalSiths = state_1.$localSiths.derive(function (ss) { return ss.filter(util_1.identity); });
+var $topSithID = state_1.$sithIDs.derive(util_1.first);
+var $firstSith = $onlyLocalSiths.derive(util_1.first);
+var $bottomSithID = state_1.$sithIDs.derive(function (ids) { return ids.last(); });
+var $lastSith = state_1.$localSiths.derive(function (ss) { return ss.filter(util_1.identity).last(); });
+var $oneSithAtBottom = $bottomSithID.mAnd($oneSith);
 var $firstSithHasNoMaster = $firstSith.mDerive(function (s) { return !s.master.url; });
 var $upDisabled = state_1.$redAlert
     .or($oneSithAtBottom)
     .or($firstSithHasNoMaster);
-var $oneSithAtTop = $firstSithID.mAnd($oneSith);
+var $oneSithAtTop = $topSithID.mAnd($oneSith);
 var $lastSithHasNoApprentice = $lastSith.mDerive(function (s) { return !s.apprentice.url; });
 var $downDisabled = state_1.$redAlert
     .or($oneSithAtTop)
@@ -6860,7 +6852,7 @@ var upButton = scrollButton('up', $upDisabled, mutations_1.up);
 var downButton = scrollButton('down', $downDisabled, mutations_1.down);
 function sithListItem(name, homeworld) {
     var $atHomeworld = state_1.$worldName.is(homeworld);
-    var $textColor = $atHomeworld.then("red", "white");
+    var $textColor = $atHomeworld.then("red", null);
     return (ddom_1.React.createElement("li", {"class": "css-slot", "style": { color: $textColor }}, ddom_1.React.createElement("h3", null, name), ddom_1.React.createElement("h6", null, homeworld && "Homeworld: " + homeworld)));
 }
 function renderSith(sith) {

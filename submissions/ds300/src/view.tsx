@@ -7,20 +7,21 @@ import {
   $redAlert,
   $worldName
 } from './state'
-import { first, last } from './util'
+import { first, last, identity } from './util'
 import { up, down } from './mutations'
 
 // ok so we disable up arrow when either one sith unloaded at the bottom or
 // sith at top has no master
-const $numSiths = $sithIDs.derive(ss => ss.filter(s => s !== null).count());
+const $numSiths = $sithIDs.derive(ss => ss.filter(identity).count());
 const $oneSith = $numSiths.is(1);
 
-const $firstSithID = $sithIDs.derive(first);
-const $firstSith = $localSiths.derive(first);
+const $onlyLocalSiths = $localSiths.derive(ss => ss.filter(identity));
+const $topSithID = $sithIDs.derive(first);
+const $firstSith = $onlyLocalSiths.derive(first);
 
-const $lastSithID = $sithIDs.derive(last);
-const $lastSith = $localSiths.derive(last);
-const $oneSithAtBottom = $lastSithID.mAnd($oneSith);
+const $bottomSithID = $sithIDs.derive(ids => ids.last());
+const $lastSith = $localSiths.derive(ss => ss.filter(identity).last());
+const $oneSithAtBottom = $bottomSithID.mAnd($oneSith);
 const $firstSithHasNoMaster = $firstSith.mDerive(s => !s.master.url);
 
 const $upDisabled =
@@ -29,7 +30,7 @@ const $upDisabled =
     .or($firstSithHasNoMaster);
 
 // similarly for down arrow
-const $oneSithAtTop = $firstSithID.mAnd($oneSith);
+const $oneSithAtTop = $topSithID.mAnd($oneSith);
 const $lastSithHasNoApprentice = $lastSith.mDerive(s => !s.apprentice.url);
 
 const $downDisabled =
@@ -55,7 +56,7 @@ const downButton = scrollButton('down', $downDisabled, down);
 function sithListItem(name, homeworld) {
   // display red text when at this sith's homeworld
   const $atHomeworld = $worldName.is(homeworld);
-  const $textColor = $atHomeworld.then("red", "white");
+  const $textColor = $atHomeworld.then("red", null);
   return (
     <li class="css-slot" style={{color: $textColor}}>
       <h3>{name}</h3>
