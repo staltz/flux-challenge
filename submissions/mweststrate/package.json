@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "mobservable": "^1.1.2",
+    "mobservable": "^1.1.3",
     "mobservable-react": "^2.1.0",
     "react": "^0.14",
     "react-dom": "^0.14",

@@ -61,15 +61,12 @@ var SithDatabase = (function () {
         };
         new WebSocket('ws://localhost:4000').onmessage = function (msg) {
             _this.currentWorld = JSON.parse(msg.data);
-            // continue any aborted requests
-            _this.siths.forEach(function (sith) { return sith && sith.load(); });
         };
-        var sith = this.siths[2] = new Sith(this, 3616);
-        sith.load();
+        this.loadSith(3616, 2);
     }
     Object.defineProperty(SithDatabase.prototype, "hasSithOnCurrentPlanet", {
         get: function () {
-            return this.siths.some(function (sith) { return sith && sith.livesOnCurrentWorld; });
+            return this.siths.filter(function (sith) { return sith && sith.livesOnCurrentWorld; }).length > 0;
         },
         enumerable: true,
         configurable: true
@@ -109,9 +106,11 @@ var SithDatabase = (function () {
         configurable: true
     });
     SithDatabase.prototype.loadSith = function (id, position) {
-        var sith = new Sith(this, id);
-        this.siths[position] = sith;
-        sith.load();
+        var _this = this;
+        mobservable_1.transaction(function () {
+            var sith = new Sith(_this, id);
+            _this.siths[position] = sith;
+        });
     };
     __decorate([
         mobservable_1.observable
@@ -147,6 +146,7 @@ var Sith = (function () {
         this.store = store;
         this.id = id;
         this.isLoaded = false;
+        this.load();
     }
     Object.defineProperty(Sith.prototype, "displayPosition", {
         get: function () {
@@ -190,6 +190,11 @@ var Sith = (function () {
         });
         mobservable_1.autorunUntil(function () { return !_this.isVisible || _this.store.hasSithOnCurrentPlanet; }, function () {
             _this.fetcher.abort();
+            if (_this.isVisible) {
+                mobservable_1.autorunUntil(function () { return !_this.store.hasSithOnCurrentPlanet; }, function () {
+                    _this.load();
+                });
+            }
         });
     };
     Sith.prototype.loadSiblings = function () {
@@ -633,9 +638,19 @@ function autorun(view, scope) {
         object: scope || view,
         name: view.name
     }, mode === ValueMode.Structure);
-    observable.setRefCount(+1);
+    var disposedPrematurely = false;
+    var started = false;
+    dnode_2.runAfterTransaction(function () {
+        if (!disposedPrematurely) {
+            observable.setRefCount(+1);
+            started = true;
+        }
+    });
     var disposer = utils_1.once(function () {
-        observable.setRefCount(-1);
+        if (started)
+            observable.setRefCount(-1);
+        else
+            disposedPrematurely = true;
     });
     disposer.$mobservable = observable;
     return disposer;
@@ -1026,6 +1041,7 @@ if (global.__mobservableTrackingStack)
 global.__mobservableViewStack = [];
 var inTransaction = 0;
 var changedValues = [];
+var afterTransactionItems = [];
 var mobservableId = 0;
 function checkIfStateIsBeingModifiedDuringView(context) {
     if (core_1.getStrict() === true && isComputingView()) {
@@ -1047,10 +1063,20 @@ function transaction(action) {
             changedValues.splice(0, length_1);
             if (changedValues.length)
                 throw new Error("[mobservable] Illegal State, please file a bug report");
+            var actions = afterTransactionItems.splice(0, afterTransactionItems.length);
+            for (var i = 0, l = actions.length; i < l; i++)
+                actions[i]();
         }
     }
 }
 exports.transaction = transaction;
+function runAfterTransaction(action) {
+    if (inTransaction === 0)
+        action();
+    else
+        afterTransactionItems.push(action);
+}
+exports.runAfterTransaction = runAfterTransaction;
 function untracked(action) {
     try {
         var dnode = new ViewNode({ object: null, name: "untracked" });

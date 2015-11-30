@@ -60,15 +60,12 @@ export class SithDatabase {
 	constructor() {
 		new WebSocket('ws://localhost:4000').onmessage = (msg) => {
 			this.currentWorld = JSON.parse(msg.data);
-			// continue any aborted requests
-			this.siths.forEach(sith => sith && sith.load());
 		};
-		const sith = this.siths[2] = new Sith(this, 3616);
-		sith.load();
+		this.loadSith(3616, 2);
 	}
 
 	@observable get hasSithOnCurrentPlanet(): boolean {
-		return this.siths.some(sith => sith && sith.livesOnCurrentWorld);
+		return this.siths.filter(sith => sith && sith.livesOnCurrentWorld).length > 0;
 	}
 
 	@observable get firstSith(): Sith {
@@ -114,9 +111,10 @@ export class SithDatabase {
 	}
 
 	loadSith(id, position) {
-		const sith = new Sith(this, id);
-		this.siths[position] = sith;
-		sith.load();
+		transaction(() => {
+			const sith = new Sith(this, id);
+			this.siths[position] = sith;
+		});
 	}
 }
 
@@ -128,7 +126,9 @@ export class Sith {
 	@observable isLoaded = false;
 	fetcher;
 
-	constructor(public store: SithDatabase, public id: number) {	}
+	constructor(public store: SithDatabase, public id: number) {
+		this.load();
+	}
 
 	@observable get displayPosition(): number {
 		return this.store.siths.indexOf(this);
@@ -165,6 +165,11 @@ export class Sith {
 			() => !this.isVisible || this.store.hasSithOnCurrentPlanet,
 			() => {
 				this.fetcher.abort();
+				if (this.isVisible) {
+					autorunUntil(() => !this.store.hasSithOnCurrentPlanet, () => {
+						this.load();
+					});
+				}
 			}
 		);
 	}
