@@ -34,8 +34,14 @@ class Store {
       duration: true,
       actionTransformer: (action) => _.assign({}, action, {type: action.type.toString()})
     });
-    // let createStoreWithMiddleware = applyMiddleware(thunk)(createStore); // Uncomment to disable logging
-    let createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore); // Comment to disable logging
+
+    let middleware = [thunk];
+    if (true) {// dev
+      middleware.push(logger);
+      middleware.push(require('redux-immutable-state-invariant')());
+    }
+
+    let createStoreWithMiddleware = applyMiddleware(...middleware)(createStore); // Comment to disable logging
     this.store = createStoreWithMiddleware(this.reducer.bind(this));
   }
 

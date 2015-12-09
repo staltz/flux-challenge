@@ -47,8 +47,8 @@ class AppStore {
   // state:     Object
   // isMaster:  Boolean  - assumed apprentice if false
   _requestSith(state, isMaster) {
-    let sithRequests = isMaster ? state.masterRequests : state.apprenticeRequests;
-    let otherRequests = isMaster ? state.apprenticeRequests : state.masterRequests;
+    let sithRequests = _.assign({}, isMaster ? state.masterRequests : state.apprenticeRequests);
+    let otherRequests = _.assign({}, isMaster ? state.apprenticeRequests : state.masterRequests);
 
     if (sithRequests.requestCount === 0) {
       let nextSith = isMaster ?
