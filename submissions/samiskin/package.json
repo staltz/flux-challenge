@@ -1,5 +1,5 @@
 {
-  "name": "ReactBase",
+  "name": "Flux Challenge - samiskin",
   "version": "0.0.1",
   "description": "www",
   "scripts": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/samiskin/ReactBase.git"
+    "url": "https://github.com/samiskin/flux-challenge.git"
   },
   "author": "Shiranka Miskin",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/samiskin/ReactBase/issues"
+    "url": "https://github.com/samiskin/flux-challenge/issues"
   },
-  "homepage": "https://github.com/samiskin/ReactBase",
+  "homepage": "https://github.com/samiskin/flux-challenge",
   "dependencies": {
     "babel-polyfill": "^6.2.0",
     "lodash": "^3.10.1",
