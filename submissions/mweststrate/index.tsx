@@ -65,7 +65,7 @@ export class SithDatabase {
 	}
 
 	@observable get hasSithOnCurrentPlanet(): boolean {
-		return this.siths.filter(sith => sith && sith.livesOnCurrentWorld).length > 0;
+		return this.siths.some(sith => sith && sith.livesOnCurrentWorld);
 	}
 
 	@observable get firstSith(): Sith {
@@ -79,14 +79,14 @@ export class SithDatabase {
 	@observable get canScrollUp(): boolean {
 		return !this.hasSithOnCurrentPlanet &&
 		       this.firstSith &&
-		       this.firstSith.displayPosition < 3 && // don't scroll beyond screen
+		       this.firstSith.displayPosition <= 2 && // don't scroll beyond screen
 		       this.firstSith.master != null;
 	}
 
 	@observable get canScrollDown(): boolean {
 		return !this.hasSithOnCurrentPlanet &&
 		       this.lastSith &&
-		       this.lastSith.displayPosition > 2 && // don't scroll beyond screen
+		       this.lastSith.displayPosition >= 2 && // don't scroll beyond screen
 		       this.lastSith.apprentice != null;
 	}
 
@@ -94,7 +94,7 @@ export class SithDatabase {
 		if (this.canScrollUp) {
 			transaction(() => {
 				this.siths.unshift(null, null);
-				this.siths.splice(5, 2);
+				this.siths.splice(5);
 			});
 			this.firstSith.loadSiblings();
 		}
@@ -112,8 +112,10 @@ export class SithDatabase {
 
 	loadSith(id, position) {
 		transaction(() => {
-			const sith = new Sith(this, id);
-			this.siths[position] = sith;
+			if (!this.siths[position]) {
+				const sith = new Sith(this, id);
+				this.siths[position] = sith;
+			}
 		});
 	}
 }
@@ -143,8 +145,6 @@ export class Sith {
 	}
 
 	load() {
-		if (this.isLoaded)
-			return;
 		this.fetcher = request
 			.get(`http://localhost:3000/dark-jedis/${this.id}`)
 			.end((err, res) => {

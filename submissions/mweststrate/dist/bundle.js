@@ -45,7 +45,7 @@ var SithDatabase = (function () {
             if (_this.canScrollUp) {
                 mobservable_1.transaction(function () {
                     _this.siths.unshift(null, null);
-                    _this.siths.splice(5, 2);
+                    _this.siths.splice(5);
                 });
                 _this.firstSith.loadSiblings();
             }
@@ -66,7 +66,7 @@ var SithDatabase = (function () {
     }
     Object.defineProperty(SithDatabase.prototype, "hasSithOnCurrentPlanet", {
         get: function () {
-            return this.siths.filter(function (sith) { return sith && sith.livesOnCurrentWorld; }).length > 0;
+            return this.siths.some(function (sith) { return sith && sith.livesOnCurrentWorld; });
         },
         enumerable: true,
         configurable: true
@@ -89,7 +89,7 @@ var SithDatabase = (function () {
         get: function () {
             return !this.hasSithOnCurrentPlanet &&
                 this.firstSith &&
-                this.firstSith.displayPosition < 3 &&
+                this.firstSith.displayPosition <= 2 &&
                 this.firstSith.master != null;
         },
         enumerable: true,
@@ -99,7 +99,7 @@ var SithDatabase = (function () {
         get: function () {
             return !this.hasSithOnCurrentPlanet &&
                 this.lastSith &&
-                this.lastSith.displayPosition > 2 &&
+                this.lastSith.displayPosition >= 2 &&
                 this.lastSith.apprentice != null;
         },
         enumerable: true,
@@ -108,8 +108,10 @@ var SithDatabase = (function () {
     SithDatabase.prototype.loadSith = function (id, position) {
         var _this = this;
         mobservable_1.transaction(function () {
-            var sith = new Sith(_this, id);
-            _this.siths[position] = sith;
+            if (!_this.siths[position]) {
+                var sith = new Sith(_this, id);
+                _this.siths[position] = sith;
+            }
         });
     };
     __decorate([
@@ -171,8 +173,6 @@ var Sith = (function () {
     });
     Sith.prototype.load = function () {
         var _this = this;
-        if (this.isLoaded)
-            return;
         this.fetcher = request
             .get("http://localhost:3000/dark-jedis/" + this.id)
             .end(function (err, res) {
@@ -664,7 +664,7 @@ function autorunUntil(predicate, effect, scope) {
                 disposer();
             else
                 disposeImmediately = true;
-            effect.call(scope);
+            dnode_1.untracked(function () { return effect.call(scope); });
         }
     });
     if (disposeImmediately)
@@ -1050,20 +1050,17 @@ function checkIfStateIsBeingModifiedDuringView(context) {
     }
 }
 exports.checkIfStateIsBeingModifiedDuringView = checkIfStateIsBeingModifiedDuringView;
-function transaction(action) {
+function transaction(action, thisArg) {
     inTransaction += 1;
     try {
-        return action();
+        return action.call(thisArg);
     }
     finally {
         if (--inTransaction === 0) {
-            var length_1 = changedValues.length;
-            for (var i = 0; i < length_1; i++)
-                changedValues[i].markReady(true);
-            changedValues.splice(0, length_1);
-            if (changedValues.length)
-                throw new Error("[mobservable] Illegal State, please file a bug report");
-            var actions = afterTransactionItems.splice(0, afterTransactionItems.length);
+            var values = changedValues.splice(0);
+            for (var i = 0, l = values.length; i < l; i++)
+                values[i].markReady(true);
+            var actions = afterTransactionItems.splice(0);
             for (var i = 0, l = actions.length; i < l; i++)
                 actions[i]();
         }
@@ -1207,7 +1204,7 @@ var ViewNode = (function (_super) {
         else {
             if (stateDidActuallyChange)
                 this.dependencyChangeCount += 1;
-            if (--this.dependencyStaleCount === 0) {
+            if (this.dependencyStaleCount > 0 && --this.dependencyStaleCount === 0) {
                 this.state = NodeState.PENDING;
                 if (this.dependencyChangeCount > 0)
                     this.computeNextState();
