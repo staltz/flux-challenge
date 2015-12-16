@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "es5",
+    "module": "commonjs",
+    "jsx": "react"
+  },
+  "files": [
+      "./index.tsx"
+  ]
+}

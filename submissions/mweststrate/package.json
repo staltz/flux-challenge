@@ -1,0 +1,21 @@
+{
+  "name": "mobservable-flux-challenge",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "mobservable": "^1.1.5",
+    "mobservable-react": "^2.1.0",
+    "react": "^0.14",
+    "react-dom": "^0.14",
+    "superagent": "^1.4.0"
+  },
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "tsify": "^0.12.2"
+  },
+  "scripts": {
+    "build": "browserify index.tsx -p tsify > dist/bundle.js"
+  },
+  "author": "Michel Weststrate",
+  "license": "MIT"
+}
