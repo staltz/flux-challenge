@@ -165,7 +165,7 @@ export class Sith {
 			() => !this.isVisible || this.store.hasSithOnCurrentPlanet,
 			() => {
 				this.fetcher.abort();
-				if (this.isVisible) {
+				if (this.isVisible && !this.isLoaded) {
 					autorunUntil(() => !this.store.hasSithOnCurrentPlanet, () => {
 						this.load();
 					});

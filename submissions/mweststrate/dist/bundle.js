@@ -190,7 +190,7 @@ var Sith = (function () {
         });
         mobservable_1.autorunUntil(function () { return !_this.isVisible || _this.store.hasSithOnCurrentPlanet; }, function () {
             _this.fetcher.abort();
-            if (_this.isVisible) {
+            if (_this.isVisible && !_this.isLoaded) {
                 mobservable_1.autorunUntil(function () { return !_this.store.hasSithOnCurrentPlanet; }, function () {
                     _this.load();
                 });
