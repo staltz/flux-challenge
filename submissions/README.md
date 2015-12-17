@@ -17,6 +17,7 @@ Submitter | Libraries
 [masiulis](masiulis)         | [React], no Flux
 [mattjbray](mattjbray)       | [Elm]
 [milankinen](milankinen)     | [React], [Baconjs]
+[mweststrate](mweststrate/index.tsx) | [React], [Mobservable], [TypeScript]
 [mynomoto](mynomoto)         | [ClojureScript], [Hoplon]
 [pasieronen](pasieronen)     | [React], [Baconjs]
 [pindia](pindia)             | [React], [Reflux]
@@ -38,6 +39,7 @@ Submitter | Libraries
 [Freezer]: https://github.com/arqex/freezer
 [Hoplon]: http://hoplon.io/
 [Immutable]: https://facebook.github.io/immutable-js/
+[Mobservable]: https://mweststrate.github.io/mobservable/
 [React]: https://facebook.github.io/react/
 [Redux]: http://redux.js.org/
 [Reflux]: https://github.com/reflux/refluxjs
