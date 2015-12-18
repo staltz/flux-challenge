@@ -1,7 +1,7 @@
 FROM node:4.1
 
 # Install Elm
-RUN npm install --global elm
+RUN npm install --global elm@0.15.1
 ENV ELM_HOME /usr/local/lib/node_modules/elm/share
 
 # Fix locales
