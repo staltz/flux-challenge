@@ -381,7 +381,7 @@ adjustPos pos oldScrollPos newScrollPos =
 
 removeRequest : JediRequest -> List JediRequest -> List JediRequest
 removeRequest request requests =
-  List.filter (\ r -> r /= request) requests
+  List.filter (\ r -> r.id /= request.id) requests
 
 
 haveJediAt : Int -> Model -> Bool
