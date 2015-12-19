@@ -98,3 +98,8 @@ There is no "winner", the objective is just to **solve the problem by building t
 ### Purpose
 
 This challenge is meant to be solved with Flux or some variation of this architecture, such as architectures with the single state tree and "actions" (Om, Redux, etc). It's my personal belief that *Flux does not provide an elegant way of coordinating multiple async data sources*, but more experienced Flux users might disagree. This challenge's requirements were tailored to touch Flux's weakest spots, these are not typical web app requirements. On the other hand, analytics and sensors dashboard UIs resemble this challenge a lot. That said, I am open and curious to be proven wrong about Flux. I'm curious about every solution's pros and cons, and I would prefer to discuss over evidence/artifacts instead of with platitude arguments.
+
+###How to run your submission's test on Travis
+
+Add your submissions's directory to another `TEST_DIR` entry under `env` in `.travis.yml`, looking like `TEST_DIR=submissions/<your_dir>/`.
+Credits for this go to [Robert Lord](https://lord.io/blog/2014/travis-multiple-subdirs/)
