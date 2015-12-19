@@ -174,7 +174,7 @@ jedi requests.
 -}
 setWorld : Maybe World -> Model -> (Model, Effects Action)
 setWorld mWorld model =
-  let model' = { model | world <- mWorld }
+  let model' = { model | world = mWorld }
   in
       if any (flip onWorld mWorld) model'.jediSlots
         then abortAndSaveAllRequests model'
@@ -201,8 +201,8 @@ setJedi request newJediResult model =
           -- Don't update the model if this jedi has been scrolled off-screen.
           else model.jediSlots
 
-      model' = { model | jediRequests <- removeRequest request model.jediRequests
-                       , jediSlots <- newJediSlots }
+      model' = { model | jediRequests = removeRequest request model.jediRequests
+                       , jediSlots = newJediSlots }
 
       maybeRetry =
         case newJediResult of
@@ -237,7 +237,7 @@ abortRequests model =
           model.jediRequests
       aborts = List.map .abort requestsToAbort
   in
-      ( { model | jediRequests <- newRequests }
+      ( { model | jediRequests = newRequests }
       , Effects.batch aborts )
 
 
@@ -245,8 +245,8 @@ abortRequests model =
 -}
 abortAndSaveAllRequests : Model -> (Model, Effects Action)
 abortAndSaveAllRequests model =
-  ( { model | jediRequests <- []
-            , requestsToResume <- List.append model.requestsToResume model.jediRequests }
+  ( { model | jediRequests = []
+            , requestsToResume = List.append model.requestsToResume model.jediRequests }
   , Effects.batch (List.map .abort model.jediRequests) )
 
 
@@ -255,7 +255,7 @@ abortAndSaveAllRequests model =
 resumeAllRequests : Model -> (Model, Effects Action)
 resumeAllRequests model =
   let model' =
-        { model | requestsToResume <- [] }
+        { model | requestsToResume = [] }
   in
       pure model' `bindAll`
         List.map (retryRequest 0) model.requestsToResume
@@ -293,8 +293,8 @@ doScroll model dir scrollSpeed =
                 )
 
       in
-          pure { model | jediSlots <- newJedis
-                       , scrollPos <- newScrollPos }
+          pure { model | jediSlots = newJedis
+                       , scrollPos = newScrollPos }
             >>= abortRequests
             >>= maybeFetchJedisAround endJediPos
 
@@ -325,8 +325,8 @@ fetchJedi sleepMillis insertPos jediUrl model =
             |> Effects.task
 
   in
-      ( { model | jediRequests <- request :: model.jediRequests
-                , nextRequestId <- model.nextRequestId + 1 }
+      ( { model | jediRequests = request :: model.jediRequests
+                , nextRequestId = model.nextRequestId + 1 }
       , sendEffect )
 
 
@@ -334,7 +334,7 @@ fetchJedi sleepMillis insertPos jediUrl model =
 -}
 retryRequest : Float -> JediRequest -> Model -> (Model, Effects Action)
 retryRequest sleepMillis request model =
-  let model' = { model | jediRequests <- removeRequest request model.jediRequests }
+  let model' = { model | jediRequests = removeRequest request model.jediRequests }
       newInsertPos =
         adjustPos request.insertPos
                   request.scrollPos
@@ -381,7 +381,7 @@ adjustPos pos oldScrollPos newScrollPos =
 
 removeRequest : JediRequest -> List JediRequest -> List JediRequest
 removeRequest request requests =
-  List.filter (\ r -> r /= request) requests
+  List.filter (\ r -> r.id /= request.id) requests
 
 
 haveJediAt : Int -> Model -> Bool
@@ -613,7 +613,7 @@ pure model = (model, Effects.none)
 {-| Monadic bind: compose effectful computations.
 -}
 (>>=) : (a, Effects b) -> (a -> (c, Effects b)) -> (c, Effects b)
-(model, effects) >>= f =
+(>>=) (model, effects) f =
   let (model', effects') = f model
   in
       (model', Effects.batch [effects, effects'])
