@@ -54,7 +54,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "bef20644634343a8e6ea"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "649d1b27ef132b487dbc"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -578,16 +578,6 @@
 	    }
 	    return count < 3;
 	}
-	function obiWanIsOnSamePlanetAsSith(state) {
-	    var obiPlanetId = state.obiWanWorld.v.id;
-	    for (var _i = 0, _a = state.sithLords.v; _i < _a.length; _i++) {
-	        var l = _a[_i];
-	        if (l.homeworldId === obiPlanetId) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
 	function sithProps(state) {
 	    var obiPlanetId = state.obiWanWorld.v.id;
 	    return state.sithLords.v.map(function (l, index) {
@@ -607,9 +597,9 @@
 	        }
 	    }
 	}
-	function scrollUpDisabled(state, obiWanSamePlanet) {
+	function scrollDownDisabled(state) {
 	    var lords = state.sithLords.v;
-	    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || lastLordHasNoApprentice(lords);
+	    return state.obiWanWorld.v.sithPresent || lessThanThreeSithLoaded(lords) || lastLordHasNoApprentice(lords);
 	}
 	function firstLordHasNoMaster(lords) {
 	    for (var _i = 0; _i < lords.length; _i++) {
@@ -619,9 +609,9 @@
 	        }
 	    }
 	}
-	function scrollDownDisabled(state, obiWanSamePlanet) {
+	function scrollUpDisabled(state) {
 	    var lords = state.sithLords.v;
-	    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || firstLordHasNoMaster(lords);
+	    return state.obiWanWorld.v.sithPresent || lessThanThreeSithLoaded(lords) || firstLordHasNoMaster(lords);
 	}
 	var App = (function (_super) {
 	    __extends(App, _super);
@@ -650,11 +640,7 @@
 	        this.socket.close();
 	    };
 	    App.prototype.render = function () {
-	        var obiWanSamePlanet = obiWanIsOnSamePlanetAsSith(this.state);
-	        if (obiWanSamePlanet) {
-	            SithLordsState.cancel.apply(SithLordsState, this.state.sithLords.v);
-	        }
-	        return (React.createElement(AppBlock_1.AppBlock, {"obiWanPlanet": this.state.obiWanWorld.v.name, "scrollUpDisabled": scrollUpDisabled(this.state, obiWanSamePlanet), "scrollDownDisabled": scrollDownDisabled(this.state, obiWanSamePlanet), "sith": sithProps(this.state), "actionCreator": new Flux.ActionCreator(this.props.store)}));
+	        return (React.createElement(AppBlock_1.AppBlock, {"obiWanPlanet": this.state.obiWanWorld.v.name, "scrollUpDisabled": scrollUpDisabled(this.state), "scrollDownDisabled": scrollDownDisabled(this.state), "sith": sithProps(this.state), "actionCreator": new Flux.ActionCreator(this.props.store)}));
 	    };
 	    return App;
 	})(Flux.Container);
@@ -757,24 +743,26 @@
 	    });
 	}
 	exports.writeSidious = writeSidious;
-	function writeScrollUp(state) {
+	function writeScrollDown(state) {
 	    return state.set(function (s) {
 	        s = s.concat(twoAbsentSithLords());
 	        cancel(s[0], s[1]);
 	        return s.slice(2, s.length);
 	    });
 	}
-	exports.writeScrollUp = writeScrollUp;
-	function writeScrollDown(state) {
+	exports.writeScrollDown = writeScrollDown;
+	function writeScrollUp(state) {
 	    return state.set(function (s) {
 	        s = twoAbsentSithLords().concat(s);
 	        cancel(s[5], s[6]);
 	        return s.slice(0, 5);
 	    });
 	}
-	exports.writeScrollDown = writeScrollDown;
-	function fetchApprenticeIfNeeded(lords, actionCreator) {
-	    if (someArePending(lords) || lords[4].status !== SithLordStatus.ABSENT) {
+	exports.writeScrollUp = writeScrollUp;
+	function fetchApprenticeIfNeeded(state, actionCreator) {
+	    var lords = state.sithLords.v;
+	    var obiAndSithOnSamePlanet = state.obiWanWorld.v.sithPresent;
+	    if (someArePending(lords) || lords[4].status !== SithLordStatus.ABSENT || obiAndSithOnSamePlanet) {
 	        return;
 	    }
 	    for (var _i = 0, _a = lords.reverse(); _i < _a.length; _i++) {
@@ -787,8 +775,10 @@
 	        }
 	    }
 	}
-	function fetchMasterIfNeeded(lords, actionCreator) {
-	    if (someArePending(lords) || lords[0].status !== SithLordStatus.ABSENT) {
+	function fetchMasterIfNeeded(state, actionCreator) {
+	    var lords = state.sithLords.v;
+	    var obiAndSithOnSamePlanet = state.obiWanWorld.v.sithPresent;
+	    if (someArePending(lords) || lords[0].status !== SithLordStatus.ABSENT || obiAndSithOnSamePlanet) {
 	        return;
 	    }
 	    for (var _i = 0; _i < lords.length; _i++) {
@@ -807,8 +797,8 @@
 	    }
 	}
 	function selector(state, actionCreator) {
-	    fetchApprenticeIfNeeded(state.sithLords.v, actionCreator);
-	    fetchMasterIfNeeded(state.sithLords.v, actionCreator);
+	    fetchApprenticeIfNeeded(state, actionCreator);
+	    fetchMasterIfNeeded(state, actionCreator);
 	    fetchSidiousIfNeeded(state.sithLords.v, actionCreator);
 	    return state.sithLords;
 	}
@@ -20573,7 +20563,7 @@
 	};
 	var Flux_1 = __webpack_require__(4);
 	var SithLordsState = __webpack_require__(3);
-	var Flux = __webpack_require__(4);
+	var ObiWanWorldState = __webpack_require__(163);
 	function makePendingSithLord(res) {
 	    var template = SithLordsState.emptySithLord();
 	    template.status = SithLordsState.SithLordStatus.PENDING;
@@ -20596,6 +20586,14 @@
 	function parseSithLordFromRequest(res) {
 	    return (res.pending) ? makePendingSithLord(res) : makeSithLord(res);
 	}
+	function onReceiveSithOrReceiveObiWanWorld(state) {
+	    for (var _i = 0, _a = state.sithLords.v; _i < _a.length; _i++) {
+	        var l = _a[_i];
+	        if (l.homeworldId === state.obiWanWorld.v.id) {
+	            ;
+	        }
+	    }
+	}
 	var GET_SIDIOUS = (function (_super) {
 	    __extends(GET_SIDIOUS, _super);
 	    function GET_SIDIOUS() {
@@ -20604,6 +20602,7 @@
 	    GET_SIDIOUS.prototype.write = function (state) {
 	        var sidious = parseSithLordFromRequest(this.req);
 	        state.sithLords = SithLordsState.writeSidious(state.sithLords, sidious);
+	        state.obiWanWorld = ObiWanWorldState.writeSithPresent(state.obiWanWorld, state.sithLords.v);
 	    };
 	    return GET_SIDIOUS;
 	})(Flux_1.RequestAction);
@@ -20617,6 +20616,7 @@
 	    GET_SITH_APPRENTICE.prototype.write = function (state) {
 	        var lord = parseSithLordFromRequest(this.req);
 	        state.sithLords = SithLordsState.writeApprentice(state.sithLords, lord, this.masterId);
+	        state.obiWanWorld = ObiWanWorldState.writeSithPresent(state.obiWanWorld, state.sithLords.v);
 	    };
 	    return GET_SITH_APPRENTICE;
 	})(Flux_1.RequestAction);
@@ -20630,6 +20630,7 @@
 	    GET_SITH_MASTER.prototype.write = function (state) {
 	        var lord = parseSithLordFromRequest(this.req);
 	        state.sithLords = SithLordsState.writeMaster(state.sithLords, lord, this.apprenticeId);
+	        state.obiWanWorld = ObiWanWorldState.writeSithPresent(state.obiWanWorld, state.sithLords.v);
 	    };
 	    return GET_SITH_MASTER;
 	})(Flux_1.RequestAction);
@@ -20642,7 +20643,7 @@
 	        _super.call(this);
 	    }
 	    RECEIVE_OBI_WORLD.prototype.write = function (state) {
-	        state.obiWanWorld = new Flux.Immutable({ id: this.worldId, name: this.worldName });
+	        state.obiWanWorld = ObiWanWorldState.writeWorld(this.worldId, this.worldName, state.sithLords.v);
 	    };
 	    return RECEIVE_OBI_WORLD;
 	})(Flux_1.Action);
@@ -20676,10 +20677,33 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Flux = __webpack_require__(4);
+	var SithLordsState_1 = __webpack_require__(3);
 	function getInitialState() {
-	    return new Flux.Immutable({ id: undefined, name: '' });
+	    return new Flux.Immutable({ id: undefined, name: '', sithPresent: false });
 	}
 	exports.getInitialState = getInitialState;
+	function sithOnSamePlanet(id, lords) {
+	    for (var _i = 0; _i < lords.length; _i++) {
+	        var l = lords[_i];
+	        if (l.homeworldId === id) {
+	            SithLordsState_1.cancel.apply(void 0, lords);
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	exports.sithOnSamePlanet = sithOnSamePlanet;
+	function writeWorld(id, name, currentLords) {
+	    return new Flux.Immutable({ id: id, name: name, sithPresent: sithOnSamePlanet(id, currentLords) });
+	}
+	exports.writeWorld = writeWorld;
+	function writeSithPresent(state, lords) {
+	    return state.set(function (s) {
+	        s.sithPresent = sithOnSamePlanet(s.id, lords);
+	        return s;
+	    });
+	}
+	exports.writeSithPresent = writeSithPresent;
 	function selector(state) {
 	    return state.obiWanWorld;
 	}

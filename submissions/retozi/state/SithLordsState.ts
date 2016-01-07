@@ -104,7 +104,7 @@ export function writeSidious(state: StateSlice, sidious: SithLord): StateSlice {
     });
 }
 
-export function writeScrollUp(state: StateSlice): StateSlice {
+export function writeScrollDown(state: StateSlice): StateSlice {
     return state.set((s: SithLord[]): SithLord[] => {
         s = s.concat(twoAbsentSithLords());
         cancel(s[0], s[1]);
@@ -112,7 +112,7 @@ export function writeScrollUp(state: StateSlice): StateSlice {
     });
 }
 
-export function writeScrollDown(state: StateSlice): StateSlice {
+export function writeScrollUp(state: StateSlice): StateSlice {
     return state.set((s: SithLord[]): SithLord[] => {
         s = twoAbsentSithLords().concat(s);
         cancel(s[5], s[6]);
@@ -120,8 +120,10 @@ export function writeScrollDown(state: StateSlice): StateSlice {
     });
 }
 
-function fetchApprenticeIfNeeded(lords: SithLord[], actionCreator: Flux.ActionCreator): void {
-    if (someArePending(lords) || lords[4].status !== SithLordStatus.ABSENT) {
+function fetchApprenticeIfNeeded(state: AllState, actionCreator: Flux.ActionCreator): void {
+    const lords = state.sithLords.v;
+    const obiAndSithOnSamePlanet = state.obiWanWorld.v.sithPresent;
+    if (someArePending(lords) || lords[4].status !== SithLordStatus.ABSENT || obiAndSithOnSamePlanet) {
         return;
     }
     for (let l of lords.reverse()) {
@@ -134,8 +136,10 @@ function fetchApprenticeIfNeeded(lords: SithLord[], actionCreator: Flux.ActionCr
     }
 }
 
-function fetchMasterIfNeeded(lords: SithLord[], actionCreator: Flux.ActionCreator): void {
-    if (someArePending(lords) || lords[0].status !== SithLordStatus.ABSENT) {
+function fetchMasterIfNeeded(state: AllState, actionCreator: Flux.ActionCreator): void {
+    const lords = state.sithLords.v;
+    const obiAndSithOnSamePlanet = state.obiWanWorld.v.sithPresent;
+    if (someArePending(lords) || lords[0].status !== SithLordStatus.ABSENT || obiAndSithOnSamePlanet) {
         return;
     }
     for (let l of lords) {
@@ -155,8 +159,8 @@ function fetchSidiousIfNeeded(lords: SithLord[], actionCreator: Flux.ActionCreat
 }
 
 export function selector(state: AllState, actionCreator: Flux.ActionCreator): StateSlice {
-    fetchApprenticeIfNeeded(state.sithLords.v, actionCreator);
-    fetchMasterIfNeeded(state.sithLords.v, actionCreator);
+    fetchApprenticeIfNeeded(state, actionCreator);
+    fetchMasterIfNeeded(state, actionCreator);
     fetchSidiousIfNeeded(state.sithLords.v, actionCreator);
     return state.sithLords;
 }

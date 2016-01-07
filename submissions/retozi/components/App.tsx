@@ -23,15 +23,6 @@ function lessThanThreeSithLoaded(lords: SithLordsState.SithLord[]): boolean {
     return count < 3;
 }
 
-function obiWanIsOnSamePlanetAsSith(state: State): boolean {
-    const obiPlanetId = state.obiWanWorld.v.id;
-    for (const l of state.sithLords.v) {
-        if (l.homeworldId === obiPlanetId) {
-            return true;
-        }
-    }
-    return false;
-}
 
 function sithProps(state: State): SithProps[] {
     const obiPlanetId = state.obiWanWorld.v.id;
@@ -53,9 +44,9 @@ function lastLordHasNoApprentice(lords: SithLordsState.SithLord[]): boolean {
     }
 }
 
-function scrollUpDisabled(state: State, obiWanSamePlanet: boolean): boolean {
+function scrollDownDisabled(state: State): boolean {
     const lords = state.sithLords.v;
-    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || lastLordHasNoApprentice(lords);
+    return state.obiWanWorld.v.sithPresent || lessThanThreeSithLoaded(lords) || lastLordHasNoApprentice(lords);
 }
 
 function firstLordHasNoMaster(lords: SithLordsState.SithLord[]): boolean {
@@ -66,9 +57,9 @@ function firstLordHasNoMaster(lords: SithLordsState.SithLord[]): boolean {
     }
 }
 
-function scrollDownDisabled(state: State, obiWanSamePlanet: boolean): boolean {
+function scrollUpDisabled(state: State): boolean {
     const lords = state.sithLords.v;
-    return obiWanSamePlanet || lessThanThreeSithLoaded(lords) || firstLordHasNoMaster(lords);
+    return state.obiWanWorld.v.sithPresent || lessThanThreeSithLoaded(lords) || firstLordHasNoMaster(lords);
 }
 
 export class App extends Flux.Container<State> {
@@ -98,15 +89,11 @@ export class App extends Flux.Container<State> {
     }
 
     render(): JSX.Element {
-        const obiWanSamePlanet = obiWanIsOnSamePlanetAsSith(this.state);
-        if (obiWanSamePlanet) {
-            SithLordsState.cancel(...this.state.sithLords.v);
-        }
         return (
             <AppBlock
                 obiWanPlanet={this.state.obiWanWorld.v.name}
-                scrollUpDisabled={scrollUpDisabled(this.state, obiWanSamePlanet)}
-                scrollDownDisabled={scrollDownDisabled(this.state, obiWanSamePlanet)}
+                scrollUpDisabled={scrollUpDisabled(this.state)}
+                scrollDownDisabled={scrollDownDisabled(this.state)}
                 sith={sithProps(this.state)}
                 actionCreator={new Flux.ActionCreator(this.props.store)}
             />
