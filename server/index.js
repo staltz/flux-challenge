@@ -4,8 +4,11 @@ var worlds = require('./worlds');
 // API backend =======================================================
 var express = require('express');
 var bodyParser = require('body-parser');
+var serveIndex = require('serve-index');
+var path = require('path');
 var app = express();
 var REST_PORT = 3000;
+
 app.use(bodyParser.json());
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -66,6 +69,11 @@ app.get('/dark-jedis/:id', function (req, res) {
     }
   }, delay);
 });
+
+app.use('/s', express.static('../submissions/'));
+app.use('/s', serveIndex('../submissions/', {icons: true}));
+
+app.use(express.static('../'));
 
 var server = app.listen(REST_PORT, function () {
   var host = this.address().address;
