@@ -9,6 +9,7 @@ Submitter | Libraries
 [hyperturtle](hyperturtle)   | [React], [Redux]
 [jas-chen](jas-chen)         | [React], [Redux], [RxJS], [thisless-react]
 [jelz](jelz)                 | [ClojureScript], [re-frame]
+[j1mr10rd4n](j1mr10rd4n)     | [ClojureScript], [Om Next]
 [jollytoad](jollytoad)       | [jQuery], [Fluxlet]
 [josepot](josepot)           | [React], [Redux]
 [garbles](garbles)           | [Yolk]
@@ -40,6 +41,7 @@ Submitter | Libraries
 [Hoplon]: http://hoplon.io/
 [Immutable]: https://facebook.github.io/immutable-js/
 [Mobservable]: https://mweststrate.github.io/mobservable/
+[Om Next]: https://github.com/omcljs/om/wiki#om-next
 [React]: https://facebook.github.io/react/
 [Redux]: http://redux.js.org/
 [Reflux]: https://github.com/reflux/refluxjs
