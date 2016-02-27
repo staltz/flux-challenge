@@ -1,0 +1,66 @@
+.base {
+  display: flex;
+}
+
+.sithSlots {
+  flex: 1 80%;
+  padding: 0;
+  list-style-type: none;
+  margin: 0 7px 0 0;
+}
+
+.sithSlot {
+  padding: 16px;
+  border: 5px solid hsla(167, 82%, 68%, 1);
+  border-radius: 2px;
+  box-shadow: 0px 0px 10px 1px rgba(105, 240, 210, 0.45), inset 0px 0px 10px 1px rgba(105, 240, 210, 0.45);
+  color: #69F0D2;
+  font-size: 18px;
+  height: 1.7em;
+
+  & h3, & h4, & h5, & h6 {
+    margin: 0;
+  }
+
+  & + & {
+    margin-top: 7px;
+  }
+}
+
+.buttons {
+  flex: 1 20%;
+  display: flex;
+  flex-direction: column;
+
+  & button {
+    flex: 1;
+    border: 5px solid #69F0D2;
+    border-radius: 2px;
+    box-shadow: 0px 0px 10px 1px #69F0D2, inset 0px 0px 10px 1px #69F0D2;
+    background: #39697A;
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}
+
+.buttonDown {
+  margin-top: 7px;
+
+  &::after {
+    content: '\21D3';
+    display: block;
+    color: #69F0D2;
+    font-size: 30px;
+    text-shadow: 0px 0px 10px #69F0D2;
+  }
+}
+
+.buttonUp::after {
+  content: '\21D1';
+  display: block;
+  color: #69F0D2;
+  font-size: 30px;
+  text-shadow: 0px 0px 10px #69F0D2;
+}

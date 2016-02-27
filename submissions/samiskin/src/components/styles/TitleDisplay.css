@@ -1,0 +1,10 @@
+.base {
+  margin-top: 0;
+  border: 5px solid #87AFE7;
+  border-radius: 2px;
+  box-shadow: 0px 0px 10px 1px rgba(135,175,231,0.5), inset 0px 0px 10px 1px rgba(135,175,231,0.5);
+  padding: 16px;
+  background-color: #2F5093;
+  color: #EDE66A;
+  text-shadow: 0px 0px 10px rgba(237, 230, 106, 0.6);
+}
