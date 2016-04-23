@@ -90,11 +90,7 @@
       (if (and (not (nil? master-remote-id)) (not (nil? master-id)))
         (om/transact! component 
                       `[(sith/set-remote-id ~{:id master-id :remote-id master-remote-id})
-                      [~[:siths/by-id id]]]))
-      (if (and (nil? apprentice-remote-id) (not= i cfg/list-size))  
-        (om/transact! component
-                      `[(siths/scroll ~{:index i :move-to :end})
-                      [:siths/list]])))))
+                      [~[:siths/by-id id]]])))))
 
 (defn scroll-callback
   [component]
