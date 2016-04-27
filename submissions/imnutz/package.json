@@ -1,0 +1,13 @@
+{
+  "name": "sam-flux-challenge",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "browserify app.js -o bundle.js"
+  },
+  "author": "sonngoc",
+  "license": "MIT",
+  "dependencies": {
+    "reqwest": "^2.0.5",
+    "snabbdom": "^0.4.2"
+  }
+}
