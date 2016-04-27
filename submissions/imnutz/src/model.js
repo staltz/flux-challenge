@@ -99,7 +99,7 @@ model.present = function present(data) {
         model.moveListUp();
 
         lastSith = model.siths[model.siths.length - 1];
-        if(lastSith.apprentice.id) {
+        if(lastSith.id && lastSith.apprentice.id) {
             model.disabledDown = false;
         }
 
@@ -119,7 +119,7 @@ model.present = function present(data) {
         model.moveListDown();
 
         firstSith = model.siths[0];
-        if(firstSith.master.id) {
+        if(firstSith.id && firstSith.master.id) {
             model.disabledUp = false;
         }
 
