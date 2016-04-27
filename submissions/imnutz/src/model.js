@@ -4,6 +4,7 @@ var model = {
     initialize: true,
 
     sithsOnPage: 5,
+    positionsToMove: 2,
     planet: "",
     siths: [],
 
@@ -59,7 +60,7 @@ model.present = function present(data) {
         if (!data.sith.apprentice.id) {
             model.disabledDown = true;
             model.shouldFetchApprentice = false;
-        } else if(!model.hasRoom()) {
+        } else if(!model.hasSlot()) {
             model.shouldFetchApprentice = false;
         } else {
             model.sithId = data.sith.apprentice.id;
@@ -75,7 +76,7 @@ model.present = function present(data) {
         if (!data.sith.master.id) {
             model.disabledUp = true;
             model.shouldFetchMaster = false;
-        } else if(!model.hasRoom()) {
+        } else if(!model.hasSlot()) {
             model.shouldFetchMaster = false;
         } else {
             model.disabledUp = false;
@@ -152,13 +153,13 @@ model.toggleHighlight = function checkSithForCurrentPlanet(planet) {
 };
 
 model.moveListUp = function moveListUp() {
-    model.siths.splice(-2);
+    model.siths.splice(-model.positionsToMove);
     model.siths.unshift({});
     model.siths.unshift({});
 };
 
 model.moveListDown = function moveListUp() {
-    model.siths.splice(0, 2);
+    model.siths.splice(0, model.positionsToMove);
     model.siths.push({});
     model.siths.push({});
 };
@@ -203,7 +204,7 @@ model.toggleUpDown = function toggleUpDown(siths) {
     }   
 };
 
-model.hasRoom = function isListFull() {
+model.hasSlot = function hasSlot() {
     return model.siths.filter(function(sith) {
         return !sith.id;
     }).length;
