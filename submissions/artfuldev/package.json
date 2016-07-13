@@ -1,31 +1,16 @@
 {
-  "name": "typescript-starter-cycle",
+  "name": "flux-challenge-artfuldev",
   "version": "1.0.0",
-  "description": "A simple project for getting started with TypeScript in cycle.js, using Webpack",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"webpack --watch\" \"lite-server\"",
     "start": "npm run dev"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cyclejs-community/typescript-starter-cycle.git"
-  },
-  "keywords": [
-    "typescript",
-    "cyclejs",
-    "cycle",
-    "starter",
-    "webpack"
-  ],
   "author": "Sudarsan Balaji",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/cyclejs-community/typescript-starter-cycle/issues"
-  },
-  "homepage": "https://github.com/cyclejs-community/typescript-starter-cycle",
   "dependencies": {
     "@cycle/dom": "^10.0.6",
+    "@cycle/http": "^9.0.2",
     "@cycle/xstream-run": "^3.0.3",
     "immutable": "^3.8.1",
     "xstream": "^5.2.0"
