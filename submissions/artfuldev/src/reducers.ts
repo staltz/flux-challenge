@@ -3,7 +3,11 @@ import { IIntent } from './intent';
 import { IState } from './definitions';
 
 export const InitialState: IState = {
-  message: ''
+  planet: 'some planet',
+  jedis: [{
+    name: 'some name',
+    home: 'some home'
+  }]
 };
 
 function reducers(actions: IIntent): Stream<(state: IState) => IState> {

@@ -11,5 +11,11 @@ export interface ISinks {
 }
 
 export interface IState {
-  message: string
+  planet: string,
+  jedis: Array<IJedi>
+}
+
+export interface IJedi {
+  name: string,
+  home: string
 }
