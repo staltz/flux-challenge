@@ -67,7 +67,8 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
     jedi$
       .map(jedi =>
         (state: IApplicationState) => {
-          const jedis = state.jedis;
+          const jedis = state.jedis || new Array<IJedi>(5);
+          const jediRequests = state.jediRequests || [];
           const masterIndex =
             jedis
               .map(j => (j && j.master) ? j.master.id : -1)
@@ -90,7 +91,10 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
                 i === index
                   ? new Jedi(jedi)
                   : (j ? new Jedi(j) : null));
-          return appState.set('jedis', newJedis) as ApplicationState;
+          const newJediRequests = jediRequests.filter(id => id !== jedi.id);
+          return appState
+            .set('jedis', newJedis)
+            .set('jediRequests', newJediRequests) as ApplicationState;
         });
   return xs.merge(
     planetReducer$,

@@ -26,14 +26,7 @@ export function jediRequests(http: HTTPSource, state$: Stream<IApplicationState>
   const xs = Stream;
   const jediRequest$ =
     state$
-      .map(state =>
-        xs.fromArray(
-          state.jediRequests
-            .filter(r =>
-              state.jedis
-                .filter(j => !!j)
-                .map(j => j.id)
-                .indexOf(r) === -1)))
+      .map(state => xs.fromArray(state.jediRequests))
       .flatten()
       .map(id => {
         const requestOptions = {
