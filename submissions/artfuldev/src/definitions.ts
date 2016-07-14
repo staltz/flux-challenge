@@ -12,7 +12,7 @@ export interface ISinks {
   dom: Stream<VNode>;
 }
 
-export interface IState {
+export interface IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
 }

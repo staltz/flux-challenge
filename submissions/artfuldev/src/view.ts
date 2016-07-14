@@ -1,14 +1,17 @@
 import { Stream } from 'xstream';
 import { ISinks } from './definitions';
 import { div, h1, section, ul, li, h3, h6, button } from '@cycle/dom';
-import { IState } from './definitions';
+import { IApplicationState } from './definitions';
 
-function view(state$: Stream<IState>): ISinks {
+function view(state$: Stream<IApplicationState>): ISinks {
   const vTree$ =
     state$
-      .map(state =>
-        div('.css-root', [
-          h1('.css-planet-monitor', 'Obi-Wan currently on ' + state.planet.name),
+      .map(state => {
+        var planetName = '';
+        if (state.planet)
+          planetName = state.planet.name || '';
+        return div('.css-root', [
+          h1('.css-planet-monitor', 'Obi-Wan currently on ' + planetName),
           section('.css-scrollable-list', [
             ul('.css-slots', state.jedis.map(jedi =>
               li('.css-slot', [
@@ -20,8 +23,8 @@ function view(state$: Stream<IState>): ISinks {
               button('.css-button-down')
             ])
           ])
-        ])
-      );
+        ]);
+      });
   const sinks = {
     dom: vTree$
   };

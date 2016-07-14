@@ -1,6 +1,6 @@
 import { Stream } from 'xstream';
 import { IIntent } from './intent';
-import { ISources, IState, IJedi } from './definitions';
+import { ISources, IApplicationState, IJedi } from './definitions';
 import { Record } from 'immutable';
 import { IPlanet } from './drivers/planets';
 
@@ -17,7 +17,7 @@ class Jedi extends JediRecord implements IJedi {
   }
 }
 
-const StateRecord = Record({
+const ApplicationStateRecord = Record({
   planet: {
     name: 'some planet',
     id: 0
@@ -30,33 +30,25 @@ const StateRecord = Record({
   ]
 });
 
-class State extends StateRecord implements IState {
+class ApplicationState extends ApplicationStateRecord implements IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
-  constructor(props: IState) {
+  constructor(props: IApplicationState) {
     super(props);
   }
 }
 
-export const InitialState: IState = new State({
-  planet: {
-    name: 'some planet',
-    id: 0
-  },
-  jedis: [
-    new Jedi({
-      name: 'some name',
-      home: 'some home'
-    })
-  ]
+export const InitialState: IApplicationState = new ApplicationState({
+  planet: null,
+  jedis: []
 });
 
-function reducers(planet$: Stream<IPlanet>, intent: IIntent): Stream<(state: IState) => IState> {
+function reducers(planet$: Stream<IPlanet>, intent: IIntent): Stream<(state: IApplicationState) => IApplicationState> {
   const planetReducer$ =
     planet$
       .map(planet =>
-        (state: IState) => {
-          return (state as State).set('planet', planet) as State;
+        (state: IApplicationState) => {
+          return (state as ApplicationState).set('planet', planet) as ApplicationState;
         });
   return planetReducer$;
 }
