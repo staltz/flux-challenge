@@ -8,7 +8,7 @@ function view(state$: Stream<IState>): ISinks {
     state$
       .map(state =>
         div('.css-root', [
-          h1('.css-planet-monitor', 'Obi-Wan currently on ' + state.planet),
+          h1('.css-planet-monitor', 'Obi-Wan currently on ' + state.planet.name),
           section('.css-scrollable-list', [
             ul('.css-slots', state.jedis.map(jedi =>
               li('.css-slot', [

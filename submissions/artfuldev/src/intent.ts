@@ -1,8 +1,7 @@
-import { ISources, IPlanet } from './definitions';
+import { ISources } from './definitions';
 import { Stream } from 'xstream';
 
 export interface IIntent {
-  planet$: Stream<string>;
   scrollUp$: Stream<boolean>;
   scrollDown$: Stream<boolean>;
 
@@ -10,7 +9,6 @@ export interface IIntent {
 
 function intent(sources: ISources): IIntent {
   const dom = sources.dom;
-  const ws = sources.ws;
   const intent = {
     scrollUp$: dom
       .select('.css-button-up')

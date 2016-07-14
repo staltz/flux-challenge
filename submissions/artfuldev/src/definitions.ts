@@ -1,11 +1,11 @@
 import { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
 import { DOMSource } from '@cycle/dom/xstream-typings';
-import { WebSocketDriver } from './drivers';
+import { PlanetDriver, IPlanet } from './drivers/planets';
 
 export interface ISources {
   dom: DOMSource;
-  ws: WebSocketDriver;
+  planets: PlanetDriver;
 }
 
 export interface ISinks {
@@ -13,16 +13,11 @@ export interface ISinks {
 }
 
 export interface IState {
-  planet: string;
+  planet: IPlanet;
   jedis: IJedi[];
 }
 
 export interface IJedi {
   name: string;
   home: string;
-}
-
-export interface IPlanet {
-  id: number;
-  name: string;
 }
