@@ -40,7 +40,13 @@ class ApplicationState extends ApplicationStateRecord implements IApplicationSta
 
 export const InitialState: IApplicationState = new ApplicationState({
   planet: null,
-  jedis: []
+  jedis: [
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
 });
 
 function reducers(planet$: Stream<IPlanet>, intent: IIntent): Stream<(state: IApplicationState) => IApplicationState> {
