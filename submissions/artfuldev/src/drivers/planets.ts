@@ -5,7 +5,7 @@ export interface IPlanet {
   name: string;
 }
 
-export class PlanetDriver {
+export class PlanetsDriver {
   planet$: Stream<IPlanet>;
   constructor() {
     const xs = Stream;
@@ -28,7 +28,7 @@ export class PlanetDriver {
 
 export function makePlanetsDriver() {
   function planetsDriver() {
-    return new PlanetDriver();
+    return new PlanetsDriver();
   }
   return planetsDriver;
 }

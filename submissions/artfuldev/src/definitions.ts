@@ -1,11 +1,11 @@
 import { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
 import { DOMSource } from '@cycle/dom/xstream-typings';
-import { PlanetDriver, IPlanet } from './drivers/planets';
+import { PlanetsDriver, IPlanet } from './drivers/planets';
 
 export interface ISources {
   dom: DOMSource;
-  planets: PlanetDriver;
+  planets: PlanetsDriver;
 }
 
 export interface ISinks {
