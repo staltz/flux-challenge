@@ -1,18 +1,16 @@
-import { ISources } from './definitions';
+import { ISources, IPlanet } from './definitions';
 import { Stream } from 'xstream';
 
 export interface IIntent {
-  nameChanged$: Stream<string>
+  planet$: Stream<string>;
 }
 
 function intent(sources: ISources): IIntent {
   const dom = sources.dom;
+  const ws = sources.ws;
   const intent = {
-    nameChanged$: dom
-      .select('.field')
-      .events('input')
-      .map(ev => (ev.target as HTMLInputElement).value)
-      .startWith('')
+    planet$: ws.message$
+      .map(message => (JSON.parse(message) as IPlanet).name)
   };
   return intent;
 }

@@ -1,29 +1,55 @@
 import { Stream } from 'xstream';
 import { IIntent } from './intent';
-import { IState } from './definitions';
+import { IState, IJedi } from './definitions';
+import { Record } from 'immutable';
 
-export const InitialState: IState = {
+const JediRecord = Record({
+  name: 'some name',
+  home: 'some home'
+});
+
+class Jedi extends JediRecord implements IJedi {
+  name: string;
+  home: string;
+  constructor(props: IJedi) {
+    super(props);
+  }
+}
+
+const StateRecord = Record({
+  planet: 'some planet',
+  jedis: [
+    new Jedi({
+      name: 'some name',
+      home: 'some home'
+    })
+  ]
+});
+
+class State extends StateRecord implements IState {
+  planet: string;
+  jedis: IJedi[];
+  constructor(props: IState) {
+    super(props);
+  }
+}
+
+export const InitialState: IState = new State({
   planet: 'some planet',
   jedis: [{
     name: 'some name',
     home: 'some home'
   }]
-};
+});
 
-function reducers(actions: IIntent): Stream<(state: IState) => IState> {
-  const messageReducer$ =
-    actions.nameChanged$
-      .map(name =>
-        state => {
-          const message =
-            name
-              ? `Hello, ${name}!`
-              : 'Hello! Please enter your name...';
-          return {
-            message
-          };
+function reducers(intent: IIntent): Stream<(state: IState) => IState> {
+  const planetReducer$ =
+    intent.planet$
+      .map(planet =>
+        (state: IState) => {
+          return (state as State).set('planet', planet) as State;
         });
-  return messageReducer$;
+  return planetReducer$;
 }
 
 export default reducers;
