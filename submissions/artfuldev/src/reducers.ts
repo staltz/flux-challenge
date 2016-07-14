@@ -97,7 +97,6 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
             newJediRequests.push(jedi.master.id);
           if (index < 4 && !newJedis[index + 1] && jedi.apprentice && jedi.apprentice.id)
             newJediRequests.push(jedi.apprentice.id);
-          console.log(newJediRequests);
           const nextState =
             appState
               .set('jedis', newJedis)
