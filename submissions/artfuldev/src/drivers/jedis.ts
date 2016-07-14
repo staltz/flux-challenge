@@ -5,7 +5,7 @@ export interface IJedi {
   home: string;
 }
 
-export class JedisDriver {
+export class JedisSource {
   jedi$: Stream<IJedi>;
   constructor(){
     
@@ -14,7 +14,7 @@ export class JedisDriver {
 
 export function makeJedisDriver() {
   function jedisDriver() {
-    return new JedisDriver();
+    return new JedisSource();
   }
   return jedisDriver;
 }

@@ -1,8 +1,9 @@
 import { Stream } from 'xstream';
 import { IIntent } from './intent';
-import { ISources, IApplicationState, IJedi } from './definitions';
+import { ISources, IApplicationState } from './definitions';
 import { Record } from 'immutable';
 import { IPlanet } from './drivers/planets';
+import { IJedi } from './drivers/jedis';
 
 const JediRecord = Record({
   name: 'some name',
@@ -18,21 +19,15 @@ class Jedi extends JediRecord implements IJedi {
 }
 
 const ApplicationStateRecord = Record({
-  planet: {
-    name: 'some planet',
-    id: 0
-  },
-  jedis: [
-    new Jedi({
-      name: 'some name',
-      home: 'some home'
-    })
-  ]
+  planet: null,
+  jedis: new Array<IJedi>(),
+  jediRequests: new Array<number>()
 });
 
 class ApplicationState extends ApplicationStateRecord implements IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
+  jediRequests: number[];
   constructor(props: IApplicationState) {
     super(props);
   }
@@ -46,6 +41,9 @@ export const InitialState: IApplicationState = new ApplicationState({
     null,
     null,
     null
+  ],
+  jediRequests: [
+    3616
   ]
 });
 

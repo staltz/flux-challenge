@@ -1,21 +1,22 @@
 import { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
 import { DOMSource } from '@cycle/dom/xstream-typings';
-import { PlanetsDriver, IPlanet } from './drivers/planets';
-import { IJedi, JedisDriver } from './drivers/jedis';
+import { IPlanet, PlanetsSource } from './drivers/planets';
+import { IJedi, JedisSource } from './drivers/jedis';
 
 export interface ISources {
   dom: DOMSource;
-  planets: PlanetsDriver;
-  jedis: JedisDriver;
+  planets: PlanetsSource;
+  jedis: JedisSource;
 }
 
 export interface ISinks {
   dom: Stream<VNode>;
-  jedis: JedisDriver;
+  jedis: Stream<number>;
 }
 
 export interface IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
+  jediRequests: number[];
 }

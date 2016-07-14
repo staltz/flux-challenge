@@ -1,7 +1,8 @@
 import { Stream } from 'xstream';
 import { ISinks } from './definitions';
 import { div, h1, section, ul, li, h3, h6, button, VNode } from '@cycle/dom';
-import { IApplicationState, IJedi } from './definitions';
+import { IApplicationState } from './definitions';
+import { IJedi } from './drivers/jedis';
 
 function renderJediSlot(jedi: IJedi): VNode {
   return li('.css-slot',
@@ -14,8 +15,8 @@ function renderJediSlot(jedi: IJedi): VNode {
   );
 }
 
-function view(state$: Stream<IApplicationState>): ISinks {
-  const vTree$ =
+function view(state$: Stream<IApplicationState>): Stream<VNode> {
+  const vDom$ =
     state$
       .map(state => {
         var planetName = '';
@@ -32,10 +33,7 @@ function view(state$: Stream<IApplicationState>): ISinks {
           ])
         ]);
       });
-  const sinks = {
-    dom: vTree$
-  };
-  return sinks;
+  return vDom$;
 }
 
 export default view;
