@@ -3,7 +3,7 @@ import { VNode } from '@cycle/dom';
 import { DOMSource } from '@cycle/dom/xstream-typings';
 import { IPlanet, PlanetsSource } from './drivers/planets';
 import { IJedi } from './jedis';
-import { HTTPSource } from '@cycle/http';
+import { HTTPSource, RequestOptions } from '@cycle/http';
 
 export interface ISources {
   dom: DOMSource;
@@ -13,7 +13,7 @@ export interface ISources {
 
 export interface ISinks {
   dom: Stream<VNode>;
-  http: Stream<string>;
+  http: Stream<RequestOptions>;
 }
 
 export interface IApplicationState {

@@ -1,5 +1,5 @@
 import { Stream, Producer, Listener } from 'xstream';
-import { HTTPSource } from '@cycle/http';
+import { HTTPSource, RequestOptions, Response } from '@cycle/http';
 import { IApplicationState } from './definitions';
 
 interface IEntity {
@@ -22,18 +22,29 @@ export interface IJedi extends INamedEntity {
 
 const JEDI_URL = 'http://localhost:3000/dark-jedis/';
 
-export function isJediUrl(url: string): boolean {
-  return url.indexOf(JEDI_URL) === 0;
-}
-
-function jediRequests(http: HTTPSource, state$: Stream<IApplicationState>): Stream<string> {
+export function jediRequests(http: HTTPSource, state$: Stream<IApplicationState>): Stream<RequestOptions> {
   const xs = Stream;
   const jediRequest$ =
     state$
       .map(state => xs.fromArray(state.jediRequests))
       .flatten()
-      .map(id => JEDI_URL + id);
+      .map(id => {
+        const requestOptions = {
+          url: JEDI_URL + id,
+          category: 'jedis'
+        } as RequestOptions;
+        return requestOptions;
+      });
   return jediRequest$;
 }
 
-export default jediRequests;
+export function jedis(http: HTTPSource): Stream<IJedi> {
+  const jedi$ =
+    http
+      .select('jedis')
+      .flatten()
+      .map((response: Response) =>
+        JSON.parse(response.text) as IJedi
+      );
+  return jedi$;
+}

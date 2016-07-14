@@ -6,8 +6,11 @@ import { IPlanet } from './drivers/planets';
 import { IJedi, INamedEntity, ILinkableEntity } from './jedis';
 
 const JediRecord = Record({
-  name: 'some name',
-  home: 'some home'
+  id: 0,
+  name: null,
+  homeworld: null,
+  master: null,
+  apprentice: null
 });
 
 class Jedi extends JediRecord implements IJedi {
@@ -65,18 +68,28 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
       .map(jedi =>
         (state: IApplicationState) => {
           const jedis = state.jedis;
-          const masterIndex = state.jedis.map(jedi => jedi.master.id).indexOf(jedi.id);
+          const masterIndex =
+            jedis
+              .map(j => (j && j.master) ? j.master.id : -1)
+              .indexOf(jedi.id);
           const appState = state as ApplicationState;
           var index = 0;
           if (masterIndex !== -1)
             index = masterIndex - 1;
           else {
-            const apprenticeIndex = state.jedis.map(jedi => jedi.apprentice.id).indexOf(jedi.id);
+            const apprenticeIndex =
+              jedis
+                .map(j => (j && j.apprentice) ? j.apprentice.id : -1)
+                .indexOf(jedi.id);
             if (apprenticeIndex !== -1)
               index = apprenticeIndex + 1;
           }
-          const newJedis = [];
-          jedis.forEach(j => newJedis.push(j ? new Jedi(j) : null));
+          const newJedis =
+            jedis
+              .map((j, i) =>
+                i === index
+                  ? new Jedi(jedi)
+                  : (j ? new Jedi(j) : null));
           return appState.set('jedis', newJedis) as ApplicationState;
         });
   return xs.merge(
