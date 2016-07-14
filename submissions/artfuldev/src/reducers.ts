@@ -1,6 +1,6 @@
 import { Stream } from 'xstream';
 import { IIntent } from './intent';
-import { IState, IJedi } from './definitions';
+import { ISources, IState, IJedi } from './definitions';
 import { Record } from 'immutable';
 
 const JediRecord = Record({
@@ -42,12 +42,12 @@ export const InitialState: IState = new State({
   }]
 });
 
-function reducers(intent: IIntent): Stream<(state: IState) => IState> {
+function reducers(planetName$: Stream<string>, intent: IIntent): Stream<(state: IState) => IState> {
   const planetReducer$ =
-    intent.planet$
-      .map(planet =>
+    planetName$
+      .map(planetName =>
         (state: IState) => {
-          return (state as State).set('planet', planet) as State;
+          return (state as State).set('planet', planetName) as State;
         });
   return planetReducer$;
 }
