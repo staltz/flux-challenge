@@ -2,17 +2,18 @@ import { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
 import { DOMSource } from '@cycle/dom/xstream-typings';
 import { IPlanet, PlanetsSource } from './drivers/planets';
-import { IJedi, JedisSource } from './drivers/jedis';
+import { IJedi } from './jedis';
+import { HTTPSource } from '@cycle/http';
 
 export interface ISources {
   dom: DOMSource;
   planets: PlanetsSource;
-  jedis: JedisSource;
+  http: HTTPSource;
 }
 
 export interface ISinks {
   dom: Stream<VNode>;
-  jedis: Stream<number>;
+  http: Stream<string>;
 }
 
 export interface IApplicationState {

@@ -2,14 +2,14 @@ import { Stream } from 'xstream';
 import { ISinks } from './definitions';
 import { div, h1, section, ul, li, h3, h6, button, VNode } from '@cycle/dom';
 import { IApplicationState } from './definitions';
-import { IJedi } from './drivers/jedis';
+import { IJedi } from './jedis';
 
 function renderJediSlot(jedi: IJedi): VNode {
   return li('.css-slot',
     jedi
       ? [
         h3([jedi.name]),
-        h6(['Homeworld: ' + jedi.home])
+        h6(['Homeworld: ' + jedi.homeworld.name])
       ]
       : []
   );

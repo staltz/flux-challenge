@@ -3,24 +3,24 @@ import intent from './intent';
 import model from './model';
 import view from './view';
 import { Stream } from 'xstream';
-
-function jediRequests(state$: Stream<IApplicationState>): Stream<number> {
-  const xs = Stream;
-  const jediRequest$ =
-    state$
-      .map(state => xs.fromArray(state.jediRequests))
-      .flatten();
-  return jediRequest$;
-}
+import jediRequests, { isJediUrl, IJedi } from './jedis';
+import { ResponseStream } from '@cycle/http';
 
 function main(sources: ISources): ISinks {
+  const http = sources.http;
+  const jedi$ =
+    http
+      .filter(response$ => isJediUrl(response$.request.url))
+      .response$$
+      .flatten()
+      .map(response => JSON.parse(response.body) as IJedi);
   const planet$ = sources.planets.planet$;
-  const state$ = model(planet$, intent(sources));
+  const state$ = model(planet$, jedi$, intent(sources));
   const vDom$ = view(state$);
-  const jediRequest$ = jediRequests(state$); 
+  const jediRequest$ = jediRequests(http, state$);
   const sinks = {
     dom: vDom$,
-    jedis: jediRequest$
+    http: jediRequest$
   };
   return sinks;
 }
