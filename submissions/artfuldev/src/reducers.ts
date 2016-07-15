@@ -59,6 +59,7 @@ export const InitialState: IApplicationState = new ApplicationState({
 
 function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IIntent): Stream<(state: IApplicationState) => IApplicationState> {
   const xs = Stream;
+  
   const planetReducer$ =
     planet$
       .map(planet =>
@@ -67,6 +68,7 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
           const nextState = appState.set('planet', planet) as ApplicationState;
           return nextState;
         });
+
   const jedisReducer$ =
     xs.merge(
       jedi$
@@ -119,34 +121,40 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
           return nextState;
         })
     );
-  const jediRequestsReducer$ =
-    xs.merge<Object>(
-      jedi$,
-      intent.scrollUp$,
-      intent.scrollDown$
-    ).mapTo((state: IApplicationState) => {
-      const jedis = state.jedis;
-      var nextId = -1;
-      const appState = state as ApplicationState;
-      for (var i = 0; i < 5; i++) {
-        const jedi = jedis[i];
-        if (jedi == null)
-          continue;
-        if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
-          nextId = jedi.master.id;
-          break;
-        }
-        if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
-          nextId = jedi.apprentice.id;
-          break;
-        }
+  
+  const updateNextId = (state: IApplicationState) => {
+    const jedis = state.jedis;
+    const nextId = state.nextId;
+    var newNextId = -1;
+    const appState = state as ApplicationState;
+    for (var i = 0; i < 5; i++) {
+      const jedi = jedis[i];
+      if (jedi == null)
+        continue;
+      if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
+        newNextId = jedi.master.id;
+        break;
       }
-      const nextState = appState.set('nextId', nextId) as ApplicationState;
-      return nextState;
-    });
+      if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
+        newNextId = jedi.apprentice.id;
+        break;
+      }
+    }
+    if (newNextId === nextId)
+      newNextId = -1;
+    const nextState = appState.set('nextId', newNextId) as ApplicationState;
+    return nextState;
+  };
+
+  const nextIdReducer$ = xs.merge(
+    jedi$.mapTo(updateNextId),
+    intent.scrollUp$.mapTo(updateNextId),
+    intent.scrollDown$.mapTo(updateNextId)
+  );
+
   const downReducer$ =
     jedi$
-      .mapTo(state => {
+      .mapTo((state: IApplicationState) => {
         const jedis = state.jedis;
         const lastJedi = jedis.filter(jedi => !!jedi).pop();
         const index = jedis.indexOf(lastJedi);
@@ -155,9 +163,10 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
         const nextState = appState.set('down', down) as ApplicationState;
         return nextState;
       });
+
   const upReducer$ =
     jedi$
-      .mapTo(state => {
+      .mapTo((state: IApplicationState) => {
         const jedis = state.jedis;
         const firstJedi = jedis.filter(jedi => !!jedi).shift();
         const index = jedis.indexOf(firstJedi);
@@ -166,10 +175,11 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
         const nextState = appState.set('up', up) as ApplicationState;
         return nextState;
       });
+
   return xs.merge(
     planetReducer$,
     jedisReducer$,
-    jediRequestsReducer$,
+    nextIdReducer$,
     downReducer$,
     upReducer$
   );
