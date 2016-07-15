@@ -54,8 +54,8 @@ export const InitialState: IApplicationState = new ApplicationState({
     null,
     null
   ],
-  nextId: 3616,
-  pendingIds: [3616],
+  nextId: -1,
+  pendingIds: [],
   down: false,
   up: false
 });
@@ -126,8 +126,7 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
     );
 
   const nextIdReducer$ =
-    xs.merge(
-      jedi$.mapTo((state: IApplicationState) => {
+      jedisReducer$.mapTo((state: IApplicationState) => {
         const jedis = state.jedis;
         const nextId = state.nextId;
         const pendingIds = state.pendingIds;
@@ -150,50 +149,9 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
           newNextId = -1;
         const nextState = appState.set('nextId', newNextId) as ApplicationState;
         return nextState;
-      }),
-      intent.scrollUp$.mapTo((state: IApplicationState) => {
-        const jedis = state.jedis;
-        const nextId = state.nextId;
-        const pendingIds = state.pendingIds;
-        var newNextId = -1;
-        const appState = state as ApplicationState;
-        for (var i = 0; i < 5; i++) {
-          const jedi = jedis[i];
-          if (jedi == null)
-            continue;
-          if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
-            newNextId = jedi.master.id;
-            break;
-          }
-        }
-        if (pendingIds.indexOf(newNextId) !== -1)
-          newNextId = -1;
-        const nextState = appState.set('nextId', newNextId) as ApplicationState;
-        return nextState;
-      }),
-      intent.scrollDown$.mapTo((state: IApplicationState) => {
-        const jedis = state.jedis;
-        const nextId = state.nextId;
-        const pendingIds = state.pendingIds;
-        var newNextId = -1;
-        const appState = state as ApplicationState;
-        for (var i = 4; i > -1; i--) {
-          const jedi = jedis[i];
-          if (jedi == null)
-            continue;
-          if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
-            newNextId = jedi.apprentice.id;
-            break;
-          }
-        }
-        if (pendingIds.indexOf(newNextId) !== -1)
-          newNextId = -1;
-        const nextState = appState.set('nextId', newNextId) as ApplicationState;
-        return nextState;
-      })
-    );
+      });
 
-  const pendingIdsReducer$ =
+  const pendingIdsReducer$ = 
     xs.merge(
       nextIdReducer$
         .mapTo((state: IApplicationState) => {

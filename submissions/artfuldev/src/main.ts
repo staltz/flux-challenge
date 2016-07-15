@@ -10,7 +10,12 @@ function main(sources: ISources): ISinks {
   const planet$ = sources.planets.planet$;
   const state$ = model(planet$, jedi$, intent(sources));
   const vNode$ = view(state$);
-  const id$ = state$.map(state => state.nextId).filter(id => id !== -1);
+  const id$ =
+    state$
+      .filter(state => state.nextId !== -1
+        && state.pendingIds.indexOf(state.nextId) === -1)
+      .map(state => state.nextId)
+      .startWith(3616);
   const sinks = {
     dom: vNode$,
     jedis: id$

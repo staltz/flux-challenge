@@ -70,7 +70,11 @@
 	    var planet$ = sources.planets.planet$;
 	    var state$ = model_1.default(planet$, jedi$, intent_1.default(sources));
 	    var vNode$ = view_1.default(state$);
-	    var id$ = state$.map(function (state) { return state.nextId; }).filter(function (id) { return id !== -1; });
+	    var id$ = state$
+	        .filter(function (state) { return state.nextId !== -1
+	        && state.pendingIds.indexOf(state.nextId) === -1; })
+	        .map(function (state) { return state.nextId; })
+	        .startWith(3616);
 	    var sinks = {
 	        dom: vNode$,
 	        jedis: id$
@@ -171,8 +175,8 @@
 	        null,
 	        null
 	    ],
-	    nextId: 3616,
-	    pendingIds: [3616],
+	    nextId: -1,
+	    pendingIds: [],
 	    down: false,
 	    up: false
 	});
@@ -230,7 +234,7 @@
 	        var nextState = appState.set('jedis', newJedis);
 	        return nextState;
 	    }));
-	    var nextIdReducer$ = xs.merge(jedi$.mapTo(function (state) {
+	    var nextIdReducer$ = jedisReducer$.mapTo(function (state) {
 	        var jedis = state.jedis;
 	        var nextId = state.nextId;
 	        var pendingIds = state.pendingIds;
@@ -253,45 +257,7 @@
 	            newNextId = -1;
 	        var nextState = appState.set('nextId', newNextId);
 	        return nextState;
-	    }), intent.scrollUp$.mapTo(function (state) {
-	        var jedis = state.jedis;
-	        var nextId = state.nextId;
-	        var pendingIds = state.pendingIds;
-	        var newNextId = -1;
-	        var appState = state;
-	        for (var i = 0; i < 5; i++) {
-	            var jedi = jedis[i];
-	            if (jedi == null)
-	                continue;
-	            if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
-	                newNextId = jedi.master.id;
-	                break;
-	            }
-	        }
-	        if (pendingIds.indexOf(newNextId) !== -1)
-	            newNextId = -1;
-	        var nextState = appState.set('nextId', newNextId);
-	        return nextState;
-	    }), intent.scrollDown$.mapTo(function (state) {
-	        var jedis = state.jedis;
-	        var nextId = state.nextId;
-	        var pendingIds = state.pendingIds;
-	        var newNextId = -1;
-	        var appState = state;
-	        for (var i = 4; i > -1; i--) {
-	            var jedi = jedis[i];
-	            if (jedi == null)
-	                continue;
-	            if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
-	                newNextId = jedi.apprentice.id;
-	                break;
-	            }
-	        }
-	        if (pendingIds.indexOf(newNextId) !== -1)
-	            newNextId = -1;
-	        var nextState = appState.set('nextId', newNextId);
-	        return nextState;
-	    }));
+	    });
 	    var pendingIdsReducer$ = xs.merge(nextIdReducer$
 	        .mapTo(function (state) {
 	        var nextId = state.nextId;
