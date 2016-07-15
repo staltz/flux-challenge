@@ -30,7 +30,7 @@ export class JedisSource {
     const xs = Stream;
     const request$ =
       id$
-        // .filter(id => requestedJedis.indexOf(id) !== -1)
+        .filter(id => requestedJedis.indexOf(id) === -1)
         .map(id => {
           requestedJedis = requestedJedis.concat(id);
           const requestOptions = {
