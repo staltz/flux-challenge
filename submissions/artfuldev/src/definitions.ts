@@ -20,4 +20,5 @@ export interface IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
   nextId: number;
+  down: boolean;
 }
