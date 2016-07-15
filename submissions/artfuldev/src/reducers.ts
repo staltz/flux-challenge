@@ -27,13 +27,13 @@ class Jedi extends JediRecord implements IJedi {
 const ApplicationStateRecord = Record({
   planet: null,
   jedis: new Array<IJedi>(),
-  jediRequests: new Array<number>()
+  nextId: -1
 });
 
 class ApplicationState extends ApplicationStateRecord implements IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
-  jediRequests: number[];
+  nextId: number;
   constructor(props: IApplicationState) {
     super(props);
   }
@@ -48,9 +48,7 @@ export const InitialState: IApplicationState = new ApplicationState({
     null,
     null
   ],
-  jediRequests: [
-    3616
-  ]
+  nextId: 3616
 });
 
 function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IIntent): Stream<(state: IApplicationState) => IApplicationState> {
@@ -64,70 +62,87 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
           return nextState;
         });
   const jedisReducer$ =
-  xs.merge(
-    jedi$
-      .map(jedi =>
-        (state: IApplicationState) => {
-          const jedis = state.jedis || new Array<IJedi>(5);
-          const jediRequests = state.jediRequests || [];
-          const masterIndex =
-            jedis
-              .map(j => (j && j.master) ? j.master.id : -1)
-              .indexOf(jedi.id);
-          const appState = state as ApplicationState;
-          var index = 0;
-          if (masterIndex !== -1)
-            index = masterIndex - 1;
-          else {
-            const apprenticeIndex =
+    xs.merge(
+      jedi$
+        .map(jedi =>
+          (state: IApplicationState) => {
+            const jedis = state.jedis || new Array<IJedi>(5);
+            const masterIndex =
               jedis
-                .map(j => (j && j.apprentice) ? j.apprentice.id : -1)
+                .map(j => (j && j.master) ? j.master.id : -1)
                 .indexOf(jedi.id);
-            if (apprenticeIndex !== -1)
-              index = apprenticeIndex + 1;
-          }
+            const appState = state as ApplicationState;
+            var index = 0;
+            if (masterIndex !== -1)
+              index = masterIndex - 1;
+            else {
+              const apprenticeIndex =
+                jedis
+                  .map(j => (j && j.apprentice) ? j.apprentice.id : -1)
+                  .indexOf(jedi.id);
+              if (apprenticeIndex !== -1)
+                index = apprenticeIndex + 1;
+            }
+            const newJedis =
+              jedis
+                .map((j, i) =>
+                  i === index
+                    ? new Jedi(jedi)
+                    : j);
+            const nextState = appState.set('jedis', newJedis) as ApplicationState;
+            return nextState;
+          }),
+      intent.scrollUp$
+        .mapTo((state: IApplicationState) => {
+          const jedis = state.jedis;
           const newJedis =
             jedis
-              .map((j, i) =>
-                i === index
-                  ? new Jedi(jedi)
-                  : j);
-          var newJediRequests =
-            jediRequests.filter(id => id !== jedi.id);
-          if (index > 0 && !newJedis[index - 1] && jedi.master && jedi.master.id)
-            newJediRequests.push(jedi.master.id);
-          if (index < 4 && !newJedis[index + 1] && jedi.apprentice && jedi.apprentice.id)
-            newJediRequests.push(jedi.apprentice.id);
-          const nextState =
-            appState
-              .set('jedis', newJedis)
-              .set('jediRequests', newJediRequests) as ApplicationState;
+              .map((jedi, i, array) => (i < 2) ? null : array[i - 2]);
+          const appState = state as ApplicationState;
+          const nextState = appState.set('jedis', newJedis) as ApplicationState;
           return nextState;
         }),
-    intent.scrollUp$
-      .mapTo((state: IApplicationState) => {
-        const jedis = state.jedis;
-        const newJedis =
-          jedis
-            .map((jedi, i, array) =>  (i<2) ? null: array[i-2]);
-        const appState = state as ApplicationState;
-        const nextState = appState.set('jedis', newJedis) as ApplicationState; 
-        return nextState;
-      }),
-    intent.scrollDown$
-      .mapTo((state: IApplicationState) => {
-        const jedis = state.jedis;
-        const newJedis =
-          jedis
-            .map((jedi, i, array) =>  (i>2) ? null: array[i+2]);
-        const appState = state as ApplicationState;
-        const nextState = appState.set('jedis', newJedis) as ApplicationState; 
-        return nextState;
-      })
-  );
+      intent.scrollDown$
+        .mapTo((state: IApplicationState) => {
+          const jedis = state.jedis;
+          const newJedis =
+            jedis
+              .map((jedi, i, array) => (i > 2) ? null : array[i + 2]);
+          const appState = state as ApplicationState;
+          const nextState = appState.set('jedis', newJedis) as ApplicationState;
+          return nextState;
+        })
+    );
+  const jediRequestsReducer$ =
+    xs.merge<Object>(
+      jedi$,
+      intent.scrollUp$,
+      intent.scrollDown$
+    ).mapTo((state: IApplicationState) => {
+      const jedis = state.jedis;
+      var nextId = -1;
+      const appState = state as ApplicationState;
+      for (var i = 0; i < 5; i++) {
+        const jedi = jedis[i];
+        if (jedi == null)
+          continue;
+        if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
+          nextId = jedi.master.id;
+          break;
+        }
+        if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
+          nextId = jedi.apprentice.id;
+          break;
+        }
+      }
+      const nextState = appState.set('nextId', nextId) as ApplicationState;
+      return nextState;
+    });
+
   return xs.merge(
     planetReducer$,
-    jedisReducer$
+    jedisReducer$,
+    jediRequestsReducer$
   );
 }
 

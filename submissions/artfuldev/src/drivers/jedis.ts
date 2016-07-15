@@ -22,11 +22,11 @@ export interface IJedi extends INamedEntity {
 }
 
 const JEDI_URL = 'http://localhost:3000/dark-jedis/';
+const requestedJedis = [];
 
 export class JedisSource {
   jedi$: Stream<IJedi>;
   constructor(jediRequest$: Stream<number>) {
-    const requestedJedis = [];
     const xs = Stream;
     const request$ =
       jediRequest$
@@ -46,9 +46,8 @@ export class JedisSource {
         .flatten()
         .map((response: Response) => {
           const jedi = JSON.parse(response.text) as IJedi;
-          var index = requestedJedis.indexOf(jedi.id);
-          if (index !== -1)
-            requestedJedis.splice(index, 1);
+          const index = requestedJedis.indexOf(jedi.id);
+          requestedJedis.splice(index, 1);
           return jedi;
         });
   }

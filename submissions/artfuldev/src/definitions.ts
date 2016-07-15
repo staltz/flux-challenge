@@ -19,5 +19,5 @@ export interface ISinks {
 export interface IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
-  jediRequests: number[];
+  nextId: number;
 }

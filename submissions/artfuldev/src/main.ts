@@ -10,7 +10,7 @@ function main(sources: ISources): ISinks {
   const planet$ = sources.planets.planet$;
   const state$ = model(planet$, jedi$, intent(sources));
   const vNode$ = view(state$);
-  const id$ = state$.map(state => xs.fromArray(state.jediRequests)).flatten();
+  const id$ = state$.map(state => state.nextId).filter(id => id !== -1);
   const sinks = {
     dom: vNode$,
     jedis: id$
