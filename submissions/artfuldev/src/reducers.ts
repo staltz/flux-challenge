@@ -55,7 +55,7 @@ export const InitialState: IApplicationState = new ApplicationState({
     null
   ],
   nextId: 3616,
-  pendingIds: [],
+  pendingIds: [3616],
   down: false,
   up: false
 });
