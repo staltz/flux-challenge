@@ -19,8 +19,6 @@ export interface ISinks {
 export interface IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
-  nextId: number;
-  pendingIds: number[];
   down: boolean;
   up: boolean;
   matchedId: number;

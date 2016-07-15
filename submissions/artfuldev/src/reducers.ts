@@ -27,8 +27,6 @@ class Jedi extends JediRecord implements IJedi {
 const ApplicationStateRecord = Record({
   planet: null,
   jedis: new Array<IJedi>(),
-  nextId: -1,
-  pendingIds: [],
   down: false,
   up: false,
   matchedId: -1
@@ -37,8 +35,6 @@ const ApplicationStateRecord = Record({
 class ApplicationState extends ApplicationStateRecord implements IApplicationState {
   planet: IPlanet;
   jedis: IJedi[];
-  nextId: number;
-  pendingIds: number[];
   down: boolean;
   up: boolean;
   matchedId: number;
@@ -56,8 +52,6 @@ export const InitialState: IApplicationState = new ApplicationState({
     null,
     null
   ],
-  nextId: -1,
-  pendingIds: [],
   down: false,
   up: false,
   matchedId: -1
@@ -86,7 +80,7 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
                 .map(j => (j && j.master) ? j.master.id : -1)
                 .indexOf(jedi.id);
             const appState = state as ApplicationState;
-            var index = 0;
+            var index = 2;
             if (masterIndex !== -1)
               index = masterIndex - 1;
             else {
@@ -127,56 +121,6 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
           return nextState;
         })
     );
-
-  const nextIdReducer$ =
-    jedisReducer$.mapTo((state: IApplicationState) => {
-      const jedis = state.jedis;
-      const nextId = state.nextId;
-      const pendingIds = state.pendingIds;
-      var newNextId = -1;
-      const appState = state as ApplicationState;
-      for (var i = 0; i < 5; i++) {
-        const jedi = jedis[i];
-        if (jedi == null)
-          continue;
-        if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
-          newNextId = jedi.master.id;
-          break;
-        }
-        if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
-          newNextId = jedi.apprentice.id;
-          break;
-        }
-      }
-      if (pendingIds.indexOf(newNextId) !== -1)
-        newNextId = -1;
-      const nextState = appState.set('nextId', newNextId) as ApplicationState;
-      return nextState;
-    });
-
-  const pendingIdsReducer$ =
-    xs.merge(
-      nextIdReducer$
-        .mapTo((state: IApplicationState) => {
-          const nextId = state.nextId;
-          if (nextId === -1)
-            return state;
-          const pendingIds = state.pendingIds;
-          const appState = state as ApplicationState;
-          const nextState = appState.set('pendingIds', pendingIds.concat(nextId)) as ApplicationState;
-          return nextState;
-        }),
-      jedi$
-        .map(jedi =>
-          (state: IApplicationState) => {
-            const id = jedi.id;
-            const pendingIds = state.pendingIds;
-            const appState = state as ApplicationState;
-            const nextState = appState.set('pendingIds', pendingIds.filter(x => x !== id)) as ApplicationState;
-            return nextState;
-          })
-    );
-
 
   const downReducer$ =
     xs.merge<{}>(
@@ -230,8 +174,6 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
   return xs.merge(
     planetReducer$,
     jedisReducer$,
-    nextIdReducer$,
-    pendingIdsReducer$,
     downReducer$,
     upReducer$,
     matchedIdReducer$

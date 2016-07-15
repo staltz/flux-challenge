@@ -47,9 +47,9 @@
 	"use strict";
 	var main_1 = __webpack_require__(1);
 	var dom_1 = __webpack_require__(9);
-	var xstream_run_1 = __webpack_require__(130);
-	var planets_1 = __webpack_require__(133);
-	var jedis_1 = __webpack_require__(134);
+	var xstream_run_1 = __webpack_require__(132);
+	var planets_1 = __webpack_require__(135);
+	var jedis_1 = __webpack_require__(136);
 	xstream_run_1.run(main_1.default, {
 	    dom: dom_1.makeDOMDriver('#app'),
 	    planets: planets_1.makePlanetsDriver(),
@@ -65,16 +65,13 @@
 	var intent_1 = __webpack_require__(2);
 	var model_1 = __webpack_require__(3);
 	var view_1 = __webpack_require__(8);
+	var requests_1 = __webpack_require__(130);
 	function main(sources) {
 	    var jedi$ = sources.jedis.jedi$;
 	    var planet$ = sources.planets.planet$;
 	    var state$ = model_1.default(planet$, jedi$, intent_1.default(sources));
 	    var vNode$ = view_1.default(state$);
-	    var id$ = state$
-	        .filter(function (state) { return state.nextId !== -1
-	        && state.pendingIds.indexOf(state.nextId) === -1; })
-	        .map(function (state) { return state.nextId; })
-	        .startWith(3616);
+	    var id$ = requests_1.default(state$);
 	    var sinks = {
 	        dom: vNode$,
 	        jedis: id$
@@ -154,8 +151,6 @@
 	var ApplicationStateRecord = immutable_1.Record({
 	    planet: null,
 	    jedis: new Array(),
-	    nextId: -1,
-	    pendingIds: [],
 	    down: false,
 	    up: false,
 	    matchedId: -1
@@ -176,8 +171,6 @@
 	        null,
 	        null
 	    ],
-	    nextId: -1,
-	    pendingIds: [],
 	    down: false,
 	    up: false,
 	    matchedId: -1
@@ -200,7 +193,7 @@
 	                .map(function (j) { return (j && j.master) ? j.master.id : -1; })
 	                .indexOf(jedi.id);
 	            var appState = state;
-	            var index = 0;
+	            var index = 2;
 	            if (masterIndex !== -1)
 	                index = masterIndex - 1;
 	            else {
@@ -236,49 +229,6 @@
 	        var nextState = appState.set('jedis', newJedis);
 	        return nextState;
 	    }));
-	    var nextIdReducer$ = jedisReducer$.mapTo(function (state) {
-	        var jedis = state.jedis;
-	        var nextId = state.nextId;
-	        var pendingIds = state.pendingIds;
-	        var newNextId = -1;
-	        var appState = state;
-	        for (var i = 0; i < 5; i++) {
-	            var jedi = jedis[i];
-	            if (jedi == null)
-	                continue;
-	            if (i > 0 && !jedis[i - 1] && jedi.master && jedi.master.id) {
-	                newNextId = jedi.master.id;
-	                break;
-	            }
-	            if (i < 4 && !jedis[i + 1] && jedi.apprentice && jedi.apprentice.id) {
-	                newNextId = jedi.apprentice.id;
-	                break;
-	            }
-	        }
-	        if (pendingIds.indexOf(newNextId) !== -1)
-	            newNextId = -1;
-	        var nextState = appState.set('nextId', newNextId);
-	        return nextState;
-	    });
-	    var pendingIdsReducer$ = xs.merge(nextIdReducer$
-	        .mapTo(function (state) {
-	        var nextId = state.nextId;
-	        if (nextId === -1)
-	            return state;
-	        var pendingIds = state.pendingIds;
-	        var appState = state;
-	        var nextState = appState.set('pendingIds', pendingIds.concat(nextId));
-	        return nextState;
-	    }), jedi$
-	        .map(function (jedi) {
-	        return function (state) {
-	            var id = jedi.id;
-	            var pendingIds = state.pendingIds;
-	            var appState = state;
-	            var nextState = appState.set('pendingIds', pendingIds.filter(function (x) { return x !== id; }));
-	            return nextState;
-	        };
-	    }));
 	    var downReducer$ = xs.merge(jedi$, intent.scrollUp$).mapTo(function (state) {
 	        var jedis = state.jedis;
 	        var lastJedi = jedis.filter(function (jedi) { return !!jedi; }).pop();
@@ -312,7 +262,7 @@
 	        var nextState = noMatchState.set('matchedId', matchedJedi.id);
 	        return nextState;
 	    });
-	    return xs.merge(planetReducer$, jedisReducer$, nextIdReducer$, pendingIdsReducer$, downReducer$, upReducer$, matchedIdReducer$);
+	    return xs.merge(planetReducer$, jedisReducer$, downReducer$, upReducer$, matchedIdReducer$);
 	}
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = reducers;
@@ -14399,8 +14349,178 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var base_1 = __webpack_require__(131);
-	var xstream_adapter_1 = __webpack_require__(132);
+	var xstream_1 = __webpack_require__(5);
+	var dropRepeats_1 = __webpack_require__(131);
+	var xs = xstream_1.Stream;
+	function IdsToLoad(state) {
+	    var matched = state.matchedId !== -1;
+	    if (matched)
+	        return [];
+	    var loadedJedis = state.jedis.filter(function (jedi) { return !!jedi; });
+	    var loadedIds = loadedJedis.map(function (jedi) { return jedi.id; });
+	    var tail = state.jedis.slice(1);
+	    var head = state.jedis.slice(0, 4);
+	    var masterIds = tail.filter(function (jedi) { return !!jedi && !!jedi.master && !!jedi.master.id; })
+	        .map(function (jedi) { return jedi.master.id; });
+	    var apprenticeIds = head.filter(function (jedi) { return !!jedi && !!jedi.apprentice && !!jedi.apprentice.id; })
+	        .map(function (jedi) { return jedi.apprentice.id; });
+	    var masterIdsToLoad = masterIds.filter(function (id) { return loadedIds.indexOf(id) === -1; });
+	    var apprenticeIdsToLoad = apprenticeIds.filter(function (id) { return loadedIds.indexOf(id) === -1; });
+	    var idsToLoad = masterIdsToLoad.concat(apprenticeIdsToLoad).filter(function () { return !matched; });
+	    return idsToLoad;
+	}
+	function hash(state) {
+	    var jedis = state.jedis.map(function (jedi) { return !!jedi ? jedi.id : '*'; }).join('-');
+	    return jedis + state.matchedId;
+	}
+	function requests(state$) {
+	    var distinctStates = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
+	    var request$ = state$
+	        .compose(distinctStates)
+	        .map(IdsToLoad)
+	        .map(function (ids) { return ids.pop() || -1; })
+	        .filter(function (id) { return id !== -1; })
+	        .startWith(3616);
+	    return request$;
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = requests;
+
+
+/***/ },
+/* 131 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var core_1 = __webpack_require__(6);
+	var empty = {};
+	var DropRepeatsOperator = (function () {
+	    function DropRepeatsOperator(fn, ins) {
+	        this.fn = fn;
+	        this.ins = ins;
+	        this.type = 'dropRepeats';
+	        this.out = null;
+	        this.v = empty;
+	    }
+	    DropRepeatsOperator.prototype._start = function (out) {
+	        this.out = out;
+	        this.ins._add(this);
+	    };
+	    DropRepeatsOperator.prototype._stop = function () {
+	        this.ins._remove(this);
+	        this.out = null;
+	        this.v = empty;
+	    };
+	    DropRepeatsOperator.prototype.isEq = function (x, y) {
+	        return this.fn ? this.fn(x, y) : x === y;
+	    };
+	    DropRepeatsOperator.prototype._n = function (t) {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        var v = this.v;
+	        if (v === empty || !this.isEq(t, v)) {
+	            u._n(t);
+	        }
+	        this.v = t;
+	    };
+	    DropRepeatsOperator.prototype._e = function (err) {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        u._e(err);
+	    };
+	    DropRepeatsOperator.prototype._c = function () {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        u._c();
+	    };
+	    return DropRepeatsOperator;
+	}());
+	exports.DropRepeatsOperator = DropRepeatsOperator;
+	/**
+	 * Drops consecutive duplicate values in a stream.
+	 *
+	 * Marble diagram:
+	 *
+	 * ```text
+	 * --1--2--1--1--1--2--3--4--3--3|
+	 *     dropRepeats
+	 * --1--2--1--------2--3--4--3---|
+	 * ```
+	 *
+	 * Example:
+	 *
+	 * ```js
+	 * import dropRepeats from 'xstream/extra/dropRepeats'
+	 *
+	 * const stream = xs.of(1, 2, 1, 1, 1, 2, 3, 4, 3, 3)
+	 *   .compose(dropRepeats())
+	 *
+	 * stream.addListener({
+	 *   next: i => console.log(i),
+	 *   error: err => console.error(err),
+	 *   complete: () => console.log('completed')
+	 * })
+	 * ```
+	 *
+	 * ```text
+	 * > 1
+	 * > 2
+	 * > 1
+	 * > 2
+	 * > 3
+	 * > 4
+	 * > 3
+	 * > completed
+	 * ```
+	 *
+	 * Example with a custom isEqual function:
+	 *
+	 * ```js
+	 * import dropRepeats from 'xstream/extra/dropRepeats'
+	 *
+	 * const stream = xs.of('a', 'b', 'a', 'A', 'B', 'b')
+	 *   .compose(dropRepeats((x, y) => x.toLowerCase() === y.toLowerCase()))
+	 *
+	 * stream.addListener({
+	 *   next: i => console.log(i),
+	 *   error: err => console.error(err),
+	 *   complete: () => console.log('completed')
+	 * })
+	 * ```
+	 *
+	 * ```text
+	 * > a
+	 * > b
+	 * > a
+	 * > B
+	 * > completed
+	 * ```
+	 *
+	 * @param {Function} isEqual An optional function of type
+	 * `(x: T, y: T) => boolean` that takes an event from the input stream and
+	 * checks if it is equal to previous event, by returning a boolean.
+	 * @return {Stream}
+	 */
+	function dropRepeats(isEqual) {
+	    if (isEqual === void 0) { isEqual = null; }
+	    return function dropRepeatsOperator(ins) {
+	        return new core_1.Stream(new DropRepeatsOperator(isEqual, ins));
+	    };
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = dropRepeats;
+	//# sourceMappingURL=dropRepeats.js.map
+
+/***/ },
+/* 132 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var base_1 = __webpack_require__(133);
+	var xstream_adapter_1 = __webpack_require__(134);
 	/**
 	 * Takes a `main` function and circularly connects it to the given collection
 	 * of driver functions.
@@ -14470,7 +14590,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 131 */
+/* 133 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -14582,7 +14702,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 132 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -14632,7 +14752,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 133 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -14669,13 +14789,13 @@
 
 
 /***/ },
-/* 134 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var xstream_1 = __webpack_require__(5);
-	var http_1 = __webpack_require__(135);
-	var xstream_adapter_1 = __webpack_require__(143);
+	var http_1 = __webpack_require__(137);
+	var xstream_adapter_1 = __webpack_require__(145);
 	var JEDI_URL = 'http://localhost:3000/dark-jedis/';
 	var requestedJedis = [];
 	var JedisSource = (function () {
@@ -14715,7 +14835,7 @@
 
 
 /***/ },
-/* 135 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -14771,19 +14891,19 @@
 	 * @return {Function} the HTTP Driver function
 	 * @function makeHTTPDriver
 	 */
-	var http_driver_1 = __webpack_require__(136);
+	var http_driver_1 = __webpack_require__(138);
 	exports.makeHTTPDriver = http_driver_1.makeHTTPDriver;
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 136 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var xstream_1 = __webpack_require__(5);
-	var MainHTTPSource_1 = __webpack_require__(137);
-	var xstream_adapter_1 = __webpack_require__(139);
-	var superagent = __webpack_require__(140);
+	var MainHTTPSource_1 = __webpack_require__(139);
+	var xstream_adapter_1 = __webpack_require__(141);
+	var superagent = __webpack_require__(142);
 	function preprocessReqOptions(reqOptions) {
 	    reqOptions.withCredentials = reqOptions.withCredentials || false;
 	    reqOptions.redirects = typeof reqOptions.redirects === 'number' ? reqOptions.redirects : 5;
@@ -14932,12 +15052,12 @@
 	//# sourceMappingURL=http-driver.js.map
 
 /***/ },
-/* 137 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var isolate_1 = __webpack_require__(138);
-	var xstream_adapter_1 = __webpack_require__(139);
+	var isolate_1 = __webpack_require__(140);
+	var xstream_adapter_1 = __webpack_require__(141);
 	var MainHTTPSource = (function () {
 	    function MainHTTPSource(_res$$, runStreamAdapter, _namespace) {
 	        if (_namespace === void 0) { _namespace = []; }
@@ -14971,7 +15091,7 @@
 	//# sourceMappingURL=MainHTTPSource.js.map
 
 /***/ },
-/* 138 */
+/* 140 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -14997,7 +15117,7 @@
 	//# sourceMappingURL=isolate.js.map
 
 /***/ },
-/* 139 */
+/* 141 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -15047,15 +15167,15 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 140 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module dependencies.
 	 */
 	
-	var Emitter = __webpack_require__(141);
-	var reduce = __webpack_require__(142);
+	var Emitter = __webpack_require__(143);
+	var reduce = __webpack_require__(144);
 	
 	/**
 	 * Root reference for iframes.
@@ -16244,7 +16364,7 @@
 
 
 /***/ },
-/* 141 */
+/* 143 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -16413,7 +16533,7 @@
 
 
 /***/ },
-/* 142 */
+/* 144 */
 /***/ function(module, exports) {
 
 	
@@ -16442,7 +16562,7 @@
 	};
 
 /***/ },
-/* 143 */
+/* 145 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
