@@ -14356,27 +14356,31 @@
 	    var matched = state.matchedId !== -1;
 	    if (matched)
 	        return [];
-	    var loadedJedis = state.jedis.filter(function (jedi) { return !!jedi; });
-	    var loadedIds = loadedJedis.map(function (jedi) { return jedi.id; });
-	    var tail = state.jedis.slice(1);
-	    var head = state.jedis.slice(0, 4);
+	    var jedis = state.jedis;
+	    var loadedIds = jedis
+	        .filter(function (jedi) { return !!jedi; })
+	        .map(function (jedi) { return jedi.id; });
+	    var tail = jedis.slice(1);
+	    var head = jedis.slice(0, 4);
 	    var masterIds = tail.filter(function (jedi) { return !!jedi && !!jedi.master && !!jedi.master.id; })
 	        .map(function (jedi) { return jedi.master.id; });
 	    var apprenticeIds = head.filter(function (jedi) { return !!jedi && !!jedi.apprentice && !!jedi.apprentice.id; })
 	        .map(function (jedi) { return jedi.apprentice.id; });
 	    var masterIdsToLoad = masterIds.filter(function (id) { return loadedIds.indexOf(id) === -1; });
 	    var apprenticeIdsToLoad = apprenticeIds.filter(function (id) { return loadedIds.indexOf(id) === -1; });
-	    var idsToLoad = masterIdsToLoad.concat(apprenticeIdsToLoad).filter(function () { return !matched; });
+	    var idsToLoad = masterIdsToLoad.concat(apprenticeIdsToLoad);
 	    return idsToLoad;
 	}
 	function hash(state) {
-	    var jedis = state.jedis.map(function (jedi) { return !!jedi ? jedi.id : '*'; }).join('-');
+	    var jedis = state.jedis
+	        .map(function (jedi) { return !!jedi ? jedi.id : '*'; })
+	        .join('-');
 	    return jedis + state.matchedId;
 	}
 	function requests(state$) {
-	    var distinctStates = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
+	    var distinct = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
 	    var request$ = state$
-	        .compose(distinctStates)
+	        .compose(distinct)
 	        .map(IdsToLoad)
 	        .map(function (ids) { return ids.pop() || -1; })
 	        .filter(function (id) { return id !== -1; })
