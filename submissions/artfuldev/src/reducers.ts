@@ -28,7 +28,8 @@ const ApplicationStateRecord = Record({
   planet: null,
   jedis: new Array<IJedi>(),
   nextId: -1,
-  down: false
+  down: false,
+  up: false
 });
 
 class ApplicationState extends ApplicationStateRecord implements IApplicationState {
@@ -36,6 +37,7 @@ class ApplicationState extends ApplicationStateRecord implements IApplicationSta
   jedis: IJedi[];
   nextId: number;
   down: boolean;
+  up: boolean;
   constructor(props: IApplicationState) {
     super(props);
   }
@@ -51,7 +53,8 @@ export const InitialState: IApplicationState = new ApplicationState({
     null
   ],
   nextId: 3616,
-  down: false
+  down: false,
+  up: false
 });
 
 function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IIntent): Stream<(state: IApplicationState) => IApplicationState> {
@@ -152,11 +155,23 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
         const nextState = appState.set('down', down) as ApplicationState;
         return nextState;
       });
+  const upReducer$ =
+    jedi$
+      .mapTo(state => {
+        const jedis = state.jedis;
+        const firstJedi = jedis.filter(jedi => !!jedi).shift();
+        const index = jedis.indexOf(firstJedi);
+        const up = firstJedi && firstJedi.master && firstJedi.master.id;
+        const appState = state as ApplicationState;
+        const nextState = appState.set('up', up) as ApplicationState;
+        return nextState;
+      });
   return xs.merge(
     planetReducer$,
     jedisReducer$,
     jediRequestsReducer$,
-    downReducer$
+    downReducer$,
+    upReducer$
   );
 }
 

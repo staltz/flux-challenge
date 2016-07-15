@@ -21,4 +21,5 @@ export interface IApplicationState {
   jedis: IJedi[];
   nextId: number;
   down: boolean;
+  up: boolean;
 }
