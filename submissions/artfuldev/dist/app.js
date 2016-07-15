@@ -157,7 +157,8 @@
 	    nextId: -1,
 	    pendingIds: [],
 	    down: false,
-	    up: false
+	    up: false,
+	    matchedId: -1
 	});
 	var ApplicationState = (function (_super) {
 	    __extends(ApplicationState, _super);
@@ -178,7 +179,8 @@
 	    nextId: -1,
 	    pendingIds: [],
 	    down: false,
-	    up: false
+	    up: false,
+	    matchedId: -1
 	});
 	function reducers(planet$, jedi$, intent) {
 	    var xs = xstream_1.Stream;
@@ -295,7 +297,22 @@
 	        var nextState = appState.set('up', up);
 	        return nextState;
 	    });
-	    return xs.merge(planetReducer$, jedisReducer$, nextIdReducer$, pendingIdsReducer$, downReducer$, upReducer$);
+	    var matchedIdReducer$ = xs.merge(jedi$, planet$).mapTo(function (state) {
+	        var planet = state.planet;
+	        var appState = state;
+	        var noMatchState = appState.set('matchedId', -1);
+	        if (!planet || !planet.id)
+	            return noMatchState;
+	        var planetId = planet.id;
+	        var matchedJedi = state.jedis
+	            .filter(function (jedi) { return !!jedi && jedi.homeworld.id === planetId; })
+	            .pop();
+	        if (!matchedJedi)
+	            return noMatchState;
+	        var nextState = noMatchState.set('matchedId', matchedJedi.id);
+	        return nextState;
+	    });
+	    return xs.merge(planetReducer$, jedisReducer$, nextIdReducer$, pendingIdsReducer$, downReducer$, upReducer$, matchedIdReducer$);
 	}
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = reducers;
@@ -7025,8 +7042,10 @@
 
 	"use strict";
 	var dom_1 = __webpack_require__(9);
-	function renderJediSlot(jedi) {
-	    return dom_1.li('.css-slot', jedi
+	function renderJediSlot(jedi, state) {
+	    var matched = state.matchedId == (jedi && jedi.id);
+	    var props = { style: { color: matched ? 'red' : null } };
+	    return dom_1.li('.css-slot', props, jedi
 	        ? [
 	            dom_1.h3([jedi.name]),
 	            dom_1.h6(['Homeworld: ' + jedi.homeworld.name])
@@ -7045,7 +7064,7 @@
 	        return dom_1.div('.css-root', [
 	            dom_1.h1('.css-planet-monitor', 'Obi-Wan currently on ' + planetName),
 	            dom_1.section('.css-scrollable-list', [
-	                dom_1.ul('.css-slots', state.jedis.map(renderJediSlot)),
+	                dom_1.ul('.css-slots', state.jedis.map(function (jedi) { return renderJediSlot(jedi, state); })),
 	                dom_1.div('.css-scroll-buttons', [
 	                    dom_1.button('.css-button-up' + disableIfNotAllowed(up)),
 	                    dom_1.button('.css-button-down' + disableIfNotAllowed(down))

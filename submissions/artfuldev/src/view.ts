@@ -4,8 +4,10 @@ import { div, h1, section, ul, li, h3, h6, button, VNode } from '@cycle/dom';
 import { IApplicationState } from './definitions';
 import { IJedi } from './drivers/jedis';
 
-function renderJediSlot(jedi: IJedi): VNode {
-  return li('.css-slot',
+function renderJediSlot(jedi: IJedi, state: IApplicationState): VNode {
+  const matched = state.matchedId == (jedi && jedi.id);
+  const props = { style: { color: matched ? 'red' : null } };
+  return li('.css-slot', props,
     jedi
       ? [
         h3([jedi.name]),
@@ -16,7 +18,7 @@ function renderJediSlot(jedi: IJedi): VNode {
 }
 
 function disableIfNotAllowed(allowed: boolean): string {
- return (allowed ? '' : '.css-button-disabled')
+  return (allowed ? '' : '.css-button-disabled')
 }
 
 function view(state$: Stream<IApplicationState>): Stream<VNode> {
@@ -29,7 +31,7 @@ function view(state$: Stream<IApplicationState>): Stream<VNode> {
         return div('.css-root', [
           h1('.css-planet-monitor', 'Obi-Wan currently on ' + planetName),
           section('.css-scrollable-list', [
-            ul('.css-slots', state.jedis.map(renderJediSlot)),
+            ul('.css-slots', state.jedis.map(jedi => renderJediSlot(jedi, state))),
             div('.css-scroll-buttons', [
               button('.css-button-up' + disableIfNotAllowed(up)),
               button('.css-button-down' + disableIfNotAllowed(down))

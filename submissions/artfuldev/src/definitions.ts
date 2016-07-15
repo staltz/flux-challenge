@@ -23,4 +23,5 @@ export interface IApplicationState {
   pendingIds: number[];
   down: boolean;
   up: boolean;
+  matchedId: number;
 }

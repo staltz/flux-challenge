@@ -30,7 +30,8 @@ const ApplicationStateRecord = Record({
   nextId: -1,
   pendingIds: [],
   down: false,
-  up: false
+  up: false,
+  matchedId: -1
 });
 
 class ApplicationState extends ApplicationStateRecord implements IApplicationState {
@@ -40,6 +41,7 @@ class ApplicationState extends ApplicationStateRecord implements IApplicationSta
   pendingIds: number[];
   down: boolean;
   up: boolean;
+  matchedId: number;
   constructor(props: IApplicationState) {
     super(props);
   }
@@ -57,7 +59,8 @@ export const InitialState: IApplicationState = new ApplicationState({
   nextId: -1,
   pendingIds: [],
   down: false,
-  up: false
+  up: false,
+  matchedId: -1
 });
 
 function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IIntent): Stream<(state: IApplicationState) => IApplicationState> {
@@ -202,6 +205,27 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
       const nextState = appState.set('up', up) as ApplicationState;
       return nextState;
     });
+  
+  const matchedIdReducer$ =
+    xs.merge<{}>(
+      jedi$,
+      planet$
+    ).mapTo((state: IApplicationState) => {
+      const planet = state.planet;
+      const appState = state as ApplicationState;
+      const noMatchState = appState.set('matchedId', -1) as ApplicationState; 
+      if(!planet || !planet.id)
+        return noMatchState;
+      const planetId = planet.id;
+      const matchedJedi =
+        state.jedis
+          .filter(jedi => !!jedi && jedi.homeworld.id === planetId)
+          .pop();
+      if(!matchedJedi)
+        return noMatchState;
+      const nextState = noMatchState.set('matchedId', matchedJedi.id) as ApplicationState;
+      return nextState;
+    });
 
   return xs.merge(
     planetReducer$,
@@ -209,7 +233,8 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
     nextIdReducer$,
     pendingIdsReducer$,
     downReducer$,
-    upReducer$
+    upReducer$,
+    matchedIdReducer$
   );
 }
 
