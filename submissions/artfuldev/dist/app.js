@@ -7061,13 +7061,14 @@
 	        var down = state.down;
 	        var up = state.up;
 	        var planetName = (state.planet && state.planet.name) || '';
+	        var matched = state.matchedId !== -1;
 	        return dom_1.div('.css-root', [
 	            dom_1.h1('.css-planet-monitor', 'Obi-Wan currently on ' + planetName),
 	            dom_1.section('.css-scrollable-list', [
 	                dom_1.ul('.css-slots', state.jedis.map(function (jedi) { return renderJediSlot(jedi, state); })),
 	                dom_1.div('.css-scroll-buttons', [
-	                    dom_1.button('.css-button-up' + disableIfNotAllowed(up)),
-	                    dom_1.button('.css-button-down' + disableIfNotAllowed(down))
+	                    dom_1.button('.css-button-up' + disableIfNotAllowed(up && !matched)),
+	                    dom_1.button('.css-button-down' + disableIfNotAllowed(down && !matched))
 	                ])
 	            ])
 	        ]);
