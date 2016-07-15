@@ -2,7 +2,7 @@ import { Stream } from 'xstream';
 import { ISinks } from './definitions';
 import { div, h1, section, ul, li, h3, h6, button, VNode } from '@cycle/dom';
 import { IApplicationState } from './definitions';
-import { IJedi } from './jedis';
+import { IJedi } from './drivers/jedis';
 
 function renderJediSlot(jedi: IJedi): VNode {
   return li('.css-slot',
@@ -16,7 +16,7 @@ function renderJediSlot(jedi: IJedi): VNode {
 }
 
 function view(state$: Stream<IApplicationState>): Stream<VNode> {
-  const vDom$ =
+  const vNode$ =
     state$
       .map(state => {
         var planetName = '';
@@ -33,7 +33,7 @@ function view(state$: Stream<IApplicationState>): Stream<VNode> {
           ])
         ]);
       });
-  return vDom$;
+  return vNode$;
 }
 
 export default view;

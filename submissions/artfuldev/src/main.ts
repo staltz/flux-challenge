@@ -2,20 +2,18 @@ import { ISources, ISinks, IApplicationState } from './definitions';
 import intent from './intent';
 import model from './model';
 import view from './view';
-import { Stream } from 'xstream';
-import { jediRequests, jedis } from './jedis';
+import xs from 'xstream';
 import { ResponseStream } from '@cycle/http';
 
 function main(sources: ISources): ISinks {
-  const http = sources.http;
-  const jedi$ = jedis(http);
+  const jedi$ = sources.jedis.jedi$;
   const planet$ = sources.planets.planet$;
   const state$ = model(planet$, jedi$, intent(sources));
-  const dom$ = view(state$);
-  const request$ = jediRequests(http, state$);
+  const vNode$ = view(state$);
+  const id$ = state$.map(state => xs.fromArray(state.jediRequests)).flatten();
   const sinks = {
-    dom: dom$,
-    http: request$
+    dom: vNode$,
+    jedis: id$
   };
   return sinks;
 }

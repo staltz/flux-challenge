@@ -3,7 +3,7 @@ import { IIntent } from './intent';
 import { ISources, IApplicationState } from './definitions';
 import { Record } from 'immutable';
 import { IPlanet } from './drivers/planets';
-import { IJedi, INamedEntity, ILinkableEntity } from './jedis';
+import { IJedi, INamedEntity, ILinkableEntity } from './drivers/jedis';
 
 const JediRecord = Record({
   id: 0,

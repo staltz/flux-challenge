@@ -3,7 +3,7 @@ import { IIntent } from './intent';
 import reducers, { InitialState } from './reducers';
 import { IApplicationState } from './definitions';
 import { IPlanet } from './drivers/planets';
-import { IJedi } from './jedis';
+import { IJedi } from './drivers/jedis';
 
 function model(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IIntent): Stream<IApplicationState> {
   const reducer$ = reducers(planet$, jedi$, intent);
