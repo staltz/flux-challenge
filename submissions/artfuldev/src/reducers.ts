@@ -64,6 +64,7 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
           return nextState;
         });
   const jedisReducer$ =
+  xs.merge(
     jedi$
       .map(jedi =>
         (state: IApplicationState) => {
@@ -102,7 +103,28 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
               .set('jedis', newJedis)
               .set('jediRequests', newJediRequests) as ApplicationState;
           return nextState;
-        });
+        }),
+    intent.scrollUp$
+      .mapTo((state: IApplicationState) => {
+        const jedis = state.jedis;
+        const newJedis =
+          jedis
+            .map((jedi, i, array) =>  (i<2) ? null: array[i-2]);
+        const appState = state as ApplicationState;
+        const nextState = appState.set('jedis', newJedis) as ApplicationState; 
+        return nextState;
+      }),
+    intent.scrollDown$
+      .mapTo((state: IApplicationState) => {
+        const jedis = state.jedis;
+        const newJedis =
+          jedis
+            .map((jedi, i, array) =>  (i>2) ? null: array[i+2]);
+        const appState = state as ApplicationState;
+        const nextState = appState.set('jedis', newJedis) as ApplicationState; 
+        return nextState;
+      })
+  );
   return xs.merge(
     planetReducer$,
     jedisReducer$
