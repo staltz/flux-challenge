@@ -14381,15 +14381,6 @@
 	}
 	function requests(state$) {
 	    var distinct = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
-	    // const justScrolled = dropRepeats<IApplicationState>(
-	    //   (prev, next) => {
-	    //     const prevHash = hash(prev);
-	    //     const nextHash = hash(next);
-	    //     function rowsOnly(hash: string):string {
-	    //       return hash.split('|')[0];
-	    //     }
-	    //   }
-	    // );
 	    var request$ = state$
 	        .compose(distinct)
 	        .map(IdsToLoad)
@@ -14812,19 +14803,16 @@
 	var http_1 = __webpack_require__(137);
 	var xstream_adapter_1 = __webpack_require__(145);
 	var JEDI_URL = 'http://localhost:3000/dark-jedis/';
-	var requestedJedis = [];
 	var JedisSource = (function () {
 	    function JedisSource(jediRequest$) {
 	        var xs = xstream_1.Stream;
 	        var id$ = jediRequest$.filter(function (req) { return req !== -1; });
 	        var cancel$ = jediRequest$.filter(function (req) { return req === -1; }).mapTo(true);
 	        var request$ = id$
-	            .filter(function (id) { return requestedJedis.indexOf(id) === -1; })
 	            .map(function (id) {
-	            requestedJedis = requestedJedis.concat(id);
 	            var requestOptions = {
 	                url: JEDI_URL + id,
-	                category: 'jedis'
+	                category: 'jedis',
 	            };
 	            return requestOptions;
 	        });
@@ -14835,16 +14823,9 @@
 	            xs
 	                .merge(response$$, cancel$$)
 	                .flatten()
-	                .filter(function (response) {
-	                var cancelled = !response;
-	                if (cancelled)
-	                    requestedJedis = [];
-	                return !cancelled;
-	            }).map(function (response) {
-	                var jedi = JSON.parse(response.text);
-	                requestedJedis = requestedJedis.filter(function (id) { return id !== jedi.id; });
-	                return jedi;
-	            }).remember();
+	                .filter(Boolean)
+	                .map(function (response) { return JSON.parse(response.text); })
+	                .remember();
 	    }
 	    return JedisSource;
 	}());

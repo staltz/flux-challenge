@@ -22,7 +22,6 @@ export interface IJedi extends INamedEntity {
 }
 
 const JEDI_URL = 'http://localhost:3000/dark-jedis/';
-var requestedJedis:number[] = [];
 
 export class JedisSource {
   jedi$: Stream<IJedi>;
@@ -32,32 +31,23 @@ export class JedisSource {
     const cancel$ = jediRequest$.filter(req => req === -1).mapTo(true);
     const request$ =
       id$
-        .filter(id => requestedJedis.indexOf(id) === -1)
         .map(id => {
-          requestedJedis = requestedJedis.concat(id);
-          const requestOptions:RequestOptions = {
+          const requestOptions: RequestOptions = {
             url: JEDI_URL + id,
-            category: 'jedis'
+            category: 'jedis',
           };
           return requestOptions;
         });
     const http: HTTPSource = makeHTTPDriver()(request$, XStreamAdapter);
-    const cancel$$ = cancel$.mapTo(xs.of(null));
+    const cancel$$ = cancel$.mapTo(xs.of<Response>(null));
     const response$$: Stream<Stream<Response>> = http.select('jedis');
     this.jedi$ =
       xs
         .merge(response$$, cancel$$)
         .flatten()
-        .filter((response: Response) => {
-          const cancelled = !response;
-          if(cancelled)
-            requestedJedis = [];
-          return !cancelled;
-        }).map((response: Response) => {
-          const jedi: IJedi = JSON.parse(response.text);
-          requestedJedis = requestedJedis.filter(id => id !== jedi.id);
-          return jedi;
-        }).remember();
+        .filter(Boolean)
+        .map(response => JSON.parse(response.text) as IJedi)
+        .remember();
   }
 }
 
