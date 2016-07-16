@@ -14353,25 +14353,32 @@
 	"use strict";
 	var xstream_1 = __webpack_require__(5);
 	var dropRepeats_1 = __webpack_require__(131);
+	var flattenConcurrently_1 = __webpack_require__(146);
 	var xs = xstream_1.Stream;
-	function IdsToLoad(state) {
-	    var matched = state.matchedId !== -1;
-	    if (matched)
-	        return [-1];
-	    var jedis = state.jedis;
+	function canJediBeAdded(jedi, jedis) {
+	    var first = jedis[0];
+	    var last = jedis[4];
+	    var isMasterOfFirst = first !== null && first.master.id === jedi.id;
+	    var isApprenticeOfLast = last !== null && last.apprentice.id === jedi.id;
 	    var loadedIds = jedis
-	        .filter(function (jedi) { return !!jedi; })
+	        .filter(Boolean)
 	        .map(function (jedi) { return jedi.id; });
-	    var tail = jedis.slice(1);
-	    var head = jedis.slice(0, 4);
-	    var masterIds = tail.filter(function (jedi) { return !!jedi && !!jedi.master && !!jedi.master.id; })
-	        .map(function (jedi) { return jedi.master.id; });
-	    var apprenticeIds = head.filter(function (jedi) { return !!jedi && !!jedi.apprentice && !!jedi.apprentice.id; })
-	        .map(function (jedi) { return jedi.apprentice.id; });
-	    var masterIdsToLoad = masterIds.filter(function (id) { return loadedIds.indexOf(id) === -1; });
-	    var apprenticeIdsToLoad = apprenticeIds.filter(function (id) { return loadedIds.indexOf(id) === -1; });
-	    var idsToLoad = masterIdsToLoad.concat(apprenticeIdsToLoad);
-	    return idsToLoad;
+	    var alreadyLoaded = loadedIds.indexOf(jedi.id) !== -1;
+	    return !alreadyLoaded && !isMasterOfFirst && !isApprenticeOfLast;
+	}
+	function neighborsToLoad(state) {
+	    var jedi$ = xs.fromArray(state.jedis);
+	    var matched = state.matchedId !== -1;
+	    var neighbors$ = jedi$
+	        .filter(Boolean)
+	        .map(function (jedi) { return xs.of(jedi.master, jedi.apprentice); })
+	        .compose(flattenConcurrently_1.default)
+	        .filter(function (jedi) {
+	        return Boolean(jedi.id)
+	            && canJediBeAdded(jedi, state.jedis)
+	            && !matched;
+	    });
+	    return neighbors$;
 	}
 	function hash(state) {
 	    var jedis = state.jedis
@@ -14379,14 +14386,15 @@
 	        .join('-');
 	    return jedis + '|' + state.matchedId;
 	}
+	var distinct = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
 	function requests(state$) {
-	    var distinct = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
-	    var request$ = state$
-	        .compose(distinct)
-	        .map(IdsToLoad)
-	        .map(function (ids) { return ids.pop() || 0; })
-	        .filter(function (id) { return id !== 0; })
-	        .startWith(3616);
+	    var distinctState$ = state$.compose(distinct);
+	    var request$ = xs.merge(distinctState$
+	        .map(neighborsToLoad)
+	        .compose(flattenConcurrently_1.default)
+	        .map(function (jedi) { return jedi.id; }), distinctState$
+	        .filter(function (state) { return state.matchedId !== -1; })
+	        .mapTo(-1)).startWith(3616);
 	    return request$;
 	}
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -16615,6 +16623,103 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = XStreamAdapter;
 	//# sourceMappingURL=index.js.map
+
+/***/ },
+/* 146 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var core_1 = __webpack_require__(6);
+	var FCIL = (function () {
+	    function FCIL(out, op) {
+	        this.out = out;
+	        this.op = op;
+	    }
+	    FCIL.prototype._n = function (t) {
+	        this.out._n(t);
+	    };
+	    FCIL.prototype._e = function (err) {
+	        this.out._e(err);
+	    };
+	    FCIL.prototype._c = function () {
+	        this.op.less();
+	    };
+	    return FCIL;
+	}());
+	var FlattenConcOperator = (function () {
+	    function FlattenConcOperator(ins) {
+	        this.ins = ins;
+	        this.type = 'flattenConcurrently';
+	        this.active = 1; // number of outers and inners that have not yet ended
+	        this.out = null;
+	    }
+	    FlattenConcOperator.prototype._start = function (out) {
+	        this.out = out;
+	        this.ins._add(this);
+	    };
+	    FlattenConcOperator.prototype._stop = function () {
+	        this.ins._remove(this);
+	        this.active = 1;
+	        this.out = null;
+	    };
+	    FlattenConcOperator.prototype.less = function () {
+	        if (--this.active === 0) {
+	            var u = this.out;
+	            if (!u)
+	                return;
+	            u._c();
+	        }
+	    };
+	    FlattenConcOperator.prototype._n = function (s) {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        this.active++;
+	        s._add(new FCIL(u, this));
+	    };
+	    FlattenConcOperator.prototype._e = function (err) {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        u._e(err);
+	    };
+	    FlattenConcOperator.prototype._c = function () {
+	        this.less();
+	    };
+	    return FlattenConcOperator;
+	}());
+	exports.FlattenConcOperator = FlattenConcOperator;
+	/**
+	 * Flattens a "stream of streams", handling multiple concurrent nested streams
+	 * simultaneously.
+	 *
+	 * If the input stream is a stream that emits streams, then this operator will
+	 * return an output stream which is a flat stream: emits regular events. The
+	 * flattening happens concurrently. It works like this: when the input stream
+	 * emits a nested stream, *flattenConcurrently* will start imitating that
+	 * nested one. When the next nested stream is emitted on the input stream,
+	 * *flattenConcurrently* will also imitate that new one, but will continue to
+	 * imitate the previous nested streams as well.
+	 *
+	 * Marble diagram:
+	 *
+	 * ```text
+	 * --+--------+---------------
+	 *   \        \
+	 *    \       ----1----2---3--
+	 *    --a--b----c----d--------
+	 *     flattenConcurrently
+	 * -----a--b----c-1--d-2---3--
+	 * ```
+	 *
+	 * @return {Stream}
+	 */
+	function flattenConcurrently(ins) {
+	    return new core_1.Stream(new FlattenConcOperator(ins));
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = flattenConcurrently;
+	//# sourceMappingURL=flattenConcurrently.js.map
 
 /***/ }
 /******/ ]);

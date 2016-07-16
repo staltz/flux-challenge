@@ -1,30 +1,37 @@
 import { Stream } from 'xstream';
 import { IApplicationState } from './definitions';
 import dropRepeats from 'xstream/extra/dropRepeats';
+import flattenConcurrently from 'xstream/extra/flattenConcurrently';
+import { ILinkableEntity, IJedi } from './drivers/jedis';
 
 const xs = Stream;
 
-function IdsToLoad(state: IApplicationState): number[] {
-  const matched = state.matchedId !== -1;
-  if (matched)
-    return [-1];
-  const jedis = state.jedis;
+function canJediBeAdded(jedi: ILinkableEntity, jedis: IJedi[]) {
+  const first = jedis[0];
+  const last = jedis[4];
+  const isMasterOfFirst = first !== null && first.master.id === jedi.id;
+  const isApprenticeOfLast = last !== null && last.apprentice.id === jedi.id;
   const loadedIds =
     jedis
-      .filter(jedi => !!jedi)
+      .filter(Boolean)
       .map(jedi => jedi.id);
-  const tail = jedis.slice(1);
-  const head = jedis.slice(0, 4);
-  const masterIds =
-    tail.filter(jedi => !!jedi && !!jedi.master && !!jedi.master.id)
-      .map(jedi => jedi.master.id);
-  const apprenticeIds =
-    head.filter(jedi => !!jedi && !!jedi.apprentice && !!jedi.apprentice.id)
-      .map(jedi => jedi.apprentice.id);
-  const masterIdsToLoad = masterIds.filter(id => loadedIds.indexOf(id) === -1);
-  const apprenticeIdsToLoad = apprenticeIds.filter(id => loadedIds.indexOf(id) === -1);
-  const idsToLoad = masterIdsToLoad.concat(apprenticeIdsToLoad);
-  return idsToLoad;
+  const alreadyLoaded = loadedIds.indexOf(jedi.id) !== -1;
+  return !alreadyLoaded && !isMasterOfFirst && !isApprenticeOfLast
+}
+
+function neighborsToLoad(state: IApplicationState): Stream<ILinkableEntity> {
+  const jedi$ = xs.fromArray(state.jedis);
+  const matched = state.matchedId !== -1;
+  const neighbors$ =
+    jedi$
+      .filter(Boolean)
+      .map(jedi => xs.of(jedi.master, jedi.apprentice))
+      .compose(flattenConcurrently)
+      .filter(jedi =>
+        Boolean(jedi.id)
+        && canJediBeAdded(jedi, state.jedis)
+        && !matched);
+  return neighbors$;
 }
 
 function hash(state: IApplicationState): string {
@@ -34,17 +41,23 @@ function hash(state: IApplicationState): string {
       .join('-');
   return jedis + '|' + state.matchedId;
 }
+
+const distinct = dropRepeats<IApplicationState>(
+  (prev, next) => hash(prev) === hash(next)
+);
+
 function requests(state$: Stream<IApplicationState>): Stream<number> {
-  const distinct = dropRepeats<IApplicationState>(
-    (prev, next) => hash(prev) === hash(next)
-  );
+  const distinctState$ = state$.compose(distinct);
   const request$ =
-    state$
-      .compose(distinct)
-      .map(IdsToLoad)
-      .map(ids => ids.pop() || 0)
-      .filter(id => id !== 0)
-      .startWith(3616);
+    xs.merge(
+      distinctState$
+        .map(neighborsToLoad)
+        .compose(flattenConcurrently)
+        .map(jedi => jedi.id),
+      distinctState$
+        .filter(state => state.matchedId !== -1)
+        .mapTo(-1)
+    ).startWith(3616);
   return request$;
 }
 
