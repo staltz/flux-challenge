@@ -42,18 +42,23 @@ function hash(state: IApplicationState): string {
   return jedis + '|' + state.matchedId;
 }
 
-const distinct = dropRepeats<IApplicationState>(
+const distinctStates = dropRepeats<IApplicationState>(
   (prev, next) => hash(prev) === hash(next)
 );
 
+const distinctIds = dropRepeats<number>(
+  (prev, next) => prev === next
+);
+
 function requests(state$: Stream<IApplicationState>): Stream<number> {
-  const distinctState$ = state$.compose(distinct);
+  const distinctState$ = state$.compose(distinctStates);
   const request$ =
     xs.merge(
       distinctState$
         .map(neighborsToLoad)
         .compose(flattenConcurrently)
-        .map(jedi => jedi.id),
+        .map(jedi => jedi.id)
+        .compose(distinctIds),
       distinctState$
         .filter(state => state.matchedId !== -1)
         .mapTo(-1)

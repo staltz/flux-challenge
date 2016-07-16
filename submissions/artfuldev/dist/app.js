@@ -14386,13 +14386,15 @@
 	        .join('-');
 	    return jedis + '|' + state.matchedId;
 	}
-	var distinct = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
+	var distinctStates = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
+	var distinctIds = dropRepeats_1.default(function (prev, next) { return prev === next; });
 	function requests(state$) {
-	    var distinctState$ = state$.compose(distinct);
+	    var distinctState$ = state$.compose(distinctStates);
 	    var request$ = xs.merge(distinctState$
 	        .map(neighborsToLoad)
 	        .compose(flattenConcurrently_1.default)
-	        .map(function (jedi) { return jedi.id; }), distinctState$
+	        .map(function (jedi) { return jedi.id; })
+	        .compose(distinctIds), distinctState$
 	        .filter(function (state) { return state.matchedId !== -1; })
 	        .mapTo(-1)).startWith(3616);
 	    return request$;
