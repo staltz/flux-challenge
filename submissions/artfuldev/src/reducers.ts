@@ -123,33 +123,29 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
     );
 
   const downReducer$ =
-    xs.merge<{}>(
-      jedi$,
-      intent.scrollUp$
-    ).mapTo((state: IApplicationState) => {
-      const jedis = state.jedis;
-      const lastJedi = jedis.filter(jedi => !!jedi).pop();
-      const index = jedis.indexOf(lastJedi);
-      const down = lastJedi && lastJedi.apprentice && lastJedi.apprentice.id;
-      const appState = state as ApplicationState;
-      const nextState = appState.set('down', down) as ApplicationState;
-      return nextState;
-    });
+    jedisReducer$
+      .mapTo((state: IApplicationState) => {
+        const jedis = state.jedis;
+        const lastJedi = jedis.filter(jedi => !!jedi).pop();
+        const index = jedis.indexOf(lastJedi);
+        const down = lastJedi && lastJedi.apprentice && lastJedi.apprentice.id;
+        const appState = state as ApplicationState;
+        const nextState = appState.set('down', down) as ApplicationState;
+        return nextState;
+      });
 
   const upReducer$ =
-    xs.merge<{}>(
-      jedi$,
-      intent.scrollDown$
-    ).mapTo((state: IApplicationState) => {
-      const jedis = state.jedis;
-      const firstJedi = jedis.filter(jedi => !!jedi).shift();
-      const index = jedis.indexOf(firstJedi);
-      const up = firstJedi && firstJedi.master && firstJedi.master.id;
-      const appState = state as ApplicationState;
-      const nextState = appState.set('up', up) as ApplicationState;
-      return nextState;
-    });
-  
+    jedisReducer$
+      .mapTo((state: IApplicationState) => {
+        const jedis = state.jedis;
+        const firstJedi = jedis.filter(jedi => !!jedi).shift();
+        const index = jedis.indexOf(firstJedi);
+        const up = firstJedi && firstJedi.master && firstJedi.master.id;
+        const appState = state as ApplicationState;
+        const nextState = appState.set('up', up) as ApplicationState;
+        return nextState;
+      });
+
   const matchedIdReducer$ =
     xs.merge<{}>(
       jedi$,
@@ -157,15 +153,15 @@ function reducers(planet$: Stream<IPlanet>, jedi$: Stream<IJedi>, intent: IInten
     ).mapTo((state: IApplicationState) => {
       const planet = state.planet;
       const appState = state as ApplicationState;
-      const noMatchState = appState.set('matchedId', -1) as ApplicationState; 
-      if(!planet || !planet.id)
+      const noMatchState = appState.set('matchedId', -1) as ApplicationState;
+      if (!planet || !planet.id)
         return noMatchState;
       const planetId = planet.id;
       const matchedJedi =
         state.jedis
           .filter(jedi => !!jedi && jedi.homeworld.id === planetId)
           .pop();
-      if(!matchedJedi)
+      if (!matchedJedi)
         return noMatchState;
       const nextState = noMatchState.set('matchedId', matchedJedi.id) as ApplicationState;
       return nextState;

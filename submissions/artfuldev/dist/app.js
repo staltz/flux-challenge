@@ -229,7 +229,8 @@
 	        var nextState = appState.set('jedis', newJedis);
 	        return nextState;
 	    }));
-	    var downReducer$ = xs.merge(jedi$, intent.scrollUp$).mapTo(function (state) {
+	    var downReducer$ = jedisReducer$
+	        .mapTo(function (state) {
 	        var jedis = state.jedis;
 	        var lastJedi = jedis.filter(function (jedi) { return !!jedi; }).pop();
 	        var index = jedis.indexOf(lastJedi);
@@ -238,7 +239,8 @@
 	        var nextState = appState.set('down', down);
 	        return nextState;
 	    });
-	    var upReducer$ = xs.merge(jedi$, intent.scrollDown$).mapTo(function (state) {
+	    var upReducer$ = jedisReducer$
+	        .mapTo(function (state) {
 	        var jedis = state.jedis;
 	        var firstJedi = jedis.filter(function (jedi) { return !!jedi; }).shift();
 	        var index = jedis.indexOf(firstJedi);
