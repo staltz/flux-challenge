@@ -30,6 +30,7 @@ export class JedisSource {
     const xs = Stream;
     const request$ =
       id$
+        .filter(id => id !== -1)
         .filter(id => requestedJedis.indexOf(id) === -1)
         .map(id => {
           requestedJedis = requestedJedis.concat(id);
@@ -39,12 +40,21 @@ export class JedisSource {
           } as RequestOptions;
           return requestOptions;
         });
-    const http = makeHTTPDriver()(request$, XStreamAdapter);
+    const http: HTTPSource = makeHTTPDriver()(request$, XStreamAdapter);
+    const cancel$$ =
+      id$
+        .filter(id => id === -1)
+        .mapTo(xs.of(null));
     this.jedi$ =
-      http
-        .select('jedis')
+      xs
+        .merge(http.response$$, cancel$$)
         .flatten()
-        .map((response: Response) => {
+        .filter((response: Response) => {
+          const jedis = !!response && response.request.category === 'jedis';
+          if(!jedis)
+            requestedJedis = [];
+          return jedis;
+        }).map((response: Response) => {
           const jedi = JSON.parse(response.text) as IJedi;
           requestedJedis = requestedJedis.filter(id => id !== jedi.id);
           return jedi;

@@ -7,7 +7,7 @@ const xs = Stream;
 function IdsToLoad(state: IApplicationState): number[] {
   const matched = state.matchedId !== -1;
   if (matched)
-    return [];
+    return [-1];
   const jedis = state.jedis;
   const loadedIds =
     jedis
@@ -43,8 +43,8 @@ function requests(state$: Stream<IApplicationState>): Stream<number> {
     state$
       .compose(distinct)
       .map(IdsToLoad)
-      .map(ids => ids.pop() || -1)
-      .filter(id => id !== -1)
+      .map(ids => ids.pop() || 0)
+      .filter(id => id !== 0)
       .startWith(3616);
   return request$;
 }

@@ -14355,7 +14355,7 @@
 	function IdsToLoad(state) {
 	    var matched = state.matchedId !== -1;
 	    if (matched)
-	        return [];
+	        return [-1];
 	    var jedis = state.jedis;
 	    var loadedIds = jedis
 	        .filter(function (jedi) { return !!jedi; })
@@ -14382,8 +14382,8 @@
 	    var request$ = state$
 	        .compose(distinct)
 	        .map(IdsToLoad)
-	        .map(function (ids) { return ids.pop() || -1; })
-	        .filter(function (id) { return id !== -1; })
+	        .map(function (ids) { return ids.pop() || 0; })
+	        .filter(function (id) { return id !== 0; })
 	        .startWith(3616);
 	    return request$;
 	}
@@ -14806,6 +14806,7 @@
 	    function JedisSource(id$) {
 	        var xs = xstream_1.Stream;
 	        var request$ = id$
+	            .filter(function (id) { return id !== -1; })
 	            .filter(function (id) { return requestedJedis.indexOf(id) === -1; })
 	            .map(function (id) {
 	            requestedJedis = requestedJedis.concat(id);
@@ -14816,11 +14817,19 @@
 	            return requestOptions;
 	        });
 	        var http = http_1.makeHTTPDriver()(request$, xstream_adapter_1.default);
+	        var cancel$$ = id$
+	            .filter(function (id) { return id === -1; })
+	            .mapTo(xs.of(null));
 	        this.jedi$ =
-	            http
-	                .select('jedis')
+	            xs
+	                .merge(http.response$$, cancel$$)
 	                .flatten()
-	                .map(function (response) {
+	                .filter(function (response) {
+	                var jedis = !!response && response.request.category === 'jedis';
+	                if (!jedis)
+	                    requestedJedis = [];
+	                return jedis;
+	            }).map(function (response) {
 	                var jedi = JSON.parse(response.text);
 	                requestedJedis = requestedJedis.filter(function (id) { return id !== jedi.id; });
 	                return jedi;
