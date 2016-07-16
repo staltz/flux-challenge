@@ -14393,10 +14393,10 @@
 	    var request$ = xs.merge(distinctState$
 	        .map(neighborsToLoad)
 	        .compose(flattenConcurrently_1.default)
-	        .map(function (jedi) { return jedi.id; })
-	        .compose(distinctIds), distinctState$
+	        .map(function (jedi) { return jedi.id; }), distinctState$
 	        .filter(function (state) { return state.matchedId !== -1; })
-	        .mapTo(-1)).startWith(3616);
+	        .mapTo(-1)).compose(distinctIds)
+	        .startWith(3616);
 	    return request$;
 	}
 	Object.defineProperty(exports, "__esModule", { value: true });

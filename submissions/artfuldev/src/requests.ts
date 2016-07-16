@@ -57,12 +57,12 @@ function requests(state$: Stream<IApplicationState>): Stream<number> {
       distinctState$
         .map(neighborsToLoad)
         .compose(flattenConcurrently)
-        .map(jedi => jedi.id)
-        .compose(distinctIds),
+        .map(jedi => jedi.id),
       distinctState$
         .filter(state => state.matchedId !== -1)
         .mapTo(-1)
-    ).startWith(3616);
+    ).compose(distinctIds)
+    .startWith(3616);
   return request$;
 }
 
