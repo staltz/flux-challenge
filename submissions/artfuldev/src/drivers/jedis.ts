@@ -26,11 +26,12 @@ var requestedJedis = [];
 
 export class JedisSource {
   jedi$: Stream<IJedi>;
-  constructor(id$: Stream<number>) {
+  constructor(jediRequest$: Stream<number>) {
     const xs = Stream;
+    const id$ = jediRequest$.filter(req => req !== -1);
+    const cancel$ = jediRequest$.filter(req => req === -1);
     const request$ =
       id$
-        .filter(id => id !== -1)
         .filter(id => requestedJedis.indexOf(id) === -1)
         .map(id => {
           requestedJedis = requestedJedis.concat(id);
@@ -41,10 +42,7 @@ export class JedisSource {
           return requestOptions;
         });
     const http: HTTPSource = makeHTTPDriver()(request$, XStreamAdapter);
-    const cancel$$ =
-      id$
-        .filter(id => id === -1)
-        .mapTo(xs.of(null));
+    const cancel$$ = cancel$.mapTo(xs.of(null));
     this.jedi$ =
       xs
         .merge(http.response$$, cancel$$)

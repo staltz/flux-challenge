@@ -14805,10 +14805,11 @@
 	var JEDI_URL = 'http://localhost:3000/dark-jedis/';
 	var requestedJedis = [];
 	var JedisSource = (function () {
-	    function JedisSource(id$) {
+	    function JedisSource(jediRequest$) {
 	        var xs = xstream_1.Stream;
+	        var id$ = jediRequest$.filter(function (req) { return req !== -1; });
+	        var cancel$ = jediRequest$.filter(function (req) { return req === -1; });
 	        var request$ = id$
-	            .filter(function (id) { return id !== -1; })
 	            .filter(function (id) { return requestedJedis.indexOf(id) === -1; })
 	            .map(function (id) {
 	            requestedJedis = requestedJedis.concat(id);
@@ -14819,9 +14820,7 @@
 	            return requestOptions;
 	        });
 	        var http = http_1.makeHTTPDriver()(request$, xstream_adapter_1.default);
-	        var cancel$$ = id$
-	            .filter(function (id) { return id === -1; })
-	            .mapTo(xs.of(null));
+	        var cancel$$ = cancel$.mapTo(xs.of(null));
 	        this.jedi$ =
 	            xs
 	                .merge(http.response$$, cancel$$)
