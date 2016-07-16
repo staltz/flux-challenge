@@ -14377,10 +14377,19 @@
 	    var jedis = state.jedis
 	        .map(function (jedi) { return !!jedi ? jedi.id : '*'; })
 	        .join('-');
-	    return jedis + state.matchedId;
+	    return jedis + '|' + state.matchedId;
 	}
 	function requests(state$) {
 	    var distinct = dropRepeats_1.default(function (prev, next) { return hash(prev) === hash(next); });
+	    // const justScrolled = dropRepeats<IApplicationState>(
+	    //   (prev, next) => {
+	    //     const prevHash = hash(prev);
+	    //     const nextHash = hash(next);
+	    //     function rowsOnly(hash: string):string {
+	    //       return hash.split('|')[0];
+	    //     }
+	    //   }
+	    // );
 	    var request$ = state$
 	        .compose(distinct)
 	        .map(IdsToLoad)
@@ -14808,7 +14817,7 @@
 	    function JedisSource(jediRequest$) {
 	        var xs = xstream_1.Stream;
 	        var id$ = jediRequest$.filter(function (req) { return req !== -1; });
-	        var cancel$ = jediRequest$.filter(function (req) { return req === -1; });
+	        var cancel$ = jediRequest$.filter(function (req) { return req === -1; }).mapTo(true);
 	        var request$ = id$
 	            .filter(function (id) { return requestedJedis.indexOf(id) === -1; })
 	            .map(function (id) {
@@ -14821,20 +14830,21 @@
 	        });
 	        var http = http_1.makeHTTPDriver()(request$, xstream_adapter_1.default);
 	        var cancel$$ = cancel$.mapTo(xs.of(null));
+	        var response$$ = http.select('jedis');
 	        this.jedi$ =
 	            xs
-	                .merge(http.response$$, cancel$$)
+	                .merge(response$$, cancel$$)
 	                .flatten()
 	                .filter(function (response) {
-	                var jedis = !!response && response.request.category === 'jedis';
-	                if (!jedis)
+	                var cancelled = !response;
+	                if (cancelled)
 	                    requestedJedis = [];
-	                return jedis;
+	                return !cancelled;
 	            }).map(function (response) {
 	                var jedi = JSON.parse(response.text);
 	                requestedJedis = requestedJedis.filter(function (id) { return id !== jedi.id; });
 	                return jedi;
-	            });
+	            }).remember();
 	    }
 	    return JedisSource;
 	}());

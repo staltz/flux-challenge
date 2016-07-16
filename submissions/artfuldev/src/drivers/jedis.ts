@@ -22,41 +22,42 @@ export interface IJedi extends INamedEntity {
 }
 
 const JEDI_URL = 'http://localhost:3000/dark-jedis/';
-var requestedJedis = [];
+var requestedJedis:number[] = [];
 
 export class JedisSource {
   jedi$: Stream<IJedi>;
   constructor(jediRequest$: Stream<number>) {
     const xs = Stream;
     const id$ = jediRequest$.filter(req => req !== -1);
-    const cancel$ = jediRequest$.filter(req => req === -1);
+    const cancel$ = jediRequest$.filter(req => req === -1).mapTo(true);
     const request$ =
       id$
         .filter(id => requestedJedis.indexOf(id) === -1)
         .map(id => {
           requestedJedis = requestedJedis.concat(id);
-          const requestOptions = {
+          const requestOptions:RequestOptions = {
             url: JEDI_URL + id,
             category: 'jedis'
-          } as RequestOptions;
+          };
           return requestOptions;
         });
     const http: HTTPSource = makeHTTPDriver()(request$, XStreamAdapter);
     const cancel$$ = cancel$.mapTo(xs.of(null));
+    const response$$: Stream<Stream<Response>> = http.select('jedis');
     this.jedi$ =
       xs
-        .merge(http.response$$, cancel$$)
+        .merge(response$$, cancel$$)
         .flatten()
         .filter((response: Response) => {
-          const jedis = !!response && response.request.category === 'jedis';
-          if(!jedis)
+          const cancelled = !response;
+          if(cancelled)
             requestedJedis = [];
-          return jedis;
+          return !cancelled;
         }).map((response: Response) => {
-          const jedi = JSON.parse(response.text) as IJedi;
+          const jedi: IJedi = JSON.parse(response.text);
           requestedJedis = requestedJedis.filter(id => id !== jedi.id);
           return jedi;
-        });
+        }).remember();
   }
 }
 

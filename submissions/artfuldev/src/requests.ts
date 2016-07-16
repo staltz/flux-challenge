@@ -32,13 +32,21 @@ function hash(state: IApplicationState): string {
     state.jedis
       .map(jedi => !!jedi ? jedi.id : '*')
       .join('-');
-  return jedis + state.matchedId;
+  return jedis + '|' + state.matchedId;
 }
-
 function requests(state$: Stream<IApplicationState>): Stream<number> {
   const distinct = dropRepeats<IApplicationState>(
     (prev, next) => hash(prev) === hash(next)
   );
+  // const justScrolled = dropRepeats<IApplicationState>(
+  //   (prev, next) => {
+  //     const prevHash = hash(prev);
+  //     const nextHash = hash(next);
+  //     function rowsOnly(hash: string):string {
+  //       return hash.split('|')[0];
+  //     }
+  //   }
+  // );
   const request$ =
     state$
       .compose(distinct)
