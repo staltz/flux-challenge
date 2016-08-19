@@ -1,10 +1,16 @@
 import { combineReducers } from 'redux';
-import currentPlanet from './currentPlanet';
-import list from './list';
-import onGoingRequests from './onGoingRequests';
 
-export default combineReducers({
-  currentPlanet,
-  list,
-  onGoingRequests
-});
+import currentPlanet from './current-planet';
+import initialState from './initial-state';
+import paddingTop from './padding-top';
+import siths from './siths';
+
+export default (state = initialState, action) => {
+  const newPaddingTop = paddingTop(state.paddingTop, action);
+
+  return combineReducers({
+    currentPlanet,
+    paddingTop: () => newPaddingTop,
+    siths: siths(state.paddingTop, newPaddingTop),
+  })(state, action);
+};
