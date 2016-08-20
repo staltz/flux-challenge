@@ -1,13 +1,16 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import App from './containers/App';
-import configureStore from './store/configureStore';
 
-const store = configureStore();
+import App from './app';
+import rootSaga from './sagas';
+import store from './store';
 
-React.render(
+store.runSaga(rootSaga);
+
+ReactDOM.render(
   <Provider store={store}>
-    {() => <App />}
+    <App />
   </Provider>,
   document.getElementById('root')
 );

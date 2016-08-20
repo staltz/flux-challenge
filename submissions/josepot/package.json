@@ -1,29 +1,31 @@
 {
-  "name": "flux-challenge-josepot",
-  "version": "0.0.0",
-  "description": "Flux Challenge",
-  "scripts": {
-    "start": "webpack --watch",
-    "build": "webpack"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/josepot/flux-challenge.git"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "classnames": "^2.1.5",
-    "ramda": "^0.17.1",
-    "react": "^0.13.3",
-    "react-redux": "^2.1.2",
-    "redux": "^3.0.0",
-    "redux-thunk": "^0.1.0",
-    "reselect": "^2.0.0",
-    "xhr": "^2.1.0"
-  },
+  "name": "josepot-2",
+  "version": "0.0.1",
+  "private": true,
   "devDependencies": {
-    "babel-core": "^5.6.18",
-    "babel-loader": "^5.1.4",
-    "webpack": "^1.9.11"
+    "copy-cli": "^1.2.1",
+    "react-scripts": "0.2.1",
+    "replace": "^0.3.0"
+  },
+  "dependencies": {
+    "immutable": "^3.8.1",
+    "ramda": "^0.22.1",
+    "react": "^15.2.1",
+    "react-dom": "^15.2.1",
+    "react-redux": "^4.4.5",
+    "redux": "^3.5.2",
+    "redux-saga": "^0.11.0",
+    "reselect": "^2.5.3",
+    "xhr": "^2.2.2"
+  },
+  "scripts": {
+    "reset-template": "./node_modules/.bin/copy index.template.html > index.html",
+    "post-build": "./node_modules/.bin/copy ./build/index.html > index.html && replace '\"/' '\"./build/' ./index.html",
+    "start": "npm run reset-template && react-scripts start",
+    "build": "npm run reset-template && react-scripts build && npm run post-build",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/react-scripts/config/eslint.js"
   }
 }

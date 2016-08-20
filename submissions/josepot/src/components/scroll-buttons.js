@@ -1,31 +1,21 @@
-import React, { Component, PropTypes } from 'react';
-import classNames from 'classnames';
+import React, { PropTypes } from 'react';
 
-export default class ScrollButtons extends Component {
-  render() {
-    const {
-      onScrollUp, onScrollDown, isScrollUpDisabled, isScrollDownDisabled
-    } = this.props;
-
-    let upClass = classNames('css-button-up',
-                             { 'css-button-disabled': isScrollUpDisabled });
-
-    let downClass = classNames('css-button-down',
-                               { 'css-button-disabled': isScrollDownDisabled });
-
-    return (
+const ScrollButtons = ({
+  onScrollUp, onScrollDown,
+  isScrollUpDisabled, isScrollDownDisabled,
+}) => {
+  return (
       <div className="css-scroll-buttons">
-        <button className={upClass}
+        <button className={'css-button-up' + (isScrollUpDisabled ? ' css-button-disabled' : '')}
                 onClick={ (e) => isScrollUpDisabled ? e.preventDefault() :
                                                       onScrollUp() }>
         </button>
-        <button className={downClass}
+        <button className={'css-button-down' + (isScrollDownDisabled ? ' css-button-disabled' : '')}
                 onClick={ (e) => isScrollDownDisabled ? e.preventDefault() :
                                                         onScrollDown() }>
         </button>
       </div>
     );
-  }
 }
 
 ScrollButtons.propTypes = {
@@ -34,3 +24,5 @@ ScrollButtons.propTypes = {
   isScrollUpDisabled: PropTypes.bool.isRequired,
   isScrollDownDisabled: PropTypes.bool.isRequired
 };
+
+export default ScrollButtons;
