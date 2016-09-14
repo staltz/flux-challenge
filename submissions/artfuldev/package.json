@@ -11,7 +11,7 @@
   "dependencies": {
     "@cycle/base": "^4.0.1",
     "@cycle/dom": "^10.0.6",
-    "@cycle/http": "^9.0.2",
+    "@cycle/http": "^11.0.1",
     "@cycle/xstream-adapter": "^3.0.2",
     "@cycle/xstream-run": "^3.0.3",
     "immutable": "^3.8.1",

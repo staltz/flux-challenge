@@ -47,9 +47,9 @@
 	"use strict";
 	var main_1 = __webpack_require__(1);
 	var dom_1 = __webpack_require__(9);
-	var xstream_run_1 = __webpack_require__(132);
-	var planets_1 = __webpack_require__(135);
-	var jedis_1 = __webpack_require__(136);
+	var xstream_run_1 = __webpack_require__(133);
+	var planets_1 = __webpack_require__(136);
+	var jedis_1 = __webpack_require__(137);
 	xstream_run_1.run(main_1.default, {
 	    dom: dom_1.makeDOMDriver('#app'),
 	    planets: planets_1.makePlanetsDriver(),
@@ -14353,7 +14353,7 @@
 	"use strict";
 	var xstream_1 = __webpack_require__(5);
 	var dropRepeats_1 = __webpack_require__(131);
-	var flattenConcurrently_1 = __webpack_require__(146);
+	var flattenConcurrently_1 = __webpack_require__(132);
 	var xs = xstream_1.Stream;
 	function canJediBeAdded(jedi, jedis) {
 	    var first = jedis[0];
@@ -14535,8 +14535,105 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var base_1 = __webpack_require__(133);
-	var xstream_adapter_1 = __webpack_require__(134);
+	var core_1 = __webpack_require__(6);
+	var FCIL = (function () {
+	    function FCIL(out, op) {
+	        this.out = out;
+	        this.op = op;
+	    }
+	    FCIL.prototype._n = function (t) {
+	        this.out._n(t);
+	    };
+	    FCIL.prototype._e = function (err) {
+	        this.out._e(err);
+	    };
+	    FCIL.prototype._c = function () {
+	        this.op.less();
+	    };
+	    return FCIL;
+	}());
+	var FlattenConcOperator = (function () {
+	    function FlattenConcOperator(ins) {
+	        this.ins = ins;
+	        this.type = 'flattenConcurrently';
+	        this.active = 1; // number of outers and inners that have not yet ended
+	        this.out = null;
+	    }
+	    FlattenConcOperator.prototype._start = function (out) {
+	        this.out = out;
+	        this.ins._add(this);
+	    };
+	    FlattenConcOperator.prototype._stop = function () {
+	        this.ins._remove(this);
+	        this.active = 1;
+	        this.out = null;
+	    };
+	    FlattenConcOperator.prototype.less = function () {
+	        if (--this.active === 0) {
+	            var u = this.out;
+	            if (!u)
+	                return;
+	            u._c();
+	        }
+	    };
+	    FlattenConcOperator.prototype._n = function (s) {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        this.active++;
+	        s._add(new FCIL(u, this));
+	    };
+	    FlattenConcOperator.prototype._e = function (err) {
+	        var u = this.out;
+	        if (!u)
+	            return;
+	        u._e(err);
+	    };
+	    FlattenConcOperator.prototype._c = function () {
+	        this.less();
+	    };
+	    return FlattenConcOperator;
+	}());
+	exports.FlattenConcOperator = FlattenConcOperator;
+	/**
+	 * Flattens a "stream of streams", handling multiple concurrent nested streams
+	 * simultaneously.
+	 *
+	 * If the input stream is a stream that emits streams, then this operator will
+	 * return an output stream which is a flat stream: emits regular events. The
+	 * flattening happens concurrently. It works like this: when the input stream
+	 * emits a nested stream, *flattenConcurrently* will start imitating that
+	 * nested one. When the next nested stream is emitted on the input stream,
+	 * *flattenConcurrently* will also imitate that new one, but will continue to
+	 * imitate the previous nested streams as well.
+	 *
+	 * Marble diagram:
+	 *
+	 * ```text
+	 * --+--------+---------------
+	 *   \        \
+	 *    \       ----1----2---3--
+	 *    --a--b----c----d--------
+	 *     flattenConcurrently
+	 * -----a--b----c-1--d-2---3--
+	 * ```
+	 *
+	 * @return {Stream}
+	 */
+	function flattenConcurrently(ins) {
+	    return new core_1.Stream(new FlattenConcOperator(ins));
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = flattenConcurrently;
+	//# sourceMappingURL=flattenConcurrently.js.map
+
+/***/ },
+/* 133 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var base_1 = __webpack_require__(134);
+	var xstream_adapter_1 = __webpack_require__(135);
 	/**
 	 * Takes a `main` function and circularly connects it to the given collection
 	 * of driver functions.
@@ -14606,7 +14703,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 133 */
+/* 134 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -14718,7 +14815,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 134 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -14768,7 +14865,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 135 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -14805,13 +14902,13 @@
 
 
 /***/ },
-/* 136 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var xstream_1 = __webpack_require__(5);
-	var http_1 = __webpack_require__(137);
-	var xstream_adapter_1 = __webpack_require__(145);
+	var http_1 = __webpack_require__(138);
+	var xstream_adapter_1 = __webpack_require__(142);
 	var JEDI_URL = 'http://localhost:3000/dark-jedis/';
 	var JedisSource = (function () {
 	    function JedisSource(jediRequest$) {
@@ -14823,6 +14920,7 @@
 	            var requestOptions = {
 	                url: JEDI_URL + id,
 	                category: 'jedis',
+	                lazy: true
 	            };
 	            return requestOptions;
 	        });
@@ -14850,7 +14948,7 @@
 
 
 /***/ },
-/* 137 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -14888,41 +14986,43 @@
 	 * - `withCredentials` *(Boolean)*: enables the ability to send cookies from the
 	 * origin.
 	 * - `redirects` *(Number)*: number of redirects to follow.
+	 * - `lazy` *(Boolean)*: whether or not this request runs lazily, which means
+	 * the request happens if and only if its corresponding response stream from the
+	 * HTTP Source is subscribed to. By default this value is false: requests run
+	 * eagerly, even if their response is ignored by the application.
 	 *
 	 * **Responses**. A metastream is a stream that emits streams. The HTTP Source
 	 * manages response metastreams. These streams of responses have a `request`
 	 * field attached to them (to the stream object itself) indicating which request
 	 * (from the driver input) generated this response streams. The HTTP Source has
-	 * functions `filter()`, `select()`, and `response$$`, but is not itself a
-	 * stream. So you can call
-	 * `sources.HTTP.filter(response$ => response$.request.url === X)` to get a new
-	 * HTTP Source object which is filtered for response streams that match the
-	 * condition given, and may call `sources.HTTP.select(category)` to get a
-	 * metastream of response that match the category key. With an HTTP Source, you
-	 * can also use `httpSource.response$$` to get the metastream. You should
-	 * flatten the metastream before consuming it, then the resulting response
-	 * stream will emit the response object received through superagent.
+	 * functions `filter()` and `select()`, but is not itself a stream. So you can
+	 * call `sources.HTTP.filter(request => request.url === X)` to get a new HTTP
+	 * Source object which is filtered for response streams that match the condition
+	 * given, and may call `sources.HTTP.select(category)` to get a metastream of
+	 * response that match the category key. With an HTTP Source, you can also call
+	 * `httpSource.select()` with no param to get the metastream. You should flatten
+	 * the metastream before consuming it, then the resulting response stream will
+	 * emit the response object received through superagent.
 	 *
 	 * @return {Function} the HTTP Driver function
 	 * @function makeHTTPDriver
 	 */
-	var http_driver_1 = __webpack_require__(138);
+	var http_driver_1 = __webpack_require__(139);
 	exports.makeHTTPDriver = http_driver_1.makeHTTPDriver;
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 138 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var xstream_1 = __webpack_require__(5);
-	var MainHTTPSource_1 = __webpack_require__(139);
-	var xstream_adapter_1 = __webpack_require__(141);
-	var superagent = __webpack_require__(142);
+	var MainHTTPSource_1 = __webpack_require__(140);
+	var xstream_adapter_1 = __webpack_require__(142);
+	var superagent = __webpack_require__(143);
 	function preprocessReqOptions(reqOptions) {
 	    reqOptions.withCredentials = reqOptions.withCredentials || false;
 	    reqOptions.redirects = typeof reqOptions.redirects === 'number' ? reqOptions.redirects : 5;
-	    reqOptions.type = reqOptions.type || "json";
 	    reqOptions.method = reqOptions.method || "get";
 	    return reqOptions;
 	}
@@ -14937,7 +15037,9 @@
 	    if (typeof request.redirects === "function") {
 	        request = request.redirects(reqOptions.redirects);
 	    }
-	    request = request.type(reqOptions.type);
+	    if (reqOptions.type) {
+	        request = request.type(reqOptions.type);
+	    }
 	    if (reqOptions.send) {
 	        request = request.send(reqOptions.send);
 	    }
@@ -15036,25 +15138,26 @@
 	function makeRequestInputToResponse$(runStreamAdapter) {
 	    return function requestInputToResponse$(reqInput) {
 	        var response$ = createResponse$(reqInput).remember();
-	        /* tslint:disable:no-empty */
-	        response$.addListener({ next: function () { }, error: function () { }, complete: function () { } });
-	        /* tslint:enable:no-empty */
+	        var reqOptions = softNormalizeRequestInput(reqInput);
+	        if (!reqOptions.lazy) {
+	            /* tslint:disable:no-empty */
+	            response$.addListener({ next: function () { }, error: function () { }, complete: function () { } });
+	        }
 	        response$ = (runStreamAdapter) ?
 	            runStreamAdapter.adapt(response$, xstream_adapter_1.default.streamSubscribe) :
 	            response$;
 	        Object.defineProperty(response$, 'request', {
-	            value: softNormalizeRequestInput(reqInput),
+	            value: reqOptions,
 	            writable: false,
 	        });
 	        return response$;
 	    };
 	}
 	function makeHTTPDriver() {
-	    function httpDriver(request$, runSA) {
+	    function httpDriver(request$, runSA, name) {
 	        var response$$ = request$
-	            .map(makeRequestInputToResponse$(runSA))
-	            .remember();
-	        var httpSource = new MainHTTPSource_1.MainHTTPSource(response$$, runSA, []);
+	            .map(makeRequestInputToResponse$(runSA));
+	        var httpSource = new MainHTTPSource_1.MainHTTPSource(response$$, runSA, name, []);
 	        /* tslint:disable:no-empty */
 	        response$$.addListener({ next: function () { }, error: function () { }, complete: function () { } });
 	        /* tslint:enable:no-empty */
@@ -15067,38 +15170,34 @@
 	//# sourceMappingURL=http-driver.js.map
 
 /***/ },
-/* 139 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var isolate_1 = __webpack_require__(140);
-	var xstream_adapter_1 = __webpack_require__(141);
+	var isolate_1 = __webpack_require__(141);
+	var xstream_adapter_1 = __webpack_require__(142);
 	var MainHTTPSource = (function () {
-	    function MainHTTPSource(_res$$, runStreamAdapter, _namespace) {
+	    function MainHTTPSource(_res$$, runStreamAdapter, _name, _namespace) {
 	        if (_namespace === void 0) { _namespace = []; }
 	        this._res$$ = _res$$;
 	        this.runStreamAdapter = runStreamAdapter;
+	        this._name = _name;
 	        this._namespace = _namespace;
 	        this.isolateSource = isolate_1.isolateSource;
 	        this.isolateSink = isolate_1.isolateSink;
 	    }
-	    Object.defineProperty(MainHTTPSource.prototype, "response$$", {
-	        get: function () {
-	            return this.runStreamAdapter.adapt(this._res$$, xstream_adapter_1.default.streamSubscribe);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    MainHTTPSource.prototype.filter = function (predicate) {
-	        var filteredResponse$$ = this._res$$.filter(predicate);
-	        return new MainHTTPSource(filteredResponse$$, this.runStreamAdapter, this._namespace);
+	        var filteredResponse$$ = this._res$$.filter(function (r$) { return predicate(r$.request); });
+	        return new MainHTTPSource(filteredResponse$$, this.runStreamAdapter, this._name, this._namespace);
 	    };
 	    MainHTTPSource.prototype.select = function (category) {
 	        var res$$ = this._res$$;
 	        if (category) {
 	            res$$ = this._res$$.filter(function (res$) { return res$.request && res$.request.category === category; });
 	        }
-	        return this.runStreamAdapter.adapt(res$$, xstream_adapter_1.default.streamSubscribe);
+	        var out = this.runStreamAdapter.adapt(res$$, xstream_adapter_1.default.streamSubscribe);
+	        out._isCycleSource = this._name;
+	        return out;
 	    };
 	    return MainHTTPSource;
 	}());
@@ -15106,14 +15205,14 @@
 	//# sourceMappingURL=MainHTTPSource.js.map
 
 /***/ },
-/* 140 */
+/* 141 */
 /***/ function(module, exports) {
 
 	"use strict";
 	function isolateSource(httpSource, scope) {
-	    return httpSource.filter(function (res$) {
-	        return Array.isArray(res$.request._namespace) &&
-	            res$.request._namespace.indexOf(scope) !== -1;
+	    return httpSource.filter(function (request) {
+	        return Array.isArray(request._namespace) &&
+	            request._namespace.indexOf(scope) !== -1;
 	    });
 	}
 	exports.isolateSource = isolateSource;
@@ -15132,7 +15231,7 @@
 	//# sourceMappingURL=isolate.js.map
 
 /***/ },
-/* 141 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -15182,16 +15281,9 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 142 */
+/* 143 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Module dependencies.
-	 */
-	
-	var Emitter = __webpack_require__(143);
-	var reduce = __webpack_require__(144);
-	
 	/**
 	 * Root reference for iframes.
 	 */
@@ -15202,8 +15294,13 @@
 	} else if (typeof self !== 'undefined') { // Web Worker
 	  root = self;
 	} else { // Other environments
+	  console.warn("Using browser-only version of superagent in non-browser environment");
 	  root = this;
 	}
+	
+	var Emitter = __webpack_require__(144);
+	var requestBase = __webpack_require__(145);
+	var isObject = __webpack_require__(146);
 	
 	/**
 	 * Noop.
@@ -15212,28 +15309,10 @@
 	function noop(){};
 	
 	/**
-	 * Check if `obj` is a host object,
-	 * we don't want to serialize these :)
-	 *
-	 * TODO: future proof, move to compoent land
-	 *
-	 * @param {Object} obj
-	 * @return {Boolean}
-	 * @api private
+	 * Expose `request`.
 	 */
 	
-	function isHost(obj) {
-	  var str = {}.toString.call(obj);
-	
-	  switch (str) {
-	    case '[object File]':
-	    case '[object Blob]':
-	    case '[object FormData]':
-	      return true;
-	    default:
-	      return false;
-	  }
-	}
+	var request = module.exports = __webpack_require__(147).bind(null, Request);
 	
 	/**
 	 * Determine XHR.
@@ -15250,7 +15329,7 @@
 	    try { return new ActiveXObject('Msxml2.XMLHTTP.3.0'); } catch(e) {}
 	    try { return new ActiveXObject('Msxml2.XMLHTTP'); } catch(e) {}
 	  }
-	  return false;
+	  throw Error("Browser-only verison of superagent could not find XHR");
 	};
 	
 	/**
@@ -15266,18 +15345,6 @@
 	  : function(s) { return s.replace(/(^\s*|\s*$)/g, ''); };
 	
 	/**
-	 * Check if `obj` is an object.
-	 *
-	 * @param {Object} obj
-	 * @return {Boolean}
-	 * @api private
-	 */
-	
-	function isObject(obj) {
-	  return obj === Object(obj);
-	}
-	
-	/**
 	 * Serialize the given `obj`.
 	 *
 	 * @param {Object} obj
@@ -15291,8 +15358,8 @@
 	  for (var key in obj) {
 	    if (null != obj[key]) {
 	      pushEncodedKeyValuePair(pairs, key, obj[key]);
-	        }
-	      }
+	    }
+	  }
 	  return pairs.join('&');
 	}
 	
@@ -15310,6 +15377,11 @@
 	    return val.forEach(function(v) {
 	      pushEncodedKeyValuePair(pairs, key, v);
 	    });
+	  } else if (isObject(val)) {
+	    for(var subkey in val) {
+	      pushEncodedKeyValuePair(pairs, key + '[' + subkey + ']', val[subkey]);
+	    }
+	    return;
 	  }
 	  pairs.push(encodeURIComponent(key)
 	    + '=' + encodeURIComponent(val));
@@ -15332,13 +15404,18 @@
 	function parseString(str) {
 	  var obj = {};
 	  var pairs = str.split('&');
-	  var parts;
 	  var pair;
+	  var pos;
 	
 	  for (var i = 0, len = pairs.length; i < len; ++i) {
 	    pair = pairs[i];
-	    parts = pair.split('=');
-	    obj[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+	    pos = pair.indexOf('=');
+	    if (pos == -1) {
+	      obj[decodeURIComponent(pair)] = '';
+	    } else {
+	      obj[decodeURIComponent(pair.slice(0, pos))] =
+	        decodeURIComponent(pair.slice(pos + 1));
+	    }
 	  }
 	
 	  return obj;
@@ -15457,10 +15534,10 @@
 	 */
 	
 	function params(str){
-	  return reduce(str.split(/ *; */), function(obj, str){
-	    var parts = str.split(/ *= */)
-	      , key = parts.shift()
-	      , val = parts.shift();
+	  return str.split(/ *; */).reduce(function(obj, str){
+	    var parts = str.split(/ *= */),
+	        key = parts.shift(),
+	        val = parts.shift();
 	
 	    if (key && val) obj[key] = val;
 	    return obj;
@@ -15522,15 +15599,15 @@
 	     ? this.xhr.responseText
 	     : null;
 	  this.statusText = this.req.xhr.statusText;
-	  this.setStatusProperties(this.xhr.status);
+	  this._setStatusProperties(this.xhr.status);
 	  this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());
 	  // getAllResponseHeaders sometimes falsely returns "" for CORS requests, but
 	  // getResponseHeader still works. so we get content-type even if getting
 	  // other headers fails.
 	  this.header['content-type'] = this.xhr.getResponseHeader('content-type');
-	  this.setHeaderProperties(this.header);
+	  this._setHeaderProperties(this.header);
 	  this.body = this.req.method != 'HEAD'
-	    ? this.parseBody(this.text ? this.text : this.xhr.response)
+	    ? this._parseBody(this.text ? this.text : this.xhr.response)
 	    : null;
 	}
 	
@@ -15558,7 +15635,7 @@
 	 * @api private
 	 */
 	
-	Response.prototype.setHeaderProperties = function(header){
+	Response.prototype._setHeaderProperties = function(header){
 	  // content-type
 	  var ct = this.header['content-type'] || '';
 	  this.type = type(ct);
@@ -15579,8 +15656,11 @@
 	 * @api private
 	 */
 	
-	Response.prototype.parseBody = function(str){
+	Response.prototype._parseBody = function(str){
 	  var parse = request.parse[this.type];
+	  if (!parse && isJSON(this.type)) {
+	    parse = request.parse['application/json'];
+	  }
 	  return parse && str && (str.length || str instanceof Object)
 	    ? parse(str)
 	    : null;
@@ -15607,7 +15687,7 @@
 	 * @api private
 	 */
 	
-	Response.prototype.setStatusProperties = function(status){
+	Response.prototype._setStatusProperties = function(status){
 	  // handle IE9 bug: http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
 	  if (status === 1223) {
 	    status = 204;
@@ -15675,12 +15755,11 @@
 	
 	function Request(method, url) {
 	  var self = this;
-	  Emitter.call(this);
 	  this._query = this._query || [];
 	  this.method = method;
 	  this.url = url;
-	  this.header = {};
-	  this._header = {};
+	  this.header = {}; // preserves header name case
+	  this._header = {}; // coerces header names to lowercase
 	  this.on('end', function(){
 	    var err = null;
 	    var res = null;
@@ -15693,148 +15772,42 @@
 	      err.original = e;
 	      // issue #675: return the raw response if the response parsing fails
 	      err.rawResponse = self.xhr && self.xhr.responseText ? self.xhr.responseText : null;
+	      // issue #876: return the http status code if the response parsing fails
+	      err.statusCode = self.xhr && self.xhr.status ? self.xhr.status : null;
 	      return self.callback(err);
 	    }
 	
 	    self.emit('response', res);
 	
-	    if (err) {
-	      return self.callback(err, res);
+	    var new_err;
+	    try {
+	      if (res.status < 200 || res.status >= 300) {
+	        new_err = new Error(res.statusText || 'Unsuccessful HTTP response');
+	        new_err.original = err;
+	        new_err.response = res;
+	        new_err.status = res.status;
+	      }
+	    } catch(e) {
+	      new_err = e; // #985 touching res may cause INVALID_STATE_ERR on old Android
 	    }
 	
-	    if (res.status >= 200 && res.status < 300) {
-	      return self.callback(err, res);
+	    // #1000 don't catch errors from the callback to avoid double calling it
+	    if (new_err) {
+	      self.callback(new_err, res);
+	    } else {
+	      self.callback(null, res);
 	    }
-	
-	    var new_err = new Error(res.statusText || 'Unsuccessful HTTP response');
-	    new_err.original = err;
-	    new_err.response = res;
-	    new_err.status = res.status;
-	
-	    self.callback(new_err, res);
 	  });
 	}
 	
 	/**
-	 * Mixin `Emitter`.
+	 * Mixin `Emitter` and `requestBase`.
 	 */
 	
 	Emitter(Request.prototype);
-	
-	/**
-	 * Allow for extension
-	 */
-	
-	Request.prototype.use = function(fn) {
-	  fn(this);
-	  return this;
+	for (var key in requestBase) {
+	  Request.prototype[key] = requestBase[key];
 	}
-	
-	/**
-	 * Set timeout to `ms`.
-	 *
-	 * @param {Number} ms
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	
-	Request.prototype.timeout = function(ms){
-	  this._timeout = ms;
-	  return this;
-	};
-	
-	/**
-	 * Clear previous timeout.
-	 *
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	
-	Request.prototype.clearTimeout = function(){
-	  this._timeout = 0;
-	  clearTimeout(this._timer);
-	  return this;
-	};
-	
-	/**
-	 * Abort the request, and clear potential timeout.
-	 *
-	 * @return {Request}
-	 * @api public
-	 */
-	
-	Request.prototype.abort = function(){
-	  if (this.aborted) return;
-	  this.aborted = true;
-	  this.xhr.abort();
-	  this.clearTimeout();
-	  this.emit('abort');
-	  return this;
-	};
-	
-	/**
-	 * Set header `field` to `val`, or multiple fields with one object.
-	 *
-	 * Examples:
-	 *
-	 *      req.get('/')
-	 *        .set('Accept', 'application/json')
-	 *        .set('X-API-Key', 'foobar')
-	 *        .end(callback);
-	 *
-	 *      req.get('/')
-	 *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })
-	 *        .end(callback);
-	 *
-	 * @param {String|Object} field
-	 * @param {String} val
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	
-	Request.prototype.set = function(field, val){
-	  if (isObject(field)) {
-	    for (var key in field) {
-	      this.set(key, field[key]);
-	    }
-	    return this;
-	  }
-	  this._header[field.toLowerCase()] = val;
-	  this.header[field] = val;
-	  return this;
-	};
-	
-	/**
-	 * Remove header `field`.
-	 *
-	 * Example:
-	 *
-	 *      req.get('/')
-	 *        .unset('User-Agent')
-	 *        .end(callback);
-	 *
-	 * @param {String} field
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	
-	Request.prototype.unset = function(field){
-	  delete this._header[field.toLowerCase()];
-	  delete this.header[field];
-	  return this;
-	};
-	
-	/**
-	 * Get case-insensitive header `field` value.
-	 *
-	 * @param {String} field
-	 * @return {String}
-	 * @api private
-	 */
-	
-	Request.prototype.getHeader = function(field){
-	  return this._header[field.toLowerCase()];
-	};
 	
 	/**
 	 * Set Content-Type to `type`, mapping values from `request.types`.
@@ -15864,16 +15837,22 @@
 	};
 	
 	/**
-	 * Force given parser
+	 * Set responseType to `val`. Presently valid responseTypes are 'blob' and
+	 * 'arraybuffer'.
 	 *
-	 * Sets the body parser no matter type.
+	 * Examples:
 	 *
-	 * @param {Function}
+	 *      req.get('/')
+	 *        .responseType('blob')
+	 *        .end(callback);
+	 *
+	 * @param {String} val
+	 * @return {Request} for chaining
 	 * @api public
 	 */
 	
-	Request.prototype.parse = function(fn){
-	  this._parser = fn;
+	Request.prototype.responseType = function(val){
+	  this._responseType = val;
 	  return this;
 	};
 	
@@ -15907,13 +15886,29 @@
 	 *
 	 * @param {String} user
 	 * @param {String} pass
+	 * @param {Object} options with 'type' property 'auto' or 'basic' (default 'basic')
 	 * @return {Request} for chaining
 	 * @api public
 	 */
 	
-	Request.prototype.auth = function(user, pass){
-	  var str = btoa(user + ':' + pass);
-	  this.set('Authorization', 'Basic ' + str);
+	Request.prototype.auth = function(user, pass, options){
+	  if (!options) {
+	    options = {
+	      type: 'basic'
+	    }
+	  }
+	
+	  switch (options.type) {
+	    case 'basic':
+	      var str = btoa(user + ':' + pass);
+	      this.set('Authorization', 'Basic ' + str);
+	    break;
+	
+	    case 'auto':
+	      this.username = user;
+	      this.password = pass;
+	    break;
+	  }
 	  return this;
 	};
 	
@@ -15938,34 +15933,12 @@
 	};
 	
 	/**
-	 * Write the field `name` and `val` for "multipart/form-data"
-	 * request bodies.
-	 *
-	 * ``` js
-	 * request.post('/upload')
-	 *   .field('foo', 'bar')
-	 *   .end(callback);
-	 * ```
-	 *
-	 * @param {String} name
-	 * @param {String|Blob|File} val
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	
-	Request.prototype.field = function(name, val){
-	  if (!this._formData) this._formData = new root.FormData();
-	  this._formData.append(name, val);
-	  return this;
-	};
-	
-	/**
 	 * Queue the given `file` as an attachment to the specified `field`,
 	 * with optional `filename`.
 	 *
 	 * ``` js
 	 * request.post('/upload')
-	 *   .attach(new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/html"}))
+	 *   .attach('content', new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/html"}))
 	 *   .end(callback);
 	 * ```
 	 *
@@ -15977,77 +15950,15 @@
 	 */
 	
 	Request.prototype.attach = function(field, file, filename){
-	  if (!this._formData) this._formData = new root.FormData();
-	  this._formData.append(field, file, filename || file.name);
+	  this._getFormData().append(field, file, filename || file.name);
 	  return this;
 	};
 	
-	/**
-	 * Send `data` as the request body, defaulting the `.type()` to "json" when
-	 * an object is given.
-	 *
-	 * Examples:
-	 *
-	 *       // manual json
-	 *       request.post('/user')
-	 *         .type('json')
-	 *         .send('{"name":"tj"}')
-	 *         .end(callback)
-	 *
-	 *       // auto json
-	 *       request.post('/user')
-	 *         .send({ name: 'tj' })
-	 *         .end(callback)
-	 *
-	 *       // manual x-www-form-urlencoded
-	 *       request.post('/user')
-	 *         .type('form')
-	 *         .send('name=tj')
-	 *         .end(callback)
-	 *
-	 *       // auto x-www-form-urlencoded
-	 *       request.post('/user')
-	 *         .type('form')
-	 *         .send({ name: 'tj' })
-	 *         .end(callback)
-	 *
-	 *       // defaults to x-www-form-urlencoded
-	  *      request.post('/user')
-	  *        .send('name=tobi')
-	  *        .send('species=ferret')
-	  *        .end(callback)
-	 *
-	 * @param {String|Object} data
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	
-	Request.prototype.send = function(data){
-	  var obj = isObject(data);
-	  var type = this.getHeader('Content-Type');
-	
-	  // merge
-	  if (obj && isObject(this._data)) {
-	    for (var key in data) {
-	      this._data[key] = data[key];
-	    }
-	  } else if ('string' == typeof data) {
-	    if (!type) this.type('form');
-	    type = this.getHeader('Content-Type');
-	    if ('application/x-www-form-urlencoded' == type) {
-	      this._data = this._data
-	        ? this._data + '&' + data
-	        : data;
-	    } else {
-	      this._data = (this._data || '') + data;
-	    }
-	  } else {
-	    this._data = data;
+	Request.prototype._getFormData = function(){
+	  if (!this._formData) {
+	    this._formData = new root.FormData();
 	  }
-	
-	  if (!obj || isHost(data)) return this;
-	  if (!type) this.type('json');
-	  return this;
+	  return this._formData;
 	};
 	
 	/**
@@ -16088,7 +15999,7 @@
 	 * @api private
 	 */
 	
-	Request.prototype.timeoutError = function(){
+	Request.prototype._timeoutError = function(){
 	  var timeout = this._timeout;
 	  var err = new Error('timeout of ' + timeout + 'ms exceeded');
 	  err.timeout = timeout;
@@ -16096,19 +16007,18 @@
 	};
 	
 	/**
-	 * Enable transmission of cookies with x-domain requests.
+	 * Compose querystring to append to req.url
 	 *
-	 * Note that for this to work the origin must not be
-	 * using "Access-Control-Allow-Origin" with a wildcard,
-	 * and also must set "Access-Control-Allow-Credentials"
-	 * to "true".
-	 *
-	 * @api public
+	 * @api private
 	 */
 	
-	Request.prototype.withCredentials = function(){
-	  this._withCredentials = true;
-	  return this;
+	Request.prototype._appendQueryString = function(){
+	  var query = this._query.join('&');
+	  if (query) {
+	    this.url += ~this.url.indexOf('?')
+	      ? '&' + query
+	      : '?' + query;
+	  }
 	};
 	
 	/**
@@ -16123,7 +16033,6 @@
 	Request.prototype.end = function(fn){
 	  var self = this;
 	  var xhr = this.xhr = request.getXHR();
-	  var query = this._query.join('&');
 	  var timeout = this._timeout;
 	  var data = this._formData || this._data;
 	
@@ -16140,8 +16049,8 @@
 	    try { status = xhr.status } catch(e) { status = 0; }
 	
 	    if (0 == status) {
-	      if (self.timedout) return self.timeoutError();
-	      if (self.aborted) return;
+	      if (self.timedout) return self._timeoutError();
+	      if (self._aborted) return;
 	      return self.crossDomainError();
 	    }
 	    self.emit('end');
@@ -16177,24 +16086,23 @@
 	  }
 	
 	  // querystring
-	  if (query) {
-	    query = request.serializeObject(query);
-	    this.url += ~this.url.indexOf('?')
-	      ? '&' + query
-	      : '?' + query;
-	  }
+	  this._appendQueryString();
 	
 	  // initiate request
-	  xhr.open(this.method, this.url, true);
+	  if (this.username && this.password) {
+	    xhr.open(this.method, this.url, true, this.username, this.password);
+	  } else {
+	    xhr.open(this.method, this.url, true);
+	  }
 	
 	  // CORS
 	  if (this._withCredentials) xhr.withCredentials = true;
 	
 	  // body
-	  if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !isHost(data)) {
+	  if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !this._isHost(data)) {
 	    // serialize stuff
-	    var contentType = this.getHeader('Content-Type');
-	    var serialize = this._parser || request.serialize[contentType ? contentType.split(';')[0] : ''];
+	    var contentType = this._header['content-type'];
+	    var serialize = this._serializer || request.serialize[contentType ? contentType.split(';')[0] : ''];
 	    if (!serialize && isJSON(contentType)) serialize = request.serialize['application/json'];
 	    if (serialize) data = serialize(data);
 	  }
@@ -16203,6 +16111,10 @@
 	  for (var field in this.header) {
 	    if (null == this.header[field]) continue;
 	    xhr.setRequestHeader(field, this.header[field]);
+	  }
+	
+	  if (this._responseType) {
+	    xhr.responseType = this._responseType;
 	  }
 	
 	  // send stuff
@@ -16214,19 +16126,6 @@
 	  return this;
 	};
 	
-	/**
-	 * Faux promise support
-	 *
-	 * @param {Function} fulfill
-	 * @param {Function} reject
-	 * @return {Request}
-	 */
-	
-	Request.prototype.then = function (fulfill, reject) {
-	  return this.end(function(err, res) {
-	    err ? reject(err) : fulfill(res);
-	  });
-	}
 	
 	/**
 	 * Expose `Request`.
@@ -16235,40 +16134,11 @@
 	request.Request = Request;
 	
 	/**
-	 * Issue a request:
-	 *
-	 * Examples:
-	 *
-	 *    request('GET', '/users').end(callback)
-	 *    request('/users').end(callback)
-	 *    request('/users', callback)
-	 *
-	 * @param {String} method
-	 * @param {String|Function} url or callback
-	 * @return {Request}
-	 * @api public
-	 */
-	
-	function request(method, url) {
-	  // callback
-	  if ('function' == typeof url) {
-	    return new Request('GET', method).end(url);
-	  }
-	
-	  // url first
-	  if (1 == arguments.length) {
-	    return new Request('GET', method);
-	  }
-	
-	  return new Request(method, url);
-	}
-	
-	/**
 	 * GET `url` with optional callback `fn(res)`.
 	 *
 	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
+	 * @param {Mixed|Function} [data] or fn
+	 * @param {Function} [fn]
 	 * @return {Request}
 	 * @api public
 	 */
@@ -16285,8 +16155,8 @@
 	 * HEAD `url` with optional callback `fn(res)`.
 	 *
 	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
+	 * @param {Mixed|Function} [data] or fn
+	 * @param {Function} [fn]
 	 * @return {Request}
 	 * @api public
 	 */
@@ -16300,10 +16170,28 @@
 	};
 	
 	/**
+	 * OPTIONS query to `url` with optional callback `fn(res)`.
+	 *
+	 * @param {String} url
+	 * @param {Mixed|Function} [data] or fn
+	 * @param {Function} [fn]
+	 * @return {Request}
+	 * @api public
+	 */
+	
+	request.options = function(url, data, fn){
+	  var req = request('OPTIONS', url);
+	  if ('function' == typeof data) fn = data, data = null;
+	  if (data) req.send(data);
+	  if (fn) req.end(fn);
+	  return req;
+	};
+	
+	/**
 	 * DELETE `url` with optional callback `fn(res)`.
 	 *
 	 * @param {String} url
-	 * @param {Function} fn
+	 * @param {Function} [fn]
 	 * @return {Request}
 	 * @api public
 	 */
@@ -16321,8 +16209,8 @@
 	 * PATCH `url` with optional `data` and callback `fn(res)`.
 	 *
 	 * @param {String} url
-	 * @param {Mixed} data
-	 * @param {Function} fn
+	 * @param {Mixed} [data]
+	 * @param {Function} [fn]
 	 * @return {Request}
 	 * @api public
 	 */
@@ -16339,8 +16227,8 @@
 	 * POST `url` with optional `data` and callback `fn(res)`.
 	 *
 	 * @param {String} url
-	 * @param {Mixed} data
-	 * @param {Function} fn
+	 * @param {Mixed} [data]
+	 * @param {Function} [fn]
 	 * @return {Request}
 	 * @api public
 	 */
@@ -16357,8 +16245,8 @@
 	 * PUT `url` with optional `data` and callback `fn(res)`.
 	 *
 	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
+	 * @param {Mixed|Function} [data] or fn
+	 * @param {Function} [fn]
 	 * @return {Request}
 	 * @api public
 	 */
@@ -16370,16 +16258,10 @@
 	  if (fn) req.end(fn);
 	  return req;
 	};
-	
-	/**
-	 * Expose `request`.
-	 */
-	
-	module.exports = request;
 
 
 /***/ },
-/* 143 */
+/* 144 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -16548,180 +16430,414 @@
 
 
 /***/ },
-/* 144 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Reduce `arr` with `fn`.
-	 *
-	 * @param {Array} arr
-	 * @param {Function} fn
-	 * @param {Mixed} initial
-	 *
-	 * TODO: combatible error handling?
-	 */
-	
-	module.exports = function(arr, fn, initial){  
-	  var idx = 0;
-	  var len = arr.length;
-	  var curr = arguments.length == 3
-	    ? initial
-	    : arr[idx++];
-	
-	  while (idx < len) {
-	    curr = fn.call(null, curr, arr[idx], ++idx, arr);
-	  }
-	  
-	  return curr;
-	};
-
-/***/ },
 /* 145 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-	var xstream_1 = __webpack_require__(5);
-	var XStreamAdapter = {
-	    adapt: function (originStream, originStreamSubscribe) {
-	        if (XStreamAdapter.isValidStream(originStream)) {
-	            return originStream;
-	        }
-	        ;
-	        var dispose = null;
-	        return xstream_1.default.create({
-	            start: function (out) {
-	                var observer = out;
-	                dispose = originStreamSubscribe(originStream, observer);
-	            },
-	            stop: function () {
-	                if (typeof dispose === 'function') {
-	                    dispose();
-	                }
-	            }
-	        });
-	    },
-	    makeSubject: function () {
-	        var stream = xstream_1.default.create();
-	        var observer = {
-	            next: function (x) { stream.shamefullySendNext(x); },
-	            error: function (err) { stream.shamefullySendError(err); },
-	            complete: function () { stream.shamefullySendComplete(); }
-	        };
-	        return { observer: observer, stream: stream };
-	    },
-	    remember: function (stream) {
-	        return stream.remember();
-	    },
-	    isValidStream: function (stream) {
-	        return (typeof stream.addListener === 'function' &&
-	            typeof stream.shamefullySendNext === 'function');
-	    },
-	    streamSubscribe: function (stream, observer) {
-	        stream.addListener(observer);
-	        return function () { return stream.removeListener(observer); };
-	    }
+	/**
+	 * Module of mixed-in functions shared between node and client code
+	 */
+	var isObject = __webpack_require__(146);
+	
+	/**
+	 * Clear previous timeout.
+	 *
+	 * @return {Request} for chaining
+	 * @api public
+	 */
+	
+	exports.clearTimeout = function _clearTimeout(){
+	  this._timeout = 0;
+	  clearTimeout(this._timer);
+	  return this;
 	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = XStreamAdapter;
-	//# sourceMappingURL=index.js.map
+	
+	/**
+	 * Override default response body parser
+	 *
+	 * This function will be called to convert incoming data into request.body
+	 *
+	 * @param {Function}
+	 * @api public
+	 */
+	
+	exports.parse = function parse(fn){
+	  this._parser = fn;
+	  return this;
+	};
+	
+	/**
+	 * Override default request body serializer
+	 *
+	 * This function will be called to convert data set via .send or .attach into payload to send
+	 *
+	 * @param {Function}
+	 * @api public
+	 */
+	
+	exports.serialize = function serialize(fn){
+	  this._serializer = fn;
+	  return this;
+	};
+	
+	/**
+	 * Set timeout to `ms`.
+	 *
+	 * @param {Number} ms
+	 * @return {Request} for chaining
+	 * @api public
+	 */
+	
+	exports.timeout = function timeout(ms){
+	  this._timeout = ms;
+	  return this;
+	};
+	
+	/**
+	 * Promise support
+	 *
+	 * @param {Function} resolve
+	 * @param {Function} reject
+	 * @return {Request}
+	 */
+	
+	exports.then = function then(resolve, reject) {
+	  if (!this._fullfilledPromise) {
+	    var self = this;
+	    this._fullfilledPromise = new Promise(function(innerResolve, innerReject){
+	      self.end(function(err, res){
+	        if (err) innerReject(err); else innerResolve(res);
+	      });
+	    });
+	  }
+	  return this._fullfilledPromise.then(resolve, reject);
+	}
+	
+	/**
+	 * Allow for extension
+	 */
+	
+	exports.use = function use(fn) {
+	  fn(this);
+	  return this;
+	}
+	
+	
+	/**
+	 * Get request header `field`.
+	 * Case-insensitive.
+	 *
+	 * @param {String} field
+	 * @return {String}
+	 * @api public
+	 */
+	
+	exports.get = function(field){
+	  return this._header[field.toLowerCase()];
+	};
+	
+	/**
+	 * Get case-insensitive header `field` value.
+	 * This is a deprecated internal API. Use `.get(field)` instead.
+	 *
+	 * (getHeader is no longer used internally by the superagent code base)
+	 *
+	 * @param {String} field
+	 * @return {String}
+	 * @api private
+	 * @deprecated
+	 */
+	
+	exports.getHeader = exports.get;
+	
+	/**
+	 * Set header `field` to `val`, or multiple fields with one object.
+	 * Case-insensitive.
+	 *
+	 * Examples:
+	 *
+	 *      req.get('/')
+	 *        .set('Accept', 'application/json')
+	 *        .set('X-API-Key', 'foobar')
+	 *        .end(callback);
+	 *
+	 *      req.get('/')
+	 *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })
+	 *        .end(callback);
+	 *
+	 * @param {String|Object} field
+	 * @param {String} val
+	 * @return {Request} for chaining
+	 * @api public
+	 */
+	
+	exports.set = function(field, val){
+	  if (isObject(field)) {
+	    for (var key in field) {
+	      this.set(key, field[key]);
+	    }
+	    return this;
+	  }
+	  this._header[field.toLowerCase()] = val;
+	  this.header[field] = val;
+	  return this;
+	};
+	
+	/**
+	 * Remove header `field`.
+	 * Case-insensitive.
+	 *
+	 * Example:
+	 *
+	 *      req.get('/')
+	 *        .unset('User-Agent')
+	 *        .end(callback);
+	 *
+	 * @param {String} field
+	 */
+	exports.unset = function(field){
+	  delete this._header[field.toLowerCase()];
+	  delete this.header[field];
+	  return this;
+	};
+	
+	/**
+	 * Write the field `name` and `val` for "multipart/form-data"
+	 * request bodies.
+	 *
+	 * ``` js
+	 * request.post('/upload')
+	 *   .field('foo', 'bar')
+	 *   .end(callback);
+	 * ```
+	 *
+	 * @param {String} name
+	 * @param {String|Blob|File|Buffer|fs.ReadStream} val
+	 * @return {Request} for chaining
+	 * @api public
+	 */
+	exports.field = function(name, val) {
+	  this._getFormData().append(name, val);
+	  return this;
+	};
+	
+	/**
+	 * Abort the request, and clear potential timeout.
+	 *
+	 * @return {Request}
+	 * @api public
+	 */
+	exports.abort = function(){
+	  if (this._aborted) {
+	    return this;
+	  }
+	  this._aborted = true;
+	  this.xhr && this.xhr.abort(); // browser
+	  this.req && this.req.abort(); // node
+	  this.clearTimeout();
+	  this.emit('abort');
+	  return this;
+	};
+	
+	/**
+	 * Enable transmission of cookies with x-domain requests.
+	 *
+	 * Note that for this to work the origin must not be
+	 * using "Access-Control-Allow-Origin" with a wildcard,
+	 * and also must set "Access-Control-Allow-Credentials"
+	 * to "true".
+	 *
+	 * @api public
+	 */
+	
+	exports.withCredentials = function(){
+	  // This is browser-only functionality. Node side is no-op.
+	  this._withCredentials = true;
+	  return this;
+	};
+	
+	/**
+	 * Set the max redirects to `n`. Does noting in browser XHR implementation.
+	 *
+	 * @param {Number} n
+	 * @return {Request} for chaining
+	 * @api public
+	 */
+	
+	exports.redirects = function(n){
+	  this._maxRedirects = n;
+	  return this;
+	};
+	
+	/**
+	 * Convert to a plain javascript object (not JSON string) of scalar properties.
+	 * Note as this method is designed to return a useful non-this value,
+	 * it cannot be chained.
+	 *
+	 * @return {Object} describing method, url, and data of this request
+	 * @api public
+	 */
+	
+	exports.toJSON = function(){
+	  return {
+	    method: this.method,
+	    url: this.url,
+	    data: this._data,
+	    headers: this._header
+	  };
+	};
+	
+	/**
+	 * Check if `obj` is a host object,
+	 * we don't want to serialize these :)
+	 *
+	 * TODO: future proof, move to compoent land
+	 *
+	 * @param {Object} obj
+	 * @return {Boolean}
+	 * @api private
+	 */
+	
+	exports._isHost = function _isHost(obj) {
+	  var str = {}.toString.call(obj);
+	
+	  switch (str) {
+	    case '[object File]':
+	    case '[object Blob]':
+	    case '[object FormData]':
+	      return true;
+	    default:
+	      return false;
+	  }
+	}
+	
+	/**
+	 * Send `data` as the request body, defaulting the `.type()` to "json" when
+	 * an object is given.
+	 *
+	 * Examples:
+	 *
+	 *       // manual json
+	 *       request.post('/user')
+	 *         .type('json')
+	 *         .send('{"name":"tj"}')
+	 *         .end(callback)
+	 *
+	 *       // auto json
+	 *       request.post('/user')
+	 *         .send({ name: 'tj' })
+	 *         .end(callback)
+	 *
+	 *       // manual x-www-form-urlencoded
+	 *       request.post('/user')
+	 *         .type('form')
+	 *         .send('name=tj')
+	 *         .end(callback)
+	 *
+	 *       // auto x-www-form-urlencoded
+	 *       request.post('/user')
+	 *         .type('form')
+	 *         .send({ name: 'tj' })
+	 *         .end(callback)
+	 *
+	 *       // defaults to x-www-form-urlencoded
+	 *      request.post('/user')
+	 *        .send('name=tobi')
+	 *        .send('species=ferret')
+	 *        .end(callback)
+	 *
+	 * @param {String|Object} data
+	 * @return {Request} for chaining
+	 * @api public
+	 */
+	
+	exports.send = function(data){
+	  var obj = isObject(data);
+	  var type = this._header['content-type'];
+	
+	  // merge
+	  if (obj && isObject(this._data)) {
+	    for (var key in data) {
+	      this._data[key] = data[key];
+	    }
+	  } else if ('string' == typeof data) {
+	    // default to x-www-form-urlencoded
+	    if (!type) this.type('form');
+	    type = this._header['content-type'];
+	    if ('application/x-www-form-urlencoded' == type) {
+	      this._data = this._data
+	        ? this._data + '&' + data
+	        : data;
+	    } else {
+	      this._data = (this._data || '') + data;
+	    }
+	  } else {
+	    this._data = data;
+	  }
+	
+	  if (!obj || this._isHost(data)) return this;
+	
+	  // default to json
+	  if (!type) this.type('json');
+	  return this;
+	};
+
 
 /***/ },
 /* 146 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	"use strict";
-	var core_1 = __webpack_require__(6);
-	var FCIL = (function () {
-	    function FCIL(out, op) {
-	        this.out = out;
-	        this.op = op;
-	    }
-	    FCIL.prototype._n = function (t) {
-	        this.out._n(t);
-	    };
-	    FCIL.prototype._e = function (err) {
-	        this.out._e(err);
-	    };
-	    FCIL.prototype._c = function () {
-	        this.op.less();
-	    };
-	    return FCIL;
-	}());
-	var FlattenConcOperator = (function () {
-	    function FlattenConcOperator(ins) {
-	        this.ins = ins;
-	        this.type = 'flattenConcurrently';
-	        this.active = 1; // number of outers and inners that have not yet ended
-	        this.out = null;
-	    }
-	    FlattenConcOperator.prototype._start = function (out) {
-	        this.out = out;
-	        this.ins._add(this);
-	    };
-	    FlattenConcOperator.prototype._stop = function () {
-	        this.ins._remove(this);
-	        this.active = 1;
-	        this.out = null;
-	    };
-	    FlattenConcOperator.prototype.less = function () {
-	        if (--this.active === 0) {
-	            var u = this.out;
-	            if (!u)
-	                return;
-	            u._c();
-	        }
-	    };
-	    FlattenConcOperator.prototype._n = function (s) {
-	        var u = this.out;
-	        if (!u)
-	            return;
-	        this.active++;
-	        s._add(new FCIL(u, this));
-	    };
-	    FlattenConcOperator.prototype._e = function (err) {
-	        var u = this.out;
-	        if (!u)
-	            return;
-	        u._e(err);
-	    };
-	    FlattenConcOperator.prototype._c = function () {
-	        this.less();
-	    };
-	    return FlattenConcOperator;
-	}());
-	exports.FlattenConcOperator = FlattenConcOperator;
 	/**
-	 * Flattens a "stream of streams", handling multiple concurrent nested streams
-	 * simultaneously.
+	 * Check if `obj` is an object.
 	 *
-	 * If the input stream is a stream that emits streams, then this operator will
-	 * return an output stream which is a flat stream: emits regular events. The
-	 * flattening happens concurrently. It works like this: when the input stream
-	 * emits a nested stream, *flattenConcurrently* will start imitating that
-	 * nested one. When the next nested stream is emitted on the input stream,
-	 * *flattenConcurrently* will also imitate that new one, but will continue to
-	 * imitate the previous nested streams as well.
-	 *
-	 * Marble diagram:
-	 *
-	 * ```text
-	 * --+--------+---------------
-	 *   \        \
-	 *    \       ----1----2---3--
-	 *    --a--b----c----d--------
-	 *     flattenConcurrently
-	 * -----a--b----c-1--d-2---3--
-	 * ```
-	 *
-	 * @return {Stream}
+	 * @param {Object} obj
+	 * @return {Boolean}
+	 * @api private
 	 */
-	function flattenConcurrently(ins) {
-	    return new core_1.Stream(new FlattenConcOperator(ins));
+	
+	function isObject(obj) {
+	  return null !== obj && 'object' === typeof obj;
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = flattenConcurrently;
-	//# sourceMappingURL=flattenConcurrently.js.map
+	
+	module.exports = isObject;
+
+
+/***/ },
+/* 147 */
+/***/ function(module, exports) {
+
+	// The node and browser modules expose versions of this with the
+	// appropriate constructor function bound as first argument
+	/**
+	 * Issue a request:
+	 *
+	 * Examples:
+	 *
+	 *    request('GET', '/users').end(callback)
+	 *    request('/users').end(callback)
+	 *    request('/users', callback)
+	 *
+	 * @param {String} method
+	 * @param {String|Function} url or callback
+	 * @return {Request}
+	 * @api public
+	 */
+	
+	function request(RequestConstructor, method, url) {
+	  // callback
+	  if ('function' == typeof url) {
+	    return new RequestConstructor('GET', method).end(url);
+	  }
+	
+	  // url first
+	  if (2 == arguments.length) {
+	    return new RequestConstructor('GET', method);
+	  }
+	
+	  return new RequestConstructor(method, url);
+	}
+	
+	module.exports = request;
+
 
 /***/ }
 /******/ ]);

@@ -35,6 +35,7 @@ export class JedisSource {
           const requestOptions: RequestOptions = {
             url: JEDI_URL + id,
             category: 'jedis',
+            lazy: true
           };
           return requestOptions;
         });
