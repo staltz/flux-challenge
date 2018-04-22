@@ -62,7 +62,12 @@ function obsKids (slot, md, newv, oldv, c) {
 
     for (let newk of newv) {
         if (find( newk, oldv)) {
-            clg('moving newk from old to frag', newk, newk.pdom);
+            // clg('moving newk from old to frag', newk.sithId, newk.dom, newk.dom===null);
+            if (newk.dom.parentNode !== pdom) {
+                //clg(' doms', dom.parent)
+
+                throw('newk dom parent not = parent');
+            }
             frag.appendChild( pdom.removeChild(newk.dom));
         } else {
             let incubator = document.createElement('div');

@@ -876,9 +876,12 @@ class Cell {
 		// "x" prefix throughout this function means "existing"
 		let xKid = (c.pv === kUnbound? [] : c.pv); // pv = "prior value", ie prior formula calculation (to-do items)
 
+		if (md.kidValues.length > aDistinct( md.kidValues).length) {
+			throw `Duplicate IDs not allowed in kidValues: {md.kidValues}`;
+		}
 		return md.kidValues.map( kidValue => {
 				let xIndex = xKid.findIndex(xk => c.md.kidKey(xk) === kidValue);
-				clg(`kidvalue ${kidValue} will be ${xIndex === -1 ? 'built new' : 'reused'}`);
+				//clg(`kidvalue ${kidValue} will be ${xIndex === -1 ? 'built new' : 'reused'}`);
 				return (xIndex === -1) ? md.kidFactory(c, kidValue) : xKid[xIndex];
 			})
 	}
@@ -903,6 +906,10 @@ class Cell {
 		return fmDown( what, key, how);
 	}
 	*/
+}
+
+function aDistinct( a) {
+    return a.filter((v, i, a) => a.indexOf(v) === i);
 }
 
 window['Cell'] = Cell; // <-- Constructor

@@ -191,7 +191,7 @@ class Model {
 				// clg(`somex passed eltx ${eltx} and elt ${elt}`)
 				let found = (elt !== how.skip)
 					&& elt.fmTv(what, Object.assign( {}, how, { upp: false, mep: true}));
-		if (found) return found;})) ||
+				if (found) return found;})) ||
 
 		(function () {
 			// clg(`fmTv ${self.name} considers upp ${how.upp} par=${self.par}`);
