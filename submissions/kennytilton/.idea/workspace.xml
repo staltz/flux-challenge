@@ -27,38 +27,8 @@
       <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="31">
-              <caret line="118" column="47" lean-forward="false" selection-start-line="118" selection-start-column="47" selection-end-line="118" selection-end-column="47" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Cells.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="835">
-              <caret line="911" column="11" lean-forward="false" selection-start-line="911" selection-start-column="11" selection-end-line="911" selection-end-column="11" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Model.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="505">
-              <caret line="193" column="16" lean-forward="false" selection-start-line="193" selection-start-column="16" selection-end-line="193" selection-end-column="16" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="mxWeb.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/mxWeb.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="362">
-              <caret line="289" column="22" lean-forward="false" selection-start-line="289" selection-start-column="22" selection-end-line="289" selection-end-column="22" />
+            <state relative-caret-position="-490">
+              <caret line="52" column="31" lean-forward="true" selection-start-line="52" selection-start-column="31" selection-end-line="52" selection-end-column="31" />
               <folding />
             </state>
           </provider>
@@ -91,12 +61,18 @@
       <find>kidValues</find>
       <find>fmTag</find>
       <find>loader</find>
+      <find>not allowed in</find>
+      <find>looking</find>
+      <find>notTobe</find>
+      <find>this</find>
+      <find>obsStyleProperty</find>
     </findStrings>
     <replaceStrings>
       <replace>SithDB</replace>
       <replace>SithTrak</replace>
       <replace>sithId</replace>
       <replace>//clg</replace>
+      <replace>md</replace>
     </replaceStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$</dir>
@@ -111,10 +87,10 @@
         <option value="$PROJECT_DIR$/SithDB.js" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/js/SithDB.js" />
+        <option value="$PROJECT_DIR$/js/Matrix/Model.js" />
         <option value="$PROJECT_DIR$/js/mxXHR.js" />
         <option value="$PROJECT_DIR$/js/Matrix/Cells.js" />
         <option value="$PROJECT_DIR$/js/mxWeb.js" />
-        <option value="$PROJECT_DIR$/js/Matrix/Model.js" />
         <option value="$PROJECT_DIR$/js/SithTrak.js" />
       </list>
     </option>
@@ -209,12 +185,12 @@
       <option name="presentableId" value="Default" />
       <updated>1524263670011</updated>
       <workItem from="1524263671490" duration="29702000" />
-      <workItem from="1524359402880" duration="27439000" />
+      <workItem from="1524359402880" duration="37975000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="57141000" />
+    <option name="totallyTimeSpent" value="67677000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="50" y="90" width="1630" height="930" extended-state="0" />
@@ -261,33 +237,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
           <caret line="16" column="14" lean-forward="false" selection-start-line="16" selection-start-column="14" selection-end-line="16" selection-end-column="14" />
-          <folding>
-            <marker date="1524355609885" expanded="true" signature="114:1862" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="171:476" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="215:355" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="386:470" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="482:1137" ph="//..." />
-            <marker date="1524355609885" expanded="true" signature="1156:1860" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1247:1745" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1408:1588" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1594:1731" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1920:2329" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2027:2325" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2154:2234" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2240:2319" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2459:3671" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2514:3542" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2549:2740" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2776:2942" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2977:3535" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3062:3467" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3103:3307" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3313:3453" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3473:3525" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3692:4004" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3728:4002" ph="//..." />
-            <marker date="1524355609885" expanded="true" signature="4041:4420" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -348,68 +298,42 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="66" column="32" lean-forward="false" selection-start-line="66" selection-start-column="16" selection-end-line="66" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/mxXHR.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="14" lean-forward="false" selection-start-line="16" selection-start-column="14" selection-end-line="16" selection-end-column="14" />
-          <folding>
-            <marker date="1524355609885" expanded="true" signature="114:1862" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="171:476" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="215:355" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="386:470" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="482:1137" ph="//..." />
-            <marker date="1524355609885" expanded="true" signature="1156:1860" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1247:1745" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1408:1588" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1594:1731" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="1920:2329" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2027:2325" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2154:2234" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2240:2319" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2459:3671" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2514:3542" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2549:2740" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2776:2942" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="2977:3535" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3062:3467" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3103:3307" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3313:3453" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3473:3525" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3692:4004" ph="{...}" />
-            <marker date="1524355609885" expanded="true" signature="3728:4002" ph="//..." />
-            <marker date="1524355609885" expanded="true" signature="4041:4420" ph="{...}" />
-          </folding>
+        <state relative-caret-position="780">
+          <caret line="62" column="47" lean-forward="false" selection-start-line="62" selection-start-column="47" selection-end-line="62" selection-end-column="47" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="835">
-          <caret line="911" column="11" lean-forward="false" selection-start-line="911" selection-start-column="11" selection-end-line="911" selection-end-column="11" />
+        <state relative-caret-position="221">
+          <caret line="874" column="0" lean-forward="true" selection-start-line="874" selection-start-column="0" selection-end-line="874" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/mxWeb.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="362">
-          <caret line="289" column="22" lean-forward="false" selection-start-line="289" selection-start-column="22" selection-end-line="289" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="505">
-          <caret line="193" column="16" lean-forward="false" selection-start-line="193" selection-start-column="16" selection-end-line="193" selection-end-column="16" />
+        <state relative-caret-position="-2502">
+          <caret line="139" column="4" lean-forward="false" selection-start-line="139" selection-start-column="4" selection-end-line="139" selection-end-column="4" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="31">
-          <caret line="118" column="47" lean-forward="false" selection-start-line="118" selection-start-column="47" selection-end-line="118" selection-end-column="47" />
+        <state relative-caret-position="-490">
+          <caret line="52" column="31" lean-forward="true" selection-start-line="52" selection-start-column="31" selection-end-line="52" selection-end-column="31" />
           <folding />
         </state>
       </provider>

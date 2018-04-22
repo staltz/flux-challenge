@@ -19,25 +19,6 @@ class mxXHR extends Model {
         }
     }
 
-    // send( delay) {
-    //     let mxx = this
-    //         , xhr = new XMLHttpRequest()
-    //         , go = function () {
-    //                 xhr.addEventListener("load", (e)=> mxx.xhr = e.target);
-    //                 xhr.addEventListener("abort", (e)=> mxx.xhr = e.target);
-    //                 xhr.addEventListener("error", (e)=> mxx.xhr = e.target);
-    //                 xhr.open('GET', mxx.uri);
-    //                 xhr.responseType = "json";
-    //                 xhr.send();
-    //             };
-    //
-    //     if (delay)
-    //         setTimeout( go, delay);
-    //     else
-    //         go();
-    //     return mxx;
-    // }
-
     send( delay) {
         let mxx = this
             , go = ()=> goog.net.XhrIo.send( mxx.uri, function(e) {

@@ -31,9 +31,12 @@ function obsContent (slot, md, newv, oldv, c) {
 }
 
 function notToBe( mx) {
+    if (mx.cleanUp) {
+        mx.cleanUp(mx);
+    }
+
     mx.state = kDoomed;
-    //clg(' not to be!', mx, typeof mx);
-    //clg('kids ', mx.kids, typeof mx.kids, mx.kids===null);
+
     if ( mx.kids ) {
         for( let k of mx.kids) {
             notToBe( k);
@@ -45,6 +48,7 @@ function notToBe( mx) {
     }
     mx.state = kDead;
 }
+
 function obsKids (slot, md, newv, oldv, c) {
 
 	if (oldv===kUnbound) return; // on awaken all HTML is assembled at once
@@ -110,7 +114,7 @@ function obsClass (slot, md, newv, oldv, c) {
 function obsStyleProperty (mxprop, md, newv, oldv, c) {
 	if (oldv===kUnbound) return; // on awaken all HTML is assembled at once
     let cssProp = mxprop.replace('_', '-')
-	domlog( 'attr global', cssProp, newv, oldv);
+	//clg( 'attr global', cssProp, newv, oldv);
 	md.tag.dom.style[cssProp] = newv;
 }
 
@@ -133,8 +137,7 @@ function obsAttrGlobal (property, md, newv, oldv, c) {
 function obsStyleAttr (property, md, newv, oldv, c) {
     if (oldv===kUnbound) return; // on awaken all HTML is assembled at once
     let ss = tagStyleString(md);
-    if (ss !== '')
-        md.dom['style'] = ss;
+    md.dom['style'] = ss;
 }
 
 class TagSession extends Model {

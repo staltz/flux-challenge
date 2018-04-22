@@ -856,6 +856,10 @@ class Cell {
 
 	// todo test not-to-be, quiesce, opti-away, etc
 	quiesce() {
+		if (this.quiesceWith) {
+			clg('quiescing!');
+			this.quiesceWith(this);
+		}
         this.unlinkFromCallers();
         this.unlinkFromUsed('quiesce');
     }
@@ -877,7 +881,7 @@ class Cell {
 		let xKid = (c.pv === kUnbound? [] : c.pv); // pv = "prior value", ie prior formula calculation (to-do items)
 
 		if (md.kidValues.length > aDistinct( md.kidValues).length) {
-			throw `Duplicate IDs not allowed in kidValues: {md.kidValues}`;
+			throw 'Duplicate IDs not allowed in kidValues: '+ md.kidValues.join();
 		}
 		return md.kidValues.map( kidValue => {
 				let xIndex = xKid.findIndex(xk => c.md.kidKey(xk) === kidValue);
@@ -900,12 +904,6 @@ class Cell {
 		if (!this.md) throw `fmDown search attempted from Cell ${this} lacking md (s/b a Model)`;
 		return this.md.fmDown( what, how, key);
 	}
-	// todo deprecate this
-	/*
-	fmd (what, key, how) {
-		return fmDown( what, key, how);
-	}
-	*/
 }
 
 function aDistinct( a) {

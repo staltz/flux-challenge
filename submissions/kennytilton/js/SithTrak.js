@@ -5,12 +5,11 @@ const sithApp = new TagSession( null, 'SithTrakSession',
     {
         // --- Obi-tracking -------------------------------------
         obiTrakker: cF( c => new WebSocket('ws://localhost:4000')
-            .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data)),
-
+                                .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data)),
         obiLoc: cI( null),
 
         // --- Sith loading -------------------------------------
-
+        // todo come up with unique constant to disambiguate placeholders
         sithIds: cI([-1,-2,3616,-3,-4])
 
     }).awaken();
@@ -19,6 +18,7 @@ function SithTrak () {
     return div({class: "app-container"},
         h1({class: "css-planet-monitor",
             content: cF( c=> "Obi-Wan currently on " + (sithApp.obiLoc? sithApp.obiLoc.name : "...dunno"))}),
+
         section({class: "css-scrollable-list"},
              ul({ class: "css-slots"},
                 {
@@ -27,47 +27,28 @@ function SithTrak () {
                     kidKey: k => k.sithId,
                     kidFactory: sithView,
 
-                    nextUp: cF( c=> {
-                        let k = c.md.kids[0];
-                        return (k && (i = k.info)) ? i.master.id : null;
-                    }),
-                    nextDown: cF( c=> {
-                        let k = c.md.kids[SLOT_CT-1];
-                        return (k && (i = k.info)) ? i.apprentice.id : null;
-                    }),
+                    nextUp: cF( c=> ((k = c.md.kids[0]) && (i = k.info)) ? i.master.id : null,
+                        {observer: (n,md) => md.checkScroll()}),
 
-                    scrollReq: cI(0, {observer: (name, md, newv) => {
-                        clg('scrollreq!!!!!!!=', newv);
-                        if ( newv < 0) {
-                            if (i=md.kids[0].info) {
-                                if (mi = md.nextUp) {
-                                    let nids = [mi].concat( sithApp.sithIds.slice(0, SLOT_CT-1));
-                                    clg('scrollup nids', nids.join());
-                                    withoutIntegrity(()=> sithApp.sithIds = nids);
-                                    md.scrollReq += 1;
-                                } else {
-                                    clg('no next up');
-                                }
-                            } else {
-                                clg('up no info)');
-                            }
-                        } else if ( newv > 0) {
-                            if (i=md.kids[SLOT_CT-1].info) {
-                                if (mi = md.nextDown) {
-                                    let nids = sithApp.sithIds.slice(1);
-                                    nids.push(mi);
-                                    clg('scrolldown nids', nids.join());
-                                    withoutIntegrity(()=> sithApp.sithIds = nids);
-                                    md.scrollReq -= 1;
-                                } else {
-                                    clg('no next down');
-                                }
-                            } else {
-                                clg('down no info');
-                            }
+                    nextDown: cF( c=> ((k = c.md.kids[SLOT_CT-1]) && (i = k.info)) ? i.apprentice.id : null,
+                        {observer: (n,md) => md.checkScroll()}),
+
+                    scrollReq: cI(0, {observer: (name, md) => md.checkScroll()}),
+
+                    checkScroll: function () {
+                        let md = this,
+                            s = md.scrollReq;
+                        if (s < 0 && (mi = md.nextUp)) {
+                            let nids = [mi].concat( sithApp.sithIds.slice(0, SLOT_CT-1));
+                            sithApp.sithIds = nids;
+                            md.scrollReq += 1;
+                        } else if (s > 0 && (mi = md.nextDown)) {
+                            let nids = sithApp.sithIds.slice(1);
+                            nids.push(mi);
+                            sithApp.sithIds = nids;
+                            md.scrollReq -= 1;
                         }
-                    }})
-
+                    }
                 },
                 c => c.kidValuesKids()),
             div({
@@ -76,55 +57,44 @@ function SithTrak () {
                         .kids
                         .some( sview => sview.withObi))
                 },
-                button(
-                    {
-                        class: cF( c=> cFscrollDisabled( c.md, "up")),
-                        onclick: md => md.fmUp("sith-list").scrollReq += -2,
-                        disabled: cF( c=> {
-                            return c.md.par.disabled || !c.md.fmTag("ul").nextUp;
-                        })
+                button({
+                    class: cF( c=> "css-button-up" + (c.md.disabled ? " css-button-disabled":"")),
+                    onclick: md => md.fmUp("sith-list").scrollReq += -2,
+                    disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul").nextUp)
                     }),
-                button(
-                    {
-                        class: cF( c=> cFscrollDisabled( c.md, "down")),
-                        onclick: md => md.fmUp("sith-list").scrollReq += 2,
-                        disabled: cF( c=> {
-                            return c.md.par.disabled || !c.md.fmTag("ul").nextDown;
-                        })
+                button({
+                    class: cF( c=> "css-button-up" + (c.md.disabled ? " css-button-disabled":"")),
+                    onclick: md => md.fmUp("sith-list").scrollReq += 2,
+                    disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul").nextDown)
                     }))));
 }
 
 function sithView( c, sithId) {
-    clg('making new sithview!!!!!!!!!!!!!!!', sithId);
     return li(
         {
             class: "css-slot",
-            // todo fix style observer
-            style: cF( c=> c.md.withObi ? "color:red":"#ede66a")
+            style: cF( c=> c.md.withObi ? "color:red": null)
         },
         {
             sithId: sithId,
 
-            lookup: cF( c=> {
-                if (c.md.sithId > 0) {
-                    clg('looking up', c.md.sithId);
-                    return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId);
-                }
-            }),
+            lookup: cF( c=> (c.md.sithId > 0) ?
+                new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
+
+            cleanUp: (md)=> (lkx = (md.lookup && md.lookup.xhr)) ? lkx.abort():null,
 
             info: cF( c=> (c.md.lookup? c.md.lookup.okResult:null),
                 {observer: (s,md,i) => {
                     if (i) {
                         let slotN = sithApp.sithIds.indexOf( sithId);
-                        clg('newsith', sithId, i.name);
                         sithIdsSet( slotN-1, i.master.id )
                         sithIdsSet( slotN+1, i.apprentice.id );
-
                     }
                 }}),
 
             withObi: cF( c=> c.md.info && sithApp.obiLoc
                 && (c.md.info.homeworld.name === sithApp.obiLoc.name))
+
         },
 
         h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")}),
@@ -132,14 +102,11 @@ function sithView( c, sithId) {
 }
 
 function sithIdsSet( slotN, sid ) {
-    //clg('considering', slotN, sid);
     if (sid && slotN >= 0 && slotN < SLOT_CT) {
         withChg('sithidset', () => {
             if ((sithApp.sithIds[slotN] || -1) !== sid) {
-                //clg('really setting', slotN, sid, sithApp.sithIds);
                 let nids = sithApp.sithIds.slice();
                 nids[slotN] = sid;
-                //clg('new nids', nids);
                 withoutIntegrity( ()=> {
                     sithApp.sithIds = nids;
                 });
@@ -148,9 +115,5 @@ function sithIdsSet( slotN, sid ) {
     }
 }
 
-
-function cFscrollDisabled (md, fixed) {
-    return "css-button-"+fixed + (md.disabled ? " css-button-disabled":"");
-}
 window['SithTrak'] = SithTrak;
 
