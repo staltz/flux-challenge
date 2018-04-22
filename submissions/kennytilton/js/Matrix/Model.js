@@ -33,7 +33,7 @@ window['sid'] = sid;
 class Model {
 	// to-do?: maybe forget constructors ever working like CLOS and standardize on "make" as preferred over "new"
 	constructor(parent, name, islots, awakenp=true) {
-		// clg("Model entry name=" + name + ", par= "+ parent + ', gPar=' + gPar);
+		// clg("Model entry name=" + name + ", par= "+ parent + ', awakenp=' + awakenp);
 		this.par = parent || gPar; // we build models as parent<->>kids
 		// clg("Model this " + islots.name + " gets par " + this.par + " named " + (this.par? this.par.name : "unnamed"));
 		this.sid = ++sid;
@@ -219,6 +219,16 @@ function mkm( par, id, props, kids, factory='Model') {
 	return md;
 }
 window['mkm'] = mkm;
+
+function mkmu( par, id, props, kids, factory='Model') {
+    let opts = Object.assign({}
+        , props
+        , kids ? {kids: cKids( kids)} : null),
+        md = new window[factory]( par, id, opts, false);
+    if (!isModel(md)) throw 'mkm made not-modelp';
+    return md;
+}
+window['mkmu'] = mkmu;
 
 function pkdFlat (ary, r=[]) {
     for (let i = 0; i < ary.length; ++i)
