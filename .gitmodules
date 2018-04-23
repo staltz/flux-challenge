@@ -1,0 +1,3 @@
+[submodule "submissions/kennytilton/js/closure-library"]
+	path = submissions/kennytilton/js/closure-library
+	url = https://github.com/google/closure-library.git
