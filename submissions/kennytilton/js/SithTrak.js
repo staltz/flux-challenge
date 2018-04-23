@@ -66,8 +66,7 @@ function SithTrak () {
                 c => c.kidValuesKids()),
             div({
                     class: "css-scroll-buttons",
-                    disabled: cF( c=> c.md.fmUp("sith-list")
-                        .kids.some( sview => sview.withObi))
+                    disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))
                 },
                 button({
                     class: cF( c=> "css-button-up" + (c.md.disabled ? " css-button-disabled":"")),
@@ -93,55 +92,7 @@ function sithView( c, sithId) {
             lookup: cF( c=> (c.md.sithId > 0) ?
                 new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
 
-            cleanUp: (md)=> (lkx = (md.lookup && md.lookup.xhr)) ? lkx.abort():null,
-
-            info: cF( c=> (c.md.lookup? c.md.lookup.okResult:null),
-                {observer: (s,md,i) => {
-                    if (i) {
-                        let slotN = sithApp.sithIds.indexOf( sithId);
-                        sithIdsSet( slotN-1, i.master.id )
-                        sithIdsSet( slotN+1, i.apprentice.id );
-                    }
-                }}),
-
-            withObi: cF( c=> c.md.info && sithApp.obiLoc
-                && (c.md.info.homeworld.name === sithApp.obiLoc.name))
-
-        },
-
-        h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")}),
-        h3({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
-}
-
-function sithIdsSet( slotN, sid ) {
-    if (sid && slotN >= 0 && slotN < SLOT_CT) {
-        withChg('sithidset', () => {
-            if ((sithApp.sithIds[slotN] || -1) !== sid) {
-                let nids = sithApp.sithIds.slice();
-                nids[slotN] = sid;
-                withoutIntegrity( ()=> {
-                    sithApp.sithIds = nids;
-                });
-            }
-        })
-    }
-}
-
-/*
-
-function sithView( c, sithId) {
-    return li(
-        {
-            class: "css-slot",
-            style: cF( c=> c.md.withObi ? "color:red": null)
-        },
-        {
-            sithId: sithId,
-
-            lookup: cF( c=> (c.md.sithId > 0) ?
-                new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
-
-            cleanUp: (md)=> (lkx = (md.lookup && md.lookup.xhr)) ? lkx.abort():null,
+            cleanUp: md=> (lkx = (md.lookup && md.lookup.xhr)) ? lkx.abort():null,
 
             info: cF( c=> (c.md.lookup? c.md.lookup.okResult:null),
                 {observer: (s,md,i) => {
@@ -152,7 +103,6 @@ function sithView( c, sithId) {
                                 , m = sithIdsSet(newIds, slotN - 1, i.master.id)
                                 , a = sithIdsSet(newIds, slotN + 1, i.apprentice.id);
                             if (a || m) {
-                                clg('setting!!!');
                                 sithApp.sithIds = newIds;
                             }
                         });
@@ -160,21 +110,17 @@ function sithView( c, sithId) {
                 }}),
 
             withObi: cF( c=> c.md.info && sithApp.obiLoc
-                && (c.md.info.homeworld.name === sithApp.obiLoc.name))
+                        && (c.md.info.homeworld.name === sithApp.obiLoc.name))
 
         },
-
         h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")}),
-        h3({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
+        h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
- */
 
-// function sithIdsSet( tempIds, slotN, sithId ) {
-//     if (sid && slotN >= 0 && slotN < SLOT_CT && (tempIds[slotN] || -1) != sid) {
-//         tempIds[slotN] = sithId;
-//         clg('newtemps!!!', tempIds.join())
-//         return true;
-//     }
-// }
+
+function sithIdsSet( tempIds, slotN, sithId ) {
+    return (sithId && slotN >= 0 && slotN < SLOT_CT && ((tempIds[slotN] || -1) != sithId)) ?
+        tempIds[slotN] = sithId : false;
+}
 
 window['SithTrak'] = SithTrak;
