@@ -64,10 +64,8 @@ function SithTrak () {
                     }
                 },
                 c => c.kidValuesKids()),
-            div({
-                    class: "css-scroll-buttons",
-                    disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))
-                },
+            div({ class: "css-scroll-buttons",
+                    disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))},
                 button({
                     class: cF( c=> "css-button-up" + (c.md.disabled ? " css-button-disabled":"")),
                     onclick: md => md.fmUp("sith-list").scrollReq += -2,
@@ -76,16 +74,12 @@ function SithTrak () {
                 button({
                     class: cF( c=> "css-button-down" + (c.md.disabled ? " css-button-disabled":"")),
                     onclick: md => md.fmUp("sith-list").scrollReq += 2,
-                    disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul").nextDown)
-                    }))));
+                    disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul").nextDown)}))));
 }
 
 function sithView( c, sithId) {
-    return li(
-        {
-            class: "css-slot",
-            style: cF( c=> c.md.withObi ? "color:red": null)
-        },
+    return li({ class: "css-slot",
+                style: cF( c=> c.md.withObi ? "color:red": null)},
         {
             sithId: sithId,
 
@@ -95,19 +89,19 @@ function sithView( c, sithId) {
             cleanUp: md=> (lkx = (md.lookup && md.lookup.xhr)) ? lkx.abort():null,
 
             info: cF( c=> (c.md.lookup? c.md.lookup.okResult:null),
-                {observer: (s,md,i) => {
-                    if (i) {
-                        withChg('bracket', ()=> {
-                            let slotN = sithApp.sithIds.indexOf(sithId)
-                                , newIds = sithApp.sithIds.slice()
-                                , m = sithIdsSet(newIds, slotN - 1, i.master.id)
-                                , a = sithIdsSet(newIds, slotN + 1, i.apprentice.id);
-                            if (a || m) {
-                                sithApp.sithIds = newIds;
-                            }
-                        });
-                    }
-                }}),
+                    {observer: (s,md,i) => {
+                        if (i) {
+                            withChg('bracket', ()=> {
+                                let slotN = sithApp.sithIds.indexOf(sithId)
+                                    , newIds = sithApp.sithIds.slice()
+                                    , m = sithIdsSet(newIds, slotN - 1, i.master.id)
+                                    , a = sithIdsSet(newIds, slotN + 1, i.apprentice.id);
+                                if (a || m) {
+                                    sithApp.sithIds = newIds;
+                                }
+                            });
+                        }
+                    }}),
 
             withObi: cF( c=> c.md.info && sithApp.obiLoc
                         && (c.md.info.homeworld.name === sithApp.obiLoc.name))
