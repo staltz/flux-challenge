@@ -63,7 +63,7 @@ function SithTrak () {
                     disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul").nextUp)
                     }),
                 button({
-                    class: cF( c=> "css-button-up" + (c.md.disabled ? " css-button-disabled":"")),
+                    class: cF( c=> "css-button-down" + (c.md.disabled ? " css-button-disabled":"")),
                     onclick: md => md.fmUp("sith-list").scrollReq += 2,
                     disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul").nextDown)
                     }))));
