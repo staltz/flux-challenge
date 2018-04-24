@@ -92,8 +92,8 @@
       <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="551">
-              <caret line="114" column="11" lean-forward="false" selection-start-line="114" selection-start-column="11" selection-end-line="114" selection-end-column="11" />
+            <state relative-caret-position="216">
+              <caret line="13" column="63" lean-forward="true" selection-start-line="8" selection-start-column="4" selection-end-line="13" selection-end-column="63" />
               <folding />
             </state>
           </provider>
@@ -263,7 +263,7 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="91" />
+    <option name="x" value="87" />
     <option name="y" value="74" />
     <option name="width" value="1485" />
     <option name="height" value="931" />
@@ -359,10 +359,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="106143000" />
+    <option name="totallyTimeSpent" value="110172000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="91" y="74" width="1485" height="931" extended-state="0" />
+    <frame x="87" y="74" width="1485" height="931" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27407408" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -741,8 +741,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="114" column="11" lean-forward="false" selection-start-line="114" selection-start-column="11" selection-end-line="114" selection-end-column="11" />
+        <state relative-caret-position="216">
+          <caret line="13" column="63" lean-forward="true" selection-start-line="8" selection-start-column="4" selection-end-line="13" selection-end-column="63" />
           <folding />
         </state>
       </provider>
