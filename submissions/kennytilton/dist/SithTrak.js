@@ -8382,7 +8382,7 @@ function xhraw(c) {
   d.responseType = "json";
   d.send();
 }
-;var sithtrak = {sithtrak:{}}, SLOT_CT = 5, sithApp = new TagSession(null, "SithTrakSession", {obiTrakker:cF(function(c) {
+;var SLOT_CT = 5, sithApp = new TagSession(null, "SithTrakSession", {obiTrakker:cF(function(c) {
   return (new WebSocket("ws://localhost:4000")).onmessage = function(d) {
     return c.md.obiLoc = JSON.parse(d.data);
   };

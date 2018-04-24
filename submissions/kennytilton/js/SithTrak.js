@@ -1,4 +1,3 @@
-goog.provide('sithtrak.sithtrak');
 goog.require('Matrix.Cells');
 goog.require('Matrix.Model');
 goog.require('Matrix.mxWeb');
@@ -7,16 +6,13 @@ goog.require('Matrix.mxXHR');
 const SLOT_CT = 5;
 
 const sithApp = new TagSession( null, 'SithTrakSession',
-    {
-        // --- Obi-tracking -------------------------------------
+    { // --- Obi-tracking -------------------------------------
         obiTrakker: cF( c => new WebSocket('ws://localhost:4000')
                                 .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data)),
         obiLoc: cI( null),
 
         // --- Sith loading -------------------------------------
-        sithIds: cI([-1,-2,3616,-3,-4])
-
-    });
+        sithIds: cI([-1,-2,3616,-3,-4])});
 
 function SithTrak () {
     return div({class: "app-container"},
@@ -62,10 +58,8 @@ function SithTrak () {
                 },
                 c => c.kidValuesKids()), // implements kidValues, kidKeys, kidFactory above
 
-            div({
-                    class: "css-scroll-buttons",
-                    disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))
-                },
+            div({ class: "css-scroll-buttons",
+                    disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))},
                 scrollerButton("up"),
                 scrollerButton("down"))));
 }
@@ -74,8 +68,7 @@ function scrollerButton( dir ) {
     return button({
         class: cF( c=> "css-button-" + dir + (c.md.disabled ? " css-button-disabled":"")),
         onclick: md => md.fmUp("sith-list").scrollReq += (dir==="up"? -2:2),
-        disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])
-    })
+        disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])})
 }
 
 function sithView( c, sithId) {
@@ -99,9 +92,7 @@ function sithView( c, sithId) {
                                 , m = slotSetMaybe(newIds, slotN - 1, i.master.id)
                                 , a = slotSetMaybe(newIds, slotN + 1, i.apprentice.id);
                             if (a || m)
-                                sithApp.sithIds = newIds;
-                        });
-                    }}),
+                                sithApp.sithIds = newIds;});}}),
 
             withObi: cF( c=> c.md.info && sithApp.obiLoc
                         && (c.md.info.homeworld.name === sithApp.obiLoc.name))
