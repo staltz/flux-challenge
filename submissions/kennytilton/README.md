@@ -6,7 +6,7 @@ Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, ninety
 >  state coordination, being completely familiar with the tools used but 
 >  completely unfamiliar with the codebase.
 
-Indeterminable because no one else is familiar *at all* with Matrix. But this could be my Submission Committee since the Matrix data flow engine has much in common with their projects:
+Indeterminable because no one else is familiar *at all* with Matrix, so we have no test dummy. But this could be my Submission Committee since the Matrix data flow engine has much in common with their projects:
 
 * Michael Westrate, author of [MobX](https://github.com/mobxjs/mobx)
 * Alan Dipert and Micha Niskin, crew behind [Javelin](https://github.com/hoplon/javelin)
@@ -28,6 +28,16 @@ npm start
 You should see a couple of announcements about the servers starting up. n.b, The `npm install` is needed only the first time.
 
 Now visit `http://localhost:3000/s/` in your browser. Look for `kennytilton` and click.
+
+What should happen is [defined here](https://github.com/staltz/flux-challenge/blob/master/README.md). The tl;dr:
+* show where Obi-Wan is as he moves around;
+* start by looking up and showing a hardcoded Sith (3616);
+* bracket that Sith with master above and apprentice below, if anys;
+* scroll up and down two at a time;
+* always lookup afresh when scrolling to get latest info;
+* if Obi-Wan is on the planet of a Sith:
+* ...highlight in red;
+* ...disable scrolling.
 
 ## Hacking data flow
 To play with my code:
@@ -83,7 +93,13 @@ function sithView( c, sithId) {
            , h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
 ````
-We will first look at the functional derivations which together set up the data flow we will trace later. We will have to bounce around the properties of the beast because UIs are a network of information. Below, `cF`s are formulaic Cells.
+Glossary:
+* `cF` creates a formulaic Cell
+* `cI` creates an input Cell
+* In `c.md`, `c` is the Cell and `md` is the proxy object corresponding to a DOM element.
+* `c.md.par` is the parent of `c.md`
+
+We will first look at the functional derivations which together set up the data flow we will trace later. We will have to bounce around the properties of the beast because UIs are a network of information.
 
 First we have a Sith's entry turning red if Obi-Wan is with them on their planet.
 ```` js
