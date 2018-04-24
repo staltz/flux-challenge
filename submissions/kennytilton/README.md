@@ -61,7 +61,7 @@ Instead we have Flux:
 
 ![Flux circular flow diagram](https://github.com/kennytilton/flux-challenge/blob/master/submissions/kennytilton/dist/facebook-flux-react.jpg)
 
-So our data swoops around in a highly purposed and constrained circle like a stadium crowd doing the wave, creating the illusion of control. But what if the hot dog guy is over their and the beer lady is over there? QED.
+So our data swoops around in a highly purposed and constrained circle like a stadium crowd doing the wave, creating the illusion of control. But what if the hot dog guy is over there and the beer lady is over there? QED.
 
 Under the data flow paradigm, no one tells anyone what data they cannot have when. Here is the view of a Sith somewhat distilled from the actual:
 
