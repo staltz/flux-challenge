@@ -33,7 +33,7 @@ Instead we have Flux:
 
 So our data swoops around in a highly purposed and constrained circle like a stadium crowd doing the wave, creating the illusion of control. But what if the hot dog guy is over their and the beer lady is over there? QED.
 
-Under the data flow paradigm, no one including the snickering engineers at Facebook tells anyone what data they cannot have when:
+Under the data flow paradigm, no one tells anyone what data they cannot have when. Here is the view of a Sith somewhat distilled from the actual:
 
 ```` js
 function sithView( c, sithId) {
@@ -53,7 +53,7 @@ function sithView( c, sithId) {
         , h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
 ````
-Ok, let us try and fail to follow the flow top to bottom.
+Ok, let us follow the flow. We will have to bounce around the properties of the beast because UIs are a netwrok of information.
 
 First we have a Sith's entry turning red if Obi-Wan is with them on their planet.
 ```` js
