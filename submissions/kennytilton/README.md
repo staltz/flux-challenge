@@ -53,7 +53,7 @@ function sithView( c, sithId) {
         , h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
 ````
-Ok, let us follow the flow. We will have to bounce around the properties of the beast because UIs are a netwrok of information.
+Ok, let us follow the flow. We will have to bounce around the properties of the beast because UIs are a netwrok of information. Below, `cF`s are formulaic Cells.
 
 First we have a Sith's entry turning red if Obi-Wan is with them on their planet.
 ```` js
@@ -69,10 +69,10 @@ info: cF( c=> (c.md.lookup && c.md.lookup.okResult))
 ````
 Wait. What is that lookup? It is actually a thinly wrapped XHR:
 ```` js
-lookup: if (c.md.sithId > 0)
-            return new mxXHR( DARK_JEDI_URL + c.md.sithId)
+lookup: cF( if (c.md.sithId > 0)
+            return new mxXHR( DARK_JEDI_URL + c.md.sithId))
 ````
-The deal above is that we created five SithViews straight away, before we knew all the IDs, and for mxWeb&trade; reasons populated them with bogus IDs. Anyway, once we kick-off a `lookup` the `info` rule will start waiting on the result, which will flow into the formula whenever it comes back. ie, asynchronicity is a natural for data flow.
+Why test if the ID is positive? We created five SithViews straight away, before we knew all the IDs, and for mxWeb&trade; internalese reasons populated them with bogus (negative) IDs. Anyway, once we kick-off a `lookup` the `info` rule will start waiting on the result, which will flow into the formula whenever it comes back. ie, asynchronicity is a natural for data flow.
 
 Speaking of which, where *is* Obi-Wan?
 ```` js
@@ -82,13 +82,13 @@ Speaking of which, where *is* Obi-Wan?
 ````
 Careful: `obiTrakker` holds the socket connection, not Obi. The asynch `onmessage` handler initiates data flow by injecting new Obi info into the `obiLoc` input Cell. Imperative meets functional. Anyway...
 
-Instead of a "batch" mentality in which view stuff happens and then data stuff happens in a big cyclic crowd wave all rising and falling in unison, we have a crowd of individual data points on their mobile devices calling people or looking things up to get the information they need when they decide they need it. Getting back to coding, this means the individual developer working on some widget can focus on that widget, pulling info from a matrix of other elements as they see fit. The only rule is, no cycles.
+Instead of a "batch" mentality in which view stuff happens and then data stuff happens in a big cyclic crowd wave all rising and falling in unison, we have a crowd of individual data point fans on their mobile devices calling people or looking things up to get the information they need when they decide they need it. Getting back to coding, this means the individual developer working on some widget can focus on that widget, pulling info from a matrix of other elements as they see fit. The only rule is, no cycles.
 
-And this is how it works. The user scrolls and we just change the list of SithIds. A new SithView is created for any new ID in the list. The `lookup` rule fires and kicks off an XHR. The `info` rulle sees the lookup and asks for its `result`. When the XHR gets its response and it is OK it again imperatively feeds the response into its input `result` cell. The `info` cell takes on the result as its value and everyone watching the info fires. That includes `withObi`, who may discover they are on the same planet and turn `true`, triggering the `style` rule to run and decide on "color:red".
+Here is how those "pulling" formulas work at run time. The user scrolls and in code not shown we simply change the list of SithIds. A new SithView is created for any new ID in the list. The `lookup` rule fires and kicks off an XHR. The `info` rule sees the lookup and asks for its `result` but gets back null. When the XHR gets its response and it is OK it imperatively feeds the response into its input `result` cell. The `info` cell now sees the result and takes on the result as its value and everyone watching the info fires. That includes `withObi`, who may discover they are on the same planet and turn `true`, triggering the `style` rule to run and decide on "color:red".
 
-In code not shown, the div owning the two scroll buttons has a `disabbled` rule watching all the SithViews to see if any are `withObi`. Seeing one is, it turns `true`, and in turn the scroll buttons decide they are disabled and separately that thier classes should include a "disabled" class.
+In more code not shown, the div owning the two scroll buttons has a `disabled` rule watching all the SithViews to see if any are `withObi`. Seeing one is, it turns `true`, and in turn the scroll buttons decide they are disabled and separately that thier classes should include a "disabled" class.
 
-Sounds complex, right? Without data flow, it is. Now look at the code. The data flow paradigm has dissolved the complexity into so many simple rules for the programmer to trivially decide. Those rules are as simple in a React view, but those rules do nothing to get the data where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
+Sounds complex, right? Without data flow, it is. Now look at the code. The data flow paradigm has dissolved the complexity into so many simple rules for the programmer to trivially decide. Those rules are as simple in a React view, but React rules do nothing to get the data where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
 
 No Flux, no Redux.
 
