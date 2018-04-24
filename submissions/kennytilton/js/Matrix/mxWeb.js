@@ -145,7 +145,7 @@ class TagSession extends Model {
 
         let superSlots = Object.assign({sid: ++sid}, islots);
 
-        super(parent, (name || islots.name), superSlots, false);
+        super(parent, (name || islots.name), superSlots, true);
 
         if (!this.routes) this.routes = islots['routes'];
     }

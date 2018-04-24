@@ -2429,7 +2429,7 @@ function obsStyleAttr(c, d, e, f, g) {
 }
 var TagSession = function(c, d, e) {
   var f = Object.assign({sid:++sid}, e);
-  Model.call(this, c, d || e.name, f, !1);
+  Model.call(this, c, d || e.name, f, !0);
   this.routes || (this.routes = e.routes);
 };
 $jscomp.inherits(TagSession, Model);
@@ -8382,11 +8382,11 @@ function xhraw(c) {
   d.responseType = "json";
   d.send();
 }
-;var sithtrak = {sithtrak:{}}, SLOT_CT = 5, sithApp = (new TagSession(null, "SithTrakSession", {obiTrakker:cF(function(c) {
+;var sithtrak = {sithtrak:{}}, SLOT_CT = 5, sithApp = new TagSession(null, "SithTrakSession", {obiTrakker:cF(function(c) {
   return (new WebSocket("ws://localhost:4000")).onmessage = function(d) {
     return c.md.obiLoc = JSON.parse(d.data);
   };
-}), obiLoc:cI(null), sithIds:cI([-1, -2, 3616, -3, -4])})).awaken();
+}), obiLoc:cI(null), sithIds:cI([-1, -2, 3616, -3, -4])});
 function SithTrak() {
   return div({class:"app-container"}, h1({class:"css-planet-monitor", content:cF(function(c) {
     return "Obi-Wan currently on " + (sithApp.obiLoc ? sithApp.obiLoc.name : "...dunno");
@@ -8394,38 +8394,35 @@ function SithTrak() {
     return sithApp.sithIds;
   }), kidKey:function(c) {
     return c.sithId;
-  }, kidFactory:sithView, nextUp:cF(function(c) {
+  }, kidFactory:sithView, next_up:cF(function(c) {
     return c.md.kids[0] && c.md.kids[0].info ? c.md.kids[0].info.master.id : null;
   }, {observer:function(c, d) {
     return d.checkScroll();
-  }}), nextDown:cF(function(c) {
-    return c.md.kids[0] && c.md.kids[0].info ? c.md.kids[0].info.apprentice.id : null;
+  }}), next_down:cF(function(c) {
+    return (c = c.md.kids[SLOT_CT - 1]) && c.info ? c.info.apprentice.id : null;
   }, {observer:function(c, d) {
     return d.checkScroll();
   }}), scrollReq:cI(0, {observer:function(c, d) {
     return d.checkScroll();
   }}), checkScroll:function() {
     var c = this.scrollReq;
-    0 > c && this.nextUp ? (sithApp.sithIds = [this.nextUp].concat(sithApp.sithIds.slice(0, SLOT_CT - 1)), this.scrollReq += 1) : 0 < c && this.nextDown && (c = sithApp.sithIds.slice(1), c.push(this.nextDown), sithApp.sithIds = c, --this.scrollReq);
+    0 > c && this.next_up ? (sithApp.sithIds = rotateInOnLeft(sithApp.sithIds, this.next_up), this.scrollReq += 1) : 0 < c && this.next_down && (sithApp.sithIds = rotateInOnRight(sithApp.sithIds, this.next_down), --this.scrollReq);
   }}, function(c) {
     return c.kidValuesKids();
   }), div({class:"css-scroll-buttons", disabled:cF(function(c) {
     return c.md.fmUp("sith-list").kids.some(function(c) {
       return c.withObi;
     });
-  })}, button({class:cF(function(c) {
-    return "css-button-up" + (c.md.disabled ? " css-button-disabled" : "");
-  }), onclick:function(c) {
-    return c.fmUp("sith-list").scrollReq += -2;
-  }, disabled:cF(function(c) {
-    return c.md.par.disabled || !c.md.fmTag("ul").nextUp;
-  })}), button({class:cF(function(c) {
-    return "css-button-down" + (c.md.disabled ? " css-button-disabled" : "");
-  }), onclick:function(c) {
-    return c.fmUp("sith-list").scrollReq += 2;
-  }, disabled:cF(function(c) {
-    return c.md.par.disabled || !c.md.fmTag("ul").nextDown;
-  })}))));
+  })}, scrollerButton("up"), scrollerButton("down"))));
+}
+function scrollerButton(c) {
+  return button({class:cF(function(d) {
+    return "css-button-" + c + (d.md.disabled ? " css-button-disabled" : "");
+  }), onclick:function(d) {
+    return d.fmUp("sith-list").scrollReq += "up" === c ? -2 : 2;
+  }, disabled:cF(function(d) {
+    return d.md.par.disabled || !d.md.fmTag("ul")["next_" + c];
+  })});
 }
 function sithView(c, d) {
   return li({class:"css-slot", style:cF(function(c) {
@@ -8438,8 +8435,8 @@ function sithView(c, d) {
     return c.md.lookup ? c.md.lookup.okResult : null;
   }, {observer:function(c, f, g) {
     g && withChg("bracket", function() {
-      var c = sithApp.sithIds.indexOf(d), e = sithApp.sithIds.slice(), f = sithIdsSet(e, c - 1, g.master.id);
-      if (sithIdsSet(e, c + 1, g.apprentice.id) || f) {
+      var c = sithApp.sithIds.indexOf(d), e = sithApp.sithIds.slice(), f = slotSetMaybe(e, c - 1, g.master.id);
+      if (slotSetMaybe(e, c + 1, g.apprentice.id) || f) {
         sithApp.sithIds = e;
       }
     });
@@ -8448,11 +8445,19 @@ function sithView(c, d) {
   })}, h3({content:cF(function(c) {
     return (i = c.md.par.info) ? i.name : "";
   })}), h6({content:cF(function(c) {
-    return (i = c.md.par.info) ? "hunh" : "";
+    return (i = c.md.par.info) ? i.homeworld.name : "";
   })}));
 }
-function sithIdsSet(c, d, e) {
-  return e && 0 <= d && d < SLOT_CT && (c[d] || -1) != e ? c[d] = e : !1;
+function slotSetMaybe(c, d, e) {
+  return e && 0 <= d && d < SLOT_CT && (c[d] || -1) !== e ? c[d] = e : !1;
+}
+function rotateInOnLeft(c, d) {
+  return [d].concat(c.slice(0, SLOT_CT - 1));
+}
+function rotateInOnRight(c, d) {
+  c = c.slice(1);
+  c.push(d);
+  return c;
 }
 window.SithTrak = SithTrak;
 

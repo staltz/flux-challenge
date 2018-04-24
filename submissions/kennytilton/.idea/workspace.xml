@@ -44,11 +44,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="139">
-              <caret line="23" column="105" lean-forward="true" selection-start-line="23" selection-start-column="105" selection-end-line="23" selection-end-column="105" />
+            <state relative-caret-position="322">
+              <caret line="62" column="62" lean-forward="false" selection-start-line="62" selection-start-column="62" selection-end-line="62" selection-end-column="62" />
               <folding />
             </state>
           </provider>
@@ -87,14 +87,14 @@
       <file leaf-file-name="mxWeb.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="612">
-              <caret line="625" column="0" lean-forward="true" selection-start-line="625" selection-start-column="0" selection-end-line="625" selection-end-column="0" />
+            <state relative-caret-position="245">
+              <caret line="147" column="61" lean-forward="false" selection-start-line="147" selection-start-column="61" selection-end-line="147" selection-end-column="61" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index-adv.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="index-adv.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index-adv.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="272">
@@ -126,7 +126,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>MicroPipe</find>
       <find>SithDB</find>
       <find>SithApp</find>
       <find>sithID</find>
@@ -154,6 +153,8 @@
       <find>mkm</find>
       <find>options</find>
       <find>xhr</find>
+      <find>nextUp</find>
+      <find>sithId</find>
       <find>'</find>
     </findStrings>
     <replaceStrings>
@@ -163,6 +164,11 @@
       <replace>//clg</replace>
       <replace>md</replace>
       <replace>options={}</replace>
+      <replace>next_up</replace>
+      <replace>next_down</replace>
+      <replace>slotSetMaybe</replace>
+      <replace>slots</replace>
+      <replace>elt</replace>
     </replaceStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$</dir>
@@ -188,13 +194,13 @@
         <option value="$PROJECT_DIR$/sithtrak-es5x" />
         <option value="$PROJECT_DIR$/trak-es5-adv" />
         <option value="$PROJECT_DIR$/js/Matrix/Model.js" />
-        <option value="$PROJECT_DIR$/js/SithTrak.js" />
         <option value="$PROJECT_DIR$/js/Matrix/Cells.js" />
         <option value="$PROJECT_DIR$/js/Matrix/mxXHR.js" />
         <option value="$PROJECT_DIR$/trak-es5" />
-        <option value="$PROJECT_DIR$/js/Matrix/mxWeb.js" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/index-adv.html" />
+        <option value="$PROJECT_DIR$/js/Matrix/mxWeb.js" />
+        <option value="$PROJECT_DIR$/js/SithTrak.js" />
       </list>
     </option>
   </component>
@@ -212,10 +218,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="51" />
-    <option name="y" value="90" />
-    <option name="width" value="1630" />
-    <option name="height" value="930" />
+    <option name="x" value="91" />
+    <option name="y" value="74" />
+    <option name="width" value="1485" />
+    <option name="height" value="931" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -308,13 +314,13 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="99290000" />
+    <option name="totallyTimeSpent" value="104446000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="51" y="90" width="1630" height="930" extended-state="0" />
+    <frame x="91" y="74" width="1485" height="931" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24969324" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27407408" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879582" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -612,22 +618,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="139">
-          <caret line="23" column="105" lean-forward="true" selection-start-line="23" selection-start-column="105" selection-end-line="23" selection-end-column="105" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="612">
-          <caret line="625" column="0" lean-forward="true" selection-start-line="625" selection-start-column="0" selection-end-line="625" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -640,6 +630,22 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
           <caret line="16" column="34" lean-forward="false" selection-start-line="16" selection-start-column="34" selection-end-line="16" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="245">
+          <caret line="147" column="61" lean-forward="false" selection-start-line="147" selection-start-column="61" selection-end-line="147" selection-end-column="61" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="322">
+          <caret line="62" column="62" lean-forward="false" selection-start-line="62" selection-start-column="62" selection-end-line="62" selection-end-column="62" />
           <folding />
         </state>
       </provider>
