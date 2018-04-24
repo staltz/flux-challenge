@@ -35,6 +35,6 @@ java -jar compiler.jar                         \
     --externs js/extRouter.js                  \
     --dependency_mode strict \
     --entry_point js/SithTrak.js \
-	--compilation_level SIMPLE_OPTIMIZATIONS   \
-	--formatting PRETTY_PRINT                  \
-	--js_output_file dist/SithTrak.js
+	--compilation_level ADVANCED_OPTIMIZATIONS   \
+	--js_output_file dist/SithTrak.adv.js
+

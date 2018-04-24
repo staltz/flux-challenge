@@ -13,6 +13,10 @@ class mxXHR extends Model {
                 okResult: cI( null)
             });
 
+        // if (!this.xhr) this.xhr = null;
+        // if (!this.uri) this.uri = null;
+        // if (!this.okResult) this.okResult = null;
+
         if ( options.send ){
             //clg('sending', uri);
             this.send( options.delay)

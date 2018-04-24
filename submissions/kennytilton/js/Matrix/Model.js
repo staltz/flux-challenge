@@ -155,7 +155,7 @@ class Model {
 			} else {
 				//clg('fm failed!!! '+what);
 				if (how.mustp) {
-					throw `fget failed what = ${what.toString()}, id ${this.id}, where = ${this.name}`;
+					throw `fget failed what = ${what.toString()}, id ${this.sid}, where = ${this.name}`;
 				}
 			}
 		} finally {
@@ -210,7 +210,7 @@ Model.prototype['awaken'] = Model.prototype.awaken;
 
 var isModel = x => x instanceof Model;
 
-function mkm( par, id, props, kids, factory='Model') {
+function mkm( par, id, props, kids=null, factory='Model') {
 	let opts = Object.assign({}
 	                    , props
 		                , kids ? {kids: cKids( kids)} : null),
@@ -220,7 +220,7 @@ function mkm( par, id, props, kids, factory='Model') {
 }
 window['mkm'] = mkm;
 
-function mkmu( par, id, props, kids, factory='Model') {
+function mkmu( par, id, props, kids=null, factory='Model') {
     let opts = Object.assign({}
         , props
         , kids ? {kids: cKids( kids)} : null),

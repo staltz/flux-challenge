@@ -14,6 +14,16 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="9" column="30" lean-forward="false" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="index-dev.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index-dev.html">
           <provider selected="true" editor-type-id="text-editor">
@@ -28,27 +38,27 @@
         <entry file="file://$PROJECT_DIR$/trak-es5">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="646">
-              <caret line="38" column="16" lean-forward="false" selection-start-line="38" selection-start-column="16" selection-end-line="38" selection-end-column="31" />
+              <caret line="38" column="48" lean-forward="false" selection-start-line="38" selection-start-column="48" selection-end-line="38" selection-end-column="48" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="deps.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/deps.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1768">
-              <caret line="104" column="0" lean-forward="false" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
+            <state relative-caret-position="139">
+              <caret line="23" column="105" lean-forward="true" selection-start-line="23" selection-start-column="105" selection-end-line="23" selection-end-column="105" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="trak-es5-adv" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/trak-es5-adv">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="671">
+              <caret line="40" column="0" lean-forward="false" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -57,8 +67,8 @@
       <file leaf-file-name="Cells.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="29" />
+            <state relative-caret-position="317">
+              <caret line="560" column="21" lean-forward="false" selection-start-line="560" selection-start-column="21" selection-end-line="560" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -67,8 +77,8 @@
       <file leaf-file-name="mxXHR.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Matrix/mxXHR.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="602">
-              <caret line="112" column="8" lean-forward="false" selection-start-line="112" selection-start-column="8" selection-end-line="112" selection-end-column="8" />
+            <state relative-caret-position="255">
+              <caret line="15" column="0" lean-forward="false" selection-start-line="15" selection-start-column="0" selection-end-line="17" selection-end-column="52" />
               <folding />
             </state>
           </provider>
@@ -77,8 +87,18 @@
       <file leaf-file-name="mxWeb.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="51">
-              <caret line="427" column="0" lean-forward="false" selection-start-line="427" selection-start-column="0" selection-end-line="427" selection-end-column="0" />
+            <state relative-caret-position="612">
+              <caret line="625" column="0" lean-forward="true" selection-start-line="625" selection-start-column="0" selection-end-line="625" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index-adv.html" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/index-adv.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="272">
+              <caret line="16" column="34" lean-forward="false" selection-start-line="16" selection-start-column="34" selection-end-line="16" selection-end-column="34" />
               <folding />
             </state>
           </provider>
@@ -87,8 +107,8 @@
       <file leaf-file-name="Model.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="29" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="29" />
+            <state relative-caret-position="261">
+              <caret line="157" column="77" lean-forward="false" selection-start-line="157" selection-start-column="77" selection-end-line="157" selection-end-column="77" />
               <folding />
             </state>
           </provider>
@@ -130,6 +150,11 @@
       <find>this</find>
       <find>tag2html</find>
       <find>goog.export</find>
+      <find>mxWeb.js:477</find>
+      <find>mkm</find>
+      <find>options</find>
+      <find>xhr</find>
+      <find>'</find>
     </findStrings>
     <replaceStrings>
       <replace>SithDB</replace>
@@ -137,6 +162,7 @@
       <replace>sithId</replace>
       <replace>//clg</replace>
       <replace>md</replace>
+      <replace>options={}</replace>
     </replaceStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$</dir>
@@ -158,15 +184,17 @@
         <option value="$PROJECT_DIR$/sithtrak/Matrix/mxWeb.js" />
         <option value="$PROJECT_DIR$/index-built.html" />
         <option value="$PROJECT_DIR$/js/closure-library/closure/goog/base_module_test.js" />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/deps.js" />
-        <option value="$PROJECT_DIR$/js/Matrix/Model.js" />
-        <option value="$PROJECT_DIR$/js/Matrix/Cells.js" />
         <option value="$PROJECT_DIR$/sithtrak-es5x" />
-        <option value="$PROJECT_DIR$/js/Matrix/mxXHR.js" />
-        <option value="$PROJECT_DIR$/js/Matrix/mxWeb.js" />
-        <option value="$PROJECT_DIR$/trak-es5" />
+        <option value="$PROJECT_DIR$/trak-es5-adv" />
+        <option value="$PROJECT_DIR$/js/Matrix/Model.js" />
         <option value="$PROJECT_DIR$/js/SithTrak.js" />
+        <option value="$PROJECT_DIR$/js/Matrix/Cells.js" />
+        <option value="$PROJECT_DIR$/js/Matrix/mxXHR.js" />
+        <option value="$PROJECT_DIR$/trak-es5" />
+        <option value="$PROJECT_DIR$/js/Matrix/mxWeb.js" />
+        <option value="$PROJECT_DIR$/index.html" />
+        <option value="$PROJECT_DIR$/index-adv.html" />
       </list>
     </option>
   </component>
@@ -183,9 +211,9 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="68" />
-    <option name="y" value="68" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="51" />
+    <option name="y" value="90" />
     <option name="width" value="1630" />
     <option name="height" value="930" />
   </component>
@@ -245,6 +273,9 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/js" />
     </key>
@@ -277,10 +308,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="90839000" />
+    <option name="totallyTimeSpent" value="99290000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="52" y="90" width="1630" height="930" extended-state="0" />
+    <frame x="51" y="90" width="1630" height="930" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24969324" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -324,15 +355,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/js/mxXHR.js" />
-    <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5950">
-          <caret line="350" column="9" lean-forward="false" selection-start-line="350" selection-start-column="9" selection-end-line="350" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/mxWeb.js" />
     <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
       <provider selected="true" editor-type-id="text-editor">
@@ -532,14 +554,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="37" lean-forward="false" selection-start-line="17" selection-start-column="37" selection-end-line="17" selection-end-column="37" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/deps.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -548,48 +562,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="29" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sithtrak-es5" />
     <entry file="file://$PROJECT_DIR$/sithtrak-es5x" />
-    <entry file="file://$PROJECT_DIR$/js/Matrix/mxXHR.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="602">
-          <caret line="112" column="8" lean-forward="false" selection-start-line="112" selection-start-column="8" selection-end-line="112" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="427" column="0" lean-forward="false" selection-start-line="427" selection-start-column="0" selection-end-line="427" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trak-es5">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="38" column="16" lean-forward="false" selection-start-line="38" selection-start-column="16" selection-end-line="38" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/index-dev.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -598,10 +572,74 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/trak-es5-adv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="671">
+          <caret line="40" column="0" lean-forward="false" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="157" column="77" lean-forward="false" selection-start-line="157" selection-start-column="77" selection-end-line="157" selection-end-column="77" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="317">
+          <caret line="560" column="21" lean-forward="false" selection-start-line="560" selection-start-column="21" selection-end-line="560" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/mxXHR.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="0" lean-forward="false" selection-start-line="15" selection-start-column="0" selection-end-line="17" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trak-es5">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="646">
+          <caret line="38" column="48" lean-forward="false" selection-start-line="38" selection-start-column="48" selection-end-line="38" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1768">
-          <caret line="104" column="0" lean-forward="false" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
+        <state relative-caret-position="139">
+          <caret line="23" column="105" lean-forward="true" selection-start-line="23" selection-start-column="105" selection-end-line="23" selection-end-column="105" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="625" column="0" lean-forward="true" selection-start-line="625" selection-start-column="0" selection-end-line="625" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="9" column="30" lean-forward="false" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index-adv.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="16" column="34" lean-forward="false" selection-start-line="16" selection-start-column="34" selection-end-line="16" selection-end-column="34" />
           <folding />
         </state>
       </provider>

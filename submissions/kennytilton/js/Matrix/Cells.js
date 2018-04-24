@@ -461,6 +461,7 @@ class Cell {
 		this.inputp = inputp;
 		this.observer = observer;
 		this.optimize = optiWhen;
+		this.quiesceWith = null;
 		this.slotOwning = false; // todo uhoh
 		// todo FNYI this.unchangedTest = function(a,b) { return a===b;};
 		this.synapticp = false; // todo FNYI
@@ -557,6 +558,7 @@ class Cell {
 	}
 	slotValueSet(newv) {
 	    if (deferChanges) {
+	        debugger;
 			throw `Assign to ${this.name} must be deferred by wrapping it in WITH-INTEGRITY`;
 		} else if (find(this.lazy, [kOnceAsked, kAlways, true])) {
 			this.valueAssume(newv, null);
@@ -927,7 +929,7 @@ function clbug( c, ...args) {
 
 // --- some handy cell factories -------------------
 
-function cF(formula, options) {
+function cF(formula, options = {}) {
 	// make a conventional formula cell
 	return Object.assign( new Cell(null, formula, false, false, null), options);
 }
@@ -936,7 +938,7 @@ window['cF'] = cF;
 // todo get consistent with all cMakers accepting options
 // todo validate options against, eg, ephmeralp
 
-function cF1(formula, options) {
+function cF1(formula, options={}) {
 	return Object.assign( new Cell(null
 			, (c)=>{
 			return withoutCDependency(formula)(c);
@@ -944,19 +946,19 @@ function cF1(formula, options) {
 , false, false, null)
 , options);
 }
-function cF_(formula, options) {
+function cF_(formula, options={}) {
 	// standard input cell
 	return Object.assign(new Cell(null, formula, false, false, null)
 		, {lazy: true}
 		, options);
 }
-function c_F(formula, options) {
+function c_F(formula, options={}) {
 	// standard input cell
 	return Object.assign(new Cell(null, formula, false, false, null)
 		, {lazy: kUntilAsked}
 		, options);
 }
-function cFI(formula, options) {
+function cFI(formula, options={}) {
 	/*
 	 make a cell whose formula runs once for
 	 its initial value but then is set procedurally
@@ -966,13 +968,13 @@ function cFI(formula, options) {
     return Object.assign(new Cell(null, formula, true, false, null), options);
 }
 window['cFI'] = cFI;
-function cI(value, options) {
+function cI(value, options={}) {
 	// standard input cell
 	return Object.assign(new Cell(value, null, true, false, null)
 		, options);
 }
 window['cI'] = cI;
-function cIe(value, options) {
+function cIe(value, options={}) {
 	// ephemeral input cell
 	return Object.assign(new Cell(value, null, true, true, null), options);
 }

@@ -147,7 +147,7 @@ class TagSession extends Model {
 
         super(parent, (name || islots.name), superSlots, false);
 
-        // this.routes = islots['routes'];
+        if (!this.routes) this.routes = islots['routes'];
     }
     static make(parent, name, islots) {
         let ts = new TagSession( parent, name, islots);
@@ -185,6 +185,8 @@ class Tag extends Model {
 		super( parent, (name || islots.name), superSlots, false);
 
 		this.sid = ++sid;
+		// if (!this.tag) this.tag = 'anon';
+		// if (!this.content) this.content = null;
 
 		if (attrs===undefined) debugger;
 
@@ -440,7 +442,23 @@ function genTagEx(tagName) {
     }
 }
 
-['a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside', 'audio',
+var a, abbr, acronym, address, applet, area, article, aside, audio,
+    b, base, basefont, bdi, bdo, bgsound, big, blink,
+    blockquote, body, br, button, canvas, caption, center,
+    cite, code, col, colgroup, command, content,
+    data, datalist, dd, del, details, dfn, dialog, dir, div, dl, dt, element, em, embed,
+    fieldset, figcaption, figure, font, footer, form, frame, frameset,
+    h1, h2, h3, h4, h5, h6, head, header, hgroup, hr, html,
+    i, iframe, image, img, input, ins, isindex, kbd, keygen,
+    label, legend, li, link, listing, main, map, mark, marquee, menu, menuitem, meta, meter, multicol,
+    nav, nextid, nobr, noembed, noframes, noscript, object, ol, optgroup, option, output,
+    p, param, path, picture, plaintext, pre, progress, q, rp, rt, rtc, ruby,
+    s, samp, script, section, select, shadow, slot, small, source, spacer, span,
+    strike, strong, style, sub, summary, sup, svg,
+    table, tbody, td, template, textarea, tfoot, th, thead, time, title,
+    tr, track, tt, u, ul, mxwvar, video, wbr, xmp;
+
+const tagNames = ['a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside', 'audio',
     'b', 'base', 'basefont', 'bdi', 'bdo', 'bgsound', 'big', 'blink',
     'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center',
     'cite', 'code', 'col', 'colgroup', 'command', 'content',
@@ -454,13 +472,158 @@ function genTagEx(tagName) {
     's', 'samp', 'script', 'section', 'select', 'shadow', 'slot', 'small', 'source', 'spacer', 'span',
     'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'svg',
     'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title',
-    'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr', 'xmp'].map( tg => genTagEx( tg));
+    'tr', 'track', 'tt', 'u', 'ul', 'mxwvar', 'video', 'wbr', 'xmp'];
 
-goog.exportSymbol('div', div);
+tagNames.map( tg => genTagEx( tg));
+
+
+goog.exportSymbol('a', a);
+goog.exportSymbol('abbr', abbr);
+goog.exportSymbol('acronym', acronym);
+goog.exportSymbol('address', address);
+goog.exportSymbol('applet', applet);
+goog.exportSymbol('area', area);
+goog.exportSymbol('article', article);
+goog.exportSymbol('aside', aside);
+goog.exportSymbol('audio', audio);
+goog.exportSymbol('b', b);
+goog.exportSymbol('base', base);
+goog.exportSymbol('basefont', basefont);
+goog.exportSymbol('bdi', bdi);
+goog.exportSymbol('bdo', bdo);
+goog.exportSymbol('bgsound', bgsound);
+goog.exportSymbol('big', big);
+goog.exportSymbol('blink', blink);
+goog.exportSymbol('blockquote', blockquote);
+goog.exportSymbol('body', body);
+goog.exportSymbol('br', br);
 goog.exportSymbol('button', button);
+goog.exportSymbol('canvas', canvas);
+goog.exportSymbol('caption', caption);
+goog.exportSymbol('center', center);
+goog.exportSymbol('cite', cite);
+goog.exportSymbol('code', code);
+goog.exportSymbol('col', col);
+goog.exportSymbol('colgroup', colgroup);
+goog.exportSymbol('command', command);
+goog.exportSymbol('content', content);
+goog.exportSymbol('data', data);
+goog.exportSymbol('datalist', datalist);
+goog.exportSymbol('dd', dd);
+goog.exportSymbol('del', del);
+goog.exportSymbol('details', details);
+goog.exportSymbol('dfn', dfn);
+goog.exportSymbol('dialog', dialog);
+goog.exportSymbol('dir', dir);
+goog.exportSymbol('div', div);
+goog.exportSymbol('dl', dl);
+goog.exportSymbol('dt', dt);
+goog.exportSymbol('element', element);
+goog.exportSymbol('em', em);
+goog.exportSymbol('embed', embed);
+goog.exportSymbol('fieldset', fieldset);
+goog.exportSymbol('figcaption', figcaption);
+goog.exportSymbol('figure', figure);
+goog.exportSymbol('font', font);
+goog.exportSymbol('footer', footer);
+goog.exportSymbol('form', form);
+goog.exportSymbol('frame', frame);
+goog.exportSymbol('frameset', frameset);
 goog.exportSymbol('h1', h1);
+goog.exportSymbol('h2', h2);
 goog.exportSymbol('h3', h3);
+goog.exportSymbol('h4', h4);
+goog.exportSymbol('h5', h5);
+goog.exportSymbol('h6', h6);
+goog.exportSymbol('head', head);
+goog.exportSymbol('header', header);
+goog.exportSymbol('hgroup', hgroup);
+goog.exportSymbol('hr', hr);
+goog.exportSymbol('html', html);
+goog.exportSymbol('i', i);
+goog.exportSymbol('iframe', iframe);
+goog.exportSymbol('image', image);
+goog.exportSymbol('img', img);
+goog.exportSymbol('input', input);
+goog.exportSymbol('ins', ins);
+goog.exportSymbol('isindex', isindex);
+goog.exportSymbol('kbd', kbd);
+goog.exportSymbol('keygen', keygen);
+goog.exportSymbol('label', label);
+goog.exportSymbol('legend', legend);
 goog.exportSymbol('li', li);
+goog.exportSymbol('link', link);
+goog.exportSymbol('listing', listing);
+goog.exportSymbol('main', main);
+goog.exportSymbol('map', map);
+goog.exportSymbol('mark', mark);
+goog.exportSymbol('marquee', marquee);
+goog.exportSymbol('menu', menu);
+goog.exportSymbol('menuitem', menuitem);
+goog.exportSymbol('meta', meta);
+goog.exportSymbol('meter', meter);
+goog.exportSymbol('multicol', multicol);
+goog.exportSymbol('nav', nav);
+goog.exportSymbol('nextid', nextid);
+goog.exportSymbol('nobr', nobr);
+goog.exportSymbol('noembed', noembed);
+goog.exportSymbol('noframes', noframes);
+goog.exportSymbol('noscript', noscript);
+goog.exportSymbol('object', object);
+goog.exportSymbol('ol', ol);
+goog.exportSymbol('optgroup', optgroup);
+goog.exportSymbol('option', option);
+goog.exportSymbol('output', output);
+goog.exportSymbol('p', p);
+goog.exportSymbol('param', param);
+goog.exportSymbol('path', path);
+goog.exportSymbol('picture', picture);
+goog.exportSymbol('plaintext', plaintext);
+goog.exportSymbol('pre', pre);
+goog.exportSymbol('progress', progress);
+goog.exportSymbol('q', q);
+goog.exportSymbol('rp', rp);
+goog.exportSymbol('rt', rt);
+goog.exportSymbol('rtc', rtc);
+goog.exportSymbol('ruby', ruby);
+goog.exportSymbol('s', s);
+goog.exportSymbol('samp', samp);
+goog.exportSymbol('script', script);
+goog.exportSymbol('section', section);
+goog.exportSymbol('select', select);
+goog.exportSymbol('shadow', shadow);
+goog.exportSymbol('slot', slot);
+goog.exportSymbol('small', small);
+goog.exportSymbol('source', source);
+goog.exportSymbol('spacer', spacer);
+goog.exportSymbol('span', span);
+goog.exportSymbol('strike', strike);
+goog.exportSymbol('strong', strong);
+goog.exportSymbol('style', style);
+goog.exportSymbol('sub', sub);
+goog.exportSymbol('summary', summary);
+goog.exportSymbol('sup', sup);
+goog.exportSymbol('svg', svg);
+goog.exportSymbol('table', table);
+goog.exportSymbol('tbody', tbody);
+goog.exportSymbol('td', td);
+goog.exportSymbol('template', template);
+goog.exportSymbol('textarea', textarea);
+goog.exportSymbol('tfoot', tfoot);
+goog.exportSymbol('th', th);
+goog.exportSymbol('thead', thead);
+goog.exportSymbol('time', time);
+goog.exportSymbol('title', title);
+goog.exportSymbol('tr', tr);
+goog.exportSymbol('track', track);
+goog.exportSymbol('tt', tt);
+goog.exportSymbol('u', u);
+goog.exportSymbol('ul', ul);
+goog.exportSymbol('mxwvar', mxwvar);
+goog.exportSymbol('video', video);
+goog.exportSymbol('wbr', wbr);
+goog.exportSymbol('xmp', xmp);
+
 
 //-------------------------------------------------------------------------------
 // ---------------- in-line Style ----------------------------------------------
@@ -582,6 +745,8 @@ class MXStorable extends Model {
 
         super(null, null, netSlots, false);
 
+        //this.deleted = this.deleted || null;
+
         this.store();
     }
 
@@ -628,7 +793,7 @@ class MXStorable extends Model {
     }
 
     static loadAllItems(klass, prefix) {
-        return Object.keys(window.localStorage)
+        return Object.keys(window.localStorage || {})
             .filter( k => k.startsWith( prefix))
             .map( key => MXStorable.load( klass, key));
     }
@@ -636,10 +801,14 @@ class MXStorable extends Model {
 
 window['MXStorable'] = MXStorable;
 
-MXStorable.prototype['make'] = MXStorable.prototype.make;
-MXStorable.prototype['toJSON'] = MXStorable.prototype.toJSON;
-MXStorable.prototype['load'] = MXStorable.prototype.load;
-MXStorable.prototype['store'] = MXStorable.prototype.store;
-MXStorable.prototype['storeObject'] = MXStorable.prototype.storeObject;
-MXStorable.prototype['delete'] = MXStorable.prototype.delete;
-MXStorable.prototype['loadAllItems'] = MXStorable.prototype.loadAllItems;
+goog.exportSymbol('MXStorable', MXStorable);
+// goog.exportSymbol('loadAllItems', loadAllItems);
+
+
+// MXStorable.prototype['make'] = MXStorable.prototype.make;
+// MXStorable.prototype['toJSON'] = MXStorable.prototype.toJSON;
+// MXStorable.prototype['load'] = MXStorable.prototype.load;
+// MXStorable.prototype['store'] = MXStorable.prototype.store;
+// MXStorable.prototype['storeObject'] = MXStorable.prototype.storeObject;
+// MXStorable.prototype['delete'] = MXStorable.prototype.delete;
+// MXStorable.prototype['loadAllItems'] = MXStorable.prototype.loadAllItems;

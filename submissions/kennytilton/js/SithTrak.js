@@ -40,10 +40,10 @@ function SithTrak () {
                     // get quite clever with the data flow, and get a bit ugly by
                     // sprinkling around checkScroll calls wherever we see one scroll
                     // and see if the second of two is stil to come.
-                    nextUp: cF( c=> ((k = c.md.kids[0]) && (i = k.info)) ? i.master.id : null,
+                    nextUp: cF( c=> (c.md.kids[0] && c.md.kids[0].info) ? c.md.kids[0].info.master.id : null,
                         {observer: (n,md) => md.checkScroll()}),
 
-                    nextDown: cF( c=> ((k = c.md.kids[SLOT_CT-1]) && (i = k.info)) ? i.apprentice.id : null,
+                    nextDown: cF( c=> (c.md.kids[0] && c.md.kids[0].info) ? c.md.kids[0].info.apprentice.id : null,
                         {observer: (n,md) => md.checkScroll()}),
 
                     scrollReq: cI(0, {observer: (name, md) => md.checkScroll()}),
@@ -52,12 +52,12 @@ function SithTrak () {
                         let md = this,
                             s = md.scrollReq;
 
-                        if (s < 0 && (mi = md.nextUp)) {
-                            sithApp.sithIds = [mi].concat( sithApp.sithIds.slice(0, SLOT_CT-1));
+                        if (s < 0 && md.nextUp) {
+                            sithApp.sithIds = [md.nextUp].concat( sithApp.sithIds.slice(0, SLOT_CT-1));
                             md.scrollReq += 1;
-                        } else if (s > 0 && (mi = md.nextDown)) {
+                        } else if (s > 0 && md.nextDown) {
                             let nids = sithApp.sithIds.slice(1);
-                            nids.push(mi);
+                            nids.push(md.nextDown);
                             sithApp.sithIds = nids;
                             md.scrollReq -= 1;
                         }
@@ -81,26 +81,25 @@ function sithView( c, sithId) {
     return li({ class: "css-slot",
                 style: cF( c=> c.md.withObi ? "color:red": null)},
         {
-            sithId: sithId,
+            sithId: sithId, // serves as child key for efficient DOM adds/removes
 
             lookup: cF( c=> (c.md.sithId > 0) ?
                 new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
 
-            cleanUp: md=> (lkx = (md.lookup && md.lookup.xhr)) ? lkx.abort():null,
+            cleanUp: md=> (md.lookup && md.lookup.xhr) ? md.lookup.xhr.abort():null,
 
             info: cF( c=> (c.md.lookup? c.md.lookup.okResult:null),
                     {observer: (s,md,i) => {
-                        if (i) {
-                            withChg('bracket', ()=> {
-                                let slotN = sithApp.sithIds.indexOf(sithId)
-                                    , newIds = sithApp.sithIds.slice()
-                                    , m = sithIdsSet(newIds, slotN - 1, i.master.id)
-                                    , a = sithIdsSet(newIds, slotN + 1, i.apprentice.id);
-                                if (a || m) {
-                                    sithApp.sithIds = newIds;
-                                }
-                            });
-                        }
+                        if (!i) return;
+
+                        withChg('bracket', ()=> {
+                            let slotN = sithApp.sithIds.indexOf(sithId)
+                                , newIds = sithApp.sithIds.slice()
+                                , m = sithIdsSet(newIds, slotN - 1, i.master.id)
+                                , a = sithIdsSet(newIds, slotN + 1, i.apprentice.id);
+                            if (a || m)
+                                sithApp.sithIds = newIds;
+                        });
                     }}),
 
             withObi: cF( c=> c.md.info && sithApp.obiLoc
@@ -108,13 +107,13 @@ function sithView( c, sithId) {
 
         },
         h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")}),
-        h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
+        h6({ content: cF( c=> (i = c.md.par.info)? "hunh"/*i.homeworld.name*/ : "")}));
 }
 
 
 function sithIdsSet( tempIds, slotN, sithId ) {
     return (sithId && slotN >= 0 && slotN < SLOT_CT && ((tempIds[slotN] || -1) != sithId)) ?
-        tempIds[slotN] = sithId : false;
+        (tempIds[slotN] = sithId) : false;
 }
 
 window['SithTrak'] = SithTrak;
