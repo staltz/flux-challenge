@@ -5,17 +5,6 @@ goog.require('Matrix.mxXHR');
 
 const SLOT_CT = 5;
 
-function palinp( s ) {
-    let lct = new Map;
-    for (x = 0; x < s.length; ++x) {
-        let c = s[x];
-        lct.set( c, 1 + (lct.get(c) || 0));
-    }
-    return Array.from(lct.values()).filter(e=> e%2).length > 1;
-}
-
-palinp("racecarx");
-
 const sithApp = new TagSession( null, 'SithTrakSession',
     { // --- Obi-tracking -------------------------------------
         obiTrakker: cF( c => new WebSocket('ws://localhost:4000')

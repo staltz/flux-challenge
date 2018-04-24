@@ -92,8 +92,8 @@
       <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="13" column="63" lean-forward="true" selection-start-line="8" selection-start-column="4" selection-end-line="13" selection-end-column="63" />
+            <state relative-caret-position="80">
+              <caret line="5" column="18" lean-forward="false" selection-start-line="5" selection-start-column="18" selection-end-line="5" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -359,7 +359,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="110172000" />
+    <option name="totallyTimeSpent" value="110612000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="87" y="74" width="1485" height="931" extended-state="0" />
@@ -741,8 +741,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="13" column="63" lean-forward="true" selection-start-line="8" selection-start-column="4" selection-end-line="13" selection-end-column="63" />
+        <state relative-caret-position="80">
+          <caret line="5" column="18" lean-forward="false" selection-start-line="5" selection-start-column="18" selection-end-line="5" selection-end-column="18" />
           <folding />
         </state>
       </provider>
