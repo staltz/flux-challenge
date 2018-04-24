@@ -68,7 +68,7 @@ Under the data flow paradigm, no one tells anyone what data they cannot have whe
 ```` js
 function sithView( c, sithId) {
     return li({ style: cF( c=> c.md.withObi ? "color:red": null)},
-            {
+              {
                 sithId: sithId,
                 lookup: cF( c=> {
                     if (c.md.sithId > 0)
@@ -78,12 +78,12 @@ function sithView( c, sithId) {
                 info: cF( c=> (c.md.lookup && c.md.lookup.okResult)),
     
                 withObi: cF( c=> c.md.info.homeworld.name === sithApp.obiLoc.name)
-            }
-        , h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")})
-        , h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
+              }
+           , h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")})
+           , h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
 ````
-We will first look at the functional derivations which together set up the data flow we will tracae later. We will have to bounce around the properties of the beast because UIs are a network of information. Below, `cF`s are formulaic Cells.
+We will first look at the functional derivations which together set up the data flow we will trace later. We will have to bounce around the properties of the beast because UIs are a network of information. Below, `cF`s are formulaic Cells.
 
 First we have a Sith's entry turning red if Obi-Wan is with them on their planet.
 ```` js
