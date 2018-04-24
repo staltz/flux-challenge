@@ -53,7 +53,7 @@ function sithView( c, sithId) {
         , h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
 ````
-Ok, let us follow the flow. We will have to bounce around the properties of the beast because UIs are a netwrok of information. Below, `cF`s are formulaic Cells.
+We will first look at the functional derivations which together set up the data flow we will tracae later. We will have to bounce around the properties of the beast because UIs are a network of information. Below, `cF`s are formulaic Cells.
 
 First we have a Sith's entry turning red if Obi-Wan is with them on their planet.
 ```` js
@@ -84,11 +84,24 @@ Careful: `obiTrakker` holds the socket connection, not Obi. The asynch `onmessag
 
 Instead of a "batch" mentality in which view stuff happens and then data stuff happens in a big cyclic crowd wave all rising and falling in unison, we have a crowd of individual data point fans on their mobile devices calling people or looking things up to get the information they need when they decide they need it. Getting back to coding, this means the individual developer working on some widget can focus on that widget, pulling info from a matrix of other elements as they see fit. The only rule is, no cycles.
 
-Here is how those "pulling" formulas work at run time. The user scrolls and in code not shown we simply change the list of SithIds. A new SithView is created for any new ID in the list. The `lookup` rule fires and kicks off an XHR. The `info` rule sees the lookup and asks for its `result` but gets back null. When the XHR gets its response and it is OK it imperatively feeds the response into its input `result` cell. The `info` cell now sees the result and takes on the result as its value and everyone watching the info fires. That includes `withObi`, who may discover they are on the same planet and turn `true`, triggering the `style` rule to run and decide on "color:red".
+Here is how those "pulling" formulas work at run time. 
+* The user scrolls and in code not shown we simply change the list of SithIds. 
+* The `UL` of SithViews sees that and creates a new SithView for any new ID in the list. 
+* The SithView is created with a validSithID so its `lookup` rule fires and kicks off an XHR. 
+* The `info` rule sees the lookup and asks for its `result` but gets back null. 
+* When the XHR gets its response and it is OK it imperatively feeds the response into its input `result` cell. 
+* The `info` cell now sees the result and takes on the result as its value and everyone watching the info fires. 
+* That includes `withObi`, which may discover they are on the same planet and turn `true`.
+* ....triggering the `style` rule to run and decide on "color:red".
+* An observer (in the correct sense of that word) updates the style of the DOM  incarnation of the SithView.
 
-In more code not shown, the div owning the two scroll buttons has a `disabled` rule watching all the SithViews to see if any are `withObi`. Seeing one is, it turns `true`, and in turn the scroll buttons decide they are disabled and separately that thier classes should include a "disabled" class.
+In more code not shown:
+* the div owning the two scroll buttons has a `disabled` rule watching all the SithViews to see if any are `withObi`
+* Seeing one is, it turns `true`
+* the individual scroll buttons decide they are disabled and...
+* decide their classes should include a "disabled" class.
 
-Sounds complex, right? Without data flow, it is. Now look at the code. The data flow paradigm has dissolved the complexity into so many simple rules for the programmer to trivially decide. Those rules are as simple in a React view, but React rules do nothing to get the data where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
+Sounds complex, right? Without data flow, it is. Now look at the full [data flow solution](https://github.com/kennytilton/flux-challenge/blob/master/submissions/kennytilton/js/SithTrak.js). The data flow paradigm  dissolves the complexity into so many simple rules for the programmer to trivially decide. Those rules are as simple in a React view, but React rules do nothing to get the data where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
 
 No Flux, no Redux.
 
