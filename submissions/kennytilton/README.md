@@ -1,10 +1,10 @@
 # SithTrak&trade;
 
-Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, ninety-seven lines of indeterminable elegance as defined by the Challenge.
+Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, eighty-four lines of indeterminable elegance as defined by the Challenge.
 
->  the ability of a programmer to easily understand the program's flow and
->  state coordination, being completely familiar with the tools used but 
->  completely unfamiliar with the codebase.
+>  Let's define code elegance to be "the ability of a programmer to easily understand
+>  the program's flow and state coordination, being completely familiar with the tools
+>  used but completely unfamiliar with the codebase.
 
 Indeterminable because no one else is familiar *at all* with Matrix, so we have no test dummy. But this could be my Submission Committee since the Matrix data flow engine has much in common with their projects:
 
@@ -40,7 +40,7 @@ What should happen is [defined here](https://github.com/staltz/flux-challenge/bl
 * ...disable scrolling.
 
 ## Hacking data flow
-To play with my code, first pull down the substantial Google Closure git submodule:
+To play with my code, first pull down the substantial Google Closure git submodule thus:
 ````bash
 cd ../submissions/kennytilton/js/closure-library
 git submodule init
@@ -54,12 +54,11 @@ Now:
 the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, but we are closing in on that.
 
 ## Discussion
+The elegance definition above presents another difficulty: data flow programs do not *have* program flow. The data flows and the UI shape simply conforms to the data. In a sense, the data flow ends with the dynamically altered UI, which itself is just data. 
 
-The elegance definition above presents another difficulty: data flow programs do not *have* program flow. The data flows and the UI shape simply conforms to the data. In a sense, the data flow ends with the dynamically altered UI, which itself is just data. To make things worse, thanks to some clever coding the data flow is transparent, so you cannot even see that. Reference a variable and you are subscribed to it. Set such a variable and everyone gets notified.
+To make things worse, thanks to some clever coding the data flow is transparent, so you cannot even see that. Reference a variable and you are subscribed to it. Set such a variable and everyone gets notified. It Just Works&trade;. 
 
-It Just Works&trade;. 
-
-This, by the way, is where Facebook erred with React: the view *is* part of the model. By addressing only the view, they covered the easy part. The whole challenge of UI programming is managing state in an environment with interpendent parts responding to asynchronous input data. But Facebook punted on state, told us to make do as best we could, then changed their mind and told us to use Flux&trade;. As for data flow, Facebook [rejects it](https://reactjs.org/docs/design-principles.html). (Scroll down to "Scheduling"). Excerpts:
+This, by the way, is where Facebook erred with React: they missed that the view *is* part of the model. By addressing only the view, they covered the easy part. The whole challenge of UI programming is managing state in an environment with interpendent parts responding to asynchronous input data. But Facebook punted on state, told us to make do as best we could, then changed their mind and told us to use Flux&trade;. As for data flow, Facebook [rejects it](https://reactjs.org/docs/design-principles.html). (Scroll down to "Scheduling"). Excerpts:
 
 > The control over scheduling would be harder for us to gain if we let the user
 > directly compose views with a “push” based paradigm common in some variations of 
@@ -76,7 +75,7 @@ Instead we have Flux:
 
 So our data swoops around in a highly purposed and constrained circle like a stadium crowd doing the wave, creating the illusion of control. But what if the hot dog guy is over there and the beer lady is over there? QED.
 
-Under the data flow paradigm, no one tells anyone what data they cannot have when. Here is the view of a Sith somewhat distilled from the actual:
+Under the data flow paradigm, no one tells anyone what data they cannot have or when they can have it. Here is the view of a Sith somewhat distilled from the actual:
 
 ```` js
 function sithView( c, sithId) {
@@ -135,7 +134,7 @@ Instead of a "batch" mentality in which view stuff happens and then data stuff h
 
 Here is how those "pulling" formulas work at run time. 
 * The user scrolls and in code not shown we simply change the list of SithIds. 
-* The `UL` of SithViews sees that and creates a new SithView for any new ID in the list. 
+* The `UL` of SithViews sees the changed list of Ids and creates a new SithView for any new ID in the list. 
 * The SithView is created with a valid SithID so its `lookup` rule fires and kicks off an XHR. 
 * The `info` rule sees the lookup and asks for its `result` but gets back null. 
 * When the XHR gets its response and it is OK it imperatively feeds the response into its input `result` cell. 
