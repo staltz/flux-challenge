@@ -34,21 +34,24 @@ function SithTrak () {
                                         return (last && last.info) ?
                                             last.info.apprentice.id : null;})
                 },
-                c => c.kidValuesKids()), // implements kidValues, kidKeys, kidFactory above
+                c => c.kidValuesKids()),
 
             div({ class: "css-scroll-buttons",
                   disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))},
                 scrollerButton("up"),
                 scrollerButton("down"))));
 }
+window['SithTrak'] = SithTrak;
 
 function scrollerButton( dir ) {
     return button({
         class: cF( c=> "css-button-" + dir + (c.md.disabled ? " css-button-disabled":"")),
-        onclick: md => for ( n=0; n < 2; ++n)
-                        sithApp.sithIds = (dir === "up" ?
-                                rotateInOnLeft( sithApp.sithIds, md.next_up)
-                                : rotateInOnRight( sithApp.sithIds, md.next_down)),
+        onclick: md => {
+            for ( let n=0; n < 2; ++n)
+                sithApp.sithIds = (dir === "up" ?
+                    rotateInOnLeft( sithApp.sithIds, md.next_up)
+                    : rotateInOnRight( sithApp.sithIds, md.next_down)
+        },
         disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])})
 }
 
@@ -56,7 +59,7 @@ function sithView( c, sithId) {
     return li({ class: "css-slot",
                 style: cF( c=> c.md.withObi ? "color:red": null)},
         {
-            sithId: sithId, // serves as child key for efficient DOM adds/removes
+            sithId: sithId,
 
             lookup: cF( c=> (c.md.sithId > 0) ?
                 new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
@@ -83,9 +86,7 @@ function sithView( c, sithId) {
         h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
 }
 
-
-
-
+// --- utils --------------------------------------------------------
 function slotSetMaybe( slots, slotN, elt ) {
     return (elt && slotN >= 0 && slotN < SLOT_CT && ((slots[slotN] || -1) !== elt)) ?
         (slots[slotN] = elt) : false;
@@ -101,5 +102,4 @@ function rotateInOnRight( a, e) {
     return na;
 }
 
-window['SithTrak'] = SithTrak;
 
