@@ -25,7 +25,7 @@ cd flux-challenge/server
 npm install
 npm start
 ````
-You should see a couple of announcements about the servers starting up. n.b, The `npm install` is needed only the first time.
+You should see a couple of announcements about the servers starting up. The `npm install` is needed only the first time.
 
 Now visit `http://localhost:3000/s/` in your browser. Look for `kennytilton` and click.
 
@@ -36,11 +36,11 @@ What should happen is [defined here](https://github.com/staltz/flux-challenge/bl
 * scroll up and down two at a time;
 * always lookup afresh when scrolling to get latest info;
 * if Obi-Wan is on the planet of a Sith:
-* ...highlight in red;
+* ...highlight that Sith in red;
 * ...disable scrolling.
 
 ## Hacking data flow
-To play with my code:
+To play with my code, first pull down the substantial Google Closure git submodule:
 ````bash
 cd ../submissions/kennytilton/js/closure-library
 git submodule init
@@ -50,11 +50,14 @@ Now:
 * open `index-dev.html` in your browser
 * as you edit the `js/SithTrak.js` code, just refresh the page
 
-Bundling: the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, but we are closing in on that.
+### Bundling
+the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, but we are closing in on that.
 
 ## Discussion
 
-The elegance definition above presents another difficulty: data flow programs do not *have* program flow. The data flows and the UI shape simply conforms to the data. In a sense, the data flow ends with the dynamically altered UI, which itself is just data.
+The elegance definition above presents another difficulty: data flow programs do not *have* program flow. The data flows and the UI shape simply conforms to the data. In a sense, the data flow ends with the dynamically altered UI, which itself is just data. To make things worse, thanks to some clever coding the data flow is transparent, so you cannot even see that. Reference a variable and you are subscribed to it. Set such a variable and everyone gets notified.
+
+It Just Works&trade;. 
 
 This, by the way, is where Facebook erred with React: the view *is* part of the model. By addressing only the view, they covered the easy part. The whole challenge of UI programming is managing state in an environment with interpendent parts responding to asynchronous input data. But Facebook punted on state, told us to make do as best we could, then changed their mind and told us to use Flux&trade;. As for data flow, Facebook [rejects it](https://reactjs.org/docs/design-principles.html). (Scroll down to "Scheduling"). Excerpts:
 
@@ -148,7 +151,7 @@ In more code not shown:
 * ...decide their classes should include a "disabled" class
 * again a generic mxWeb observer updates the DOM `classlist` and button `disabled` attributes.
 
-Sounds complex, right? Without data flow, it is. Now look at the full [data flow solution](https://github.com/kennytilton/flux-challenge/blob/master/submissions/kennytilton/js/SithTrak.js). The data flow paradigm  dissolves the complexity into so many simple rules for the programmer to trivially decide. Those rules are as simple in a React view, but React rules do nothing to get the data to where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
+Sounds complex, right? Without data flow, it is. Now look at the full [data flow solution](https://github.com/kennytilton/flux-challenge/blob/master/submissions/kennytilton/js/SithTrak.js). The data flow paradigm  dissolves all that the complexity into so many simple rules. Those rules are easy to write and validate, and if we get one wrong we know exactly where to look. Those rules are as simple in a React view, but React rules do nothing to move the data used by a rule to where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
 
 No Flux, no Redux.
 
