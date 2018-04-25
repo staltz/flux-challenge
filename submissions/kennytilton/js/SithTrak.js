@@ -24,42 +24,20 @@ function SithTrak () {
                 {
                     name: "sith-list",
 
-                    // next few lines along with kidValuesKids below
-                    // is the standard Matrix mechanism to avoid regenerating
-                    // all children just because one comes or goes
                     kidValues: cF( c=> sithApp.sithIds),
                     kidKey: k => k.sithId,
                     kidFactory: sithView,
 
-                    // scrolling by two was a challenge since we do not want
-                    // to overshoot by scrolling two when only one remained.
-                    next_up: cF( c=> (c.md.kids[0] && c.md.kids[0].info) ? c.md.kids[0].info.master.id : null,
-                        {observer: (n,md) => md.checkScroll()}),
+                    next_up: cF( c=> (c.md.kids[0] && c.md.kids[0].info) ?
+                                        c.md.kids[0].info.master.id : null),
                     next_down: cF( c=> { let last = c.md.kids[SLOT_CT-1];
                                         return (last && last.info) ?
-                                            last.info.apprentice.id : null;},
-                        {observer: (n,md) => md.checkScroll()}),
-
-                    scrollReq: cI(0, {observer: (name, md) => md.checkScroll()}),
-
-                    // the workhorse in deferred incremental scrolling
-                    checkScroll: function () {
-                        let md = this,
-                            s = md.scrollReq;
-
-                        if (s < 0 && md.next_up) {
-                            sithApp.sithIds = rotateInOnLeft( sithApp.sithIds, md.next_up);
-                            md.scrollReq += 1;
-                        } else if (s > 0 && md.next_down) {
-                            sithApp.sithIds = rotateInOnRight( sithApp.sithIds, md.next_down);
-                            md.scrollReq -= 1;
-                        }
-                    }
+                                            last.info.apprentice.id : null;})
                 },
                 c => c.kidValuesKids()), // implements kidValues, kidKeys, kidFactory above
 
             div({ class: "css-scroll-buttons",
-                    disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))},
+                  disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))},
                 scrollerButton("up"),
                 scrollerButton("down"))));
 }
@@ -67,7 +45,10 @@ function SithTrak () {
 function scrollerButton( dir ) {
     return button({
         class: cF( c=> "css-button-" + dir + (c.md.disabled ? " css-button-disabled":"")),
-        onclick: md => md.fmUp("sith-list").scrollReq += (dir==="up"? -2:2),
+        onclick: md => for ( n=0; n < 2; ++n)
+                        sithApp.sithIds = (dir === "up" ?
+                                rotateInOnLeft( sithApp.sithIds, md.next_up)
+                                : rotateInOnRight( sithApp.sithIds, md.next_down)),
         disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])})
 }
 
