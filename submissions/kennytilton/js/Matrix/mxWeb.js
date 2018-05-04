@@ -313,8 +313,8 @@ var isTag = x => x instanceof Tag;
 
 /* global Tag TagEvents */
 const TagAttributesGlobal =  new Set(['accesskey','autofocus','checked','class'
-    ,'content', 'contenteditable'
-	,'contextmenu','dir','draggable','dropzone','for','hidden','href'
+    ,'content', 'contenteditable','contextmenu'
+    , 'data','dir','draggable','dropzone','for','hidden','href'
     ,'id','itemid','itemprop','itemref','itemscope'
 	,'itemtype','lang','spellcheck','src','style','tabindex','title','translate', 'type'
     ,'viewBox','fill','d']);

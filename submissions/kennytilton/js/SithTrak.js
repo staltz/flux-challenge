@@ -50,7 +50,7 @@ function scrollerButton( dir ) {
             for ( let n=0; n < 2; ++n)
                 sithApp.sithIds = (dir === "up" ?
                     rotateInOnLeft( sithApp.sithIds, md.next_up)
-                    : rotateInOnRight( sithApp.sithIds, md.next_down)
+                    : rotateInOnRight( sithApp.sithIds, md.next_down))
         },
         disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])})
 }

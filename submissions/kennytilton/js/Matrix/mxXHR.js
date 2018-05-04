@@ -1,11 +1,8 @@
 goog.provide('Matrix.mxXHR');
 goog.require('goog.net.XhrIo');
 
-var zoom={};zoom.hunh={};
-
-
 class mxXHR extends Model {
-    constructor( uri , options={send: true, delay: 0}) {
+    constructor( uri , options={send: true, delay: 0, responseType: 'json'}) {
         super( null, "mxXhr",
             {
                 uri: cI( uri),
@@ -13,9 +10,7 @@ class mxXHR extends Model {
                 okResult: cI( null)
             });
 
-        // if (!this.xhr) this.xhr = null;
-        // if (!this.uri) this.uri = null;
-        // if (!this.okResult) this.okResult = null;
+        this.responseType = options.responseType;
 
         if ( options.send ){
             //clg('sending', uri);
@@ -26,17 +21,24 @@ class mxXHR extends Model {
     send( delay) {
         let mxx = this
             , go = ()=> goog.net.XhrIo.send( mxx.uri, function(e) {
-                let xhr = e.target;
-                //clg('send setting xhr:', mxx.uri);
+                let xhr = e.target
+                //clg('send setting xhr:', mxx.uri)
                 mxx.xhr = xhr;
 
                 if ( xhr.isSuccess()) {
-                    //clg('send sees OK');
-                    mxx.okResult = xhr.getResponseJson();
-                    //clg('just set result', mxx.okResult);
+                    //clg('send sees OK')
+                    if ( mxx.responseType === 'json') {
+                        mxx.okResult = xhr.getResponseJson()
+                    } else if ( mxx.responseType === 'xml'){
+                        mxx.okResult = xhr.getResponseXML()
+                    } else if ( mxx.responseType === 'test'){
+                        mxx.okResult = xhr.getResponseText()
+                    } else {
+                        throw("Invalid XHR responseType="+mxx.responseType)
+                    }
                 } else {
                     //clg('send XHR NG');
-                    throw 'getXHR_JSONxhr last error: '+xhr.getLastError();
+                    throw 'getXHR xhr last error: '+xhr.getLastError();
                 }
             });
 
@@ -52,7 +54,7 @@ window['mxXHR'] = mxXHR;
 
 function getXHR_JSON( datau ) {
     //clg('getXHR_JSON Sending request for ['+ datau + ']');
-    goog.net.XhrIo.send( datau, function(e) {
+    goog.net.XhrIo.send( datau, function (e) {
         let xhr = e.target;
         //clg('getXHR_JSONxhr', xhr.getStatus(), xhr.isSuccess());
         if ( xhr.isSuccess()) {
@@ -66,7 +68,7 @@ function getXHR_JSON( datau ) {
 
 //getXHR_JSON( "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.brand_name:chevy&limit=3");
 
-function testXHR() {
+function testXHR () {
     clg('testXHR');
     let it = mkm( null, "testX", {
         lookup: cF( function (c) {
