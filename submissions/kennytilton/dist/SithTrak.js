@@ -2520,7 +2520,7 @@ window.tag2html = tag2html;
 goog.exportSymbol("tag2html", tag2html);
 var isTag = function(c) {
   return c instanceof Tag;
-}, TagAttributesGlobal = new Set("accesskey autofocus checked class content contenteditable contextmenu dir draggable dropzone for hidden href id itemid itemprop itemref itemscope itemtype lang spellcheck src style tabindex title translate type viewBox fill d".split(" ")), TagEvents = new Set("onabort onautocomplete onautocompleteerror onblur oncancel oncanplay oncanplaythrough onchange onclick onclose oncontextmenu oncuechange ondblclick ondrag ondragend ondragenter ondragexit ondragleave ondragover ondragstart ondrop ondurationchange onemptied onended onerror onfocus oninput oninvalid onkeydown onkeypress onkeyup onload onloadeddata onloadedmetadata onloadstart onmousedown onmouseenter onmouseleave onmousemove onmouseout onmouseover onmouseup onmousewheel onpause onplay onplaying onprogress onratechange onreset onresize onscroll onseeked onseeking onselect onshow onsort onstalled onsubmit onsuspend ontimeupdate ontoggle onvolumechange onwaiting".split(" "));
+}, TagAttributesGlobal = new Set("accesskey autofocus checked class content contenteditable contextmenu data dir draggable dropzone for hidden href id itemid itemprop itemref itemscope itemtype lang spellcheck src style tabindex title translate type viewBox fill d".split(" ")), TagEvents = new Set("onabort onautocomplete onautocompleteerror onblur oncancel oncanplay oncanplaythrough onchange onclick onclose oncontextmenu oncuechange ondblclick ondrag ondragend ondragenter ondragexit ondragleave ondragover ondragstart ondrop ondurationchange onemptied onended onerror onfocus oninput oninvalid onkeydown onkeypress onkeyup onload onloadeddata onloadedmetadata onloadstart onmousedown onmouseenter onmouseleave onmousemove onmouseout onmouseover onmouseup onmousewheel onpause onplay onplaying onprogress onratechange onreset onresize onscroll onseeked onseeking onselect onshow onsort onstalled onsubmit onsuspend ontimeupdate ontoggle onvolumechange onwaiting".split(" "));
 function tagEventHandler(c, d) {
   var e = dom2mx(c.target);
   e.callbacks.get(d)(e, c, d);
@@ -8307,9 +8307,10 @@ goog.debug.entryPointRegistry.register(function(c) {
   goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_ = c(goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_);
 });
 Matrix.mxXHR = {};
-var zoom = {hunh:{}}, mxXHR = function(c, d) {
-  d = void 0 === d ? {send:!0, delay:0} : d;
+var mxXHR = function(c, d) {
+  d = void 0 === d ? {send:!0, delay:0, responseType:"json"} : d;
   Model.call(this, null, "mxXhr", {uri:cI(c), xhr:cI(null), okResult:cI(null)});
+  this.responseType = d.responseType;
   d.send && this.send(d.delay);
 };
 $jscomp.inherits(mxXHR, Model);
@@ -8320,9 +8321,21 @@ mxXHR.prototype.send = function(c) {
       c = c.target;
       d.xhr = c;
       if (c.isSuccess()) {
-        d.okResult = c.getResponseJson();
+        if ("json" === d.responseType) {
+          d.okResult = c.getResponseJson();
+        } else {
+          if ("xml" === d.responseType) {
+            d.okResult = c.getResponseXML();
+          } else {
+            if ("test" === d.responseType) {
+              d.okResult = c.getResponseText();
+            } else {
+              throw "Invalid XHR responseType=" + d.responseType;
+            }
+          }
+        }
       } else {
-        throw "getXHR_JSONxhr last error: " + c.getLastError();
+        throw "getXHR xhr last error: " + c.getLastError();
       }
     });
   };
@@ -8396,18 +8409,9 @@ function SithTrak() {
     return c.sithId;
   }, kidFactory:sithView, next_up:cF(function(c) {
     return c.md.kids[0] && c.md.kids[0].info ? c.md.kids[0].info.master.id : null;
-  }, {observer:function(c, d) {
-    return d.checkScroll();
-  }}), next_down:cF(function(c) {
+  }), next_down:cF(function(c) {
     return (c = c.md.kids[SLOT_CT - 1]) && c.info ? c.info.apprentice.id : null;
-  }, {observer:function(c, d) {
-    return d.checkScroll();
-  }}), scrollReq:cI(0, {observer:function(c, d) {
-    return d.checkScroll();
-  }}), checkScroll:function() {
-    var c = this.scrollReq;
-    0 > c && this.next_up ? (sithApp.sithIds = rotateInOnLeft(sithApp.sithIds, this.next_up), this.scrollReq += 1) : 0 < c && this.next_down && (sithApp.sithIds = rotateInOnRight(sithApp.sithIds, this.next_down), --this.scrollReq);
-  }}, function(c) {
+  })}, function(c) {
     return c.kidValuesKids();
   }), div({class:"css-scroll-buttons", disabled:cF(function(c) {
     return c.md.fmUp("sith-list").kids.some(function(c) {
@@ -8415,11 +8419,14 @@ function SithTrak() {
     });
   })}, scrollerButton("up"), scrollerButton("down"))));
 }
+window.SithTrak = SithTrak;
 function scrollerButton(c) {
   return button({class:cF(function(d) {
     return "css-button-" + c + (d.md.disabled ? " css-button-disabled" : "");
   }), onclick:function(d) {
-    return d.fmUp("sith-list").scrollReq += "up" === c ? -2 : 2;
+    for (var e = 0; 2 > e; ++e) {
+      sithApp.sithIds = "up" === c ? rotateInOnLeft(sithApp.sithIds, d.next_up) : rotateInOnRight(sithApp.sithIds, d.next_down);
+    }
   }, disabled:cF(function(d) {
     return d.md.par.disabled || !d.md.fmTag("ul")["next_" + c];
   })});
@@ -8459,5 +8466,4 @@ function rotateInOnRight(c, d) {
   c.push(d);
   return c;
 }
-window.SithTrak = SithTrak;
-
+;
