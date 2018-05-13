@@ -5,100 +5,167 @@ goog.require('Matrix.mxXHR');
 
 const SLOT_CT = 5;
 
-const sithApp = new TagSession( null, 'SithTrakSession',
+class Sith extends Model {
+    constructor( uri , options={send: true, delay: 0, responseType: 'json'}) {
+        super( null, "mxXhr",
+            {
+                uri: cI( uri),
+                xhr: cI( null), // returned by XhrIO.send
+                okResult: cI( null)
+            });
+
+        this.responseType = options.responseType;
+
+        if ( options.send ){
+            //clg('sending', uri);
+            this.send( options.delay)
+        }
+    }
+
+const sithApp = new TagSession(null, 'SithTrakSession',
     { // --- Obi-tracking -------------------------------------
-        obiTrakker: cF( c => new WebSocket('ws://localhost:4000')
-                                .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data)),
-        obiLoc: cI( null),
+        obiTrakker: cF(c => new WebSocket('ws://localhost:4000')
+            .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data))
+        , obiLoc: cI(null)
 
         // --- Sith loading -------------------------------------
-        sithIds: cI([-1,-2,3616,-3,-4])});
+        , sithIds: cI([null, null, 3616, null, null])
+        , siths: cF(c => s.md.sithIds.map(id => {
+        let sx = c.pv.indexOf(s => s.sithId === id)
+        return sx === -1 ? new Sith(id) : c.pv[sx]
 
-function SithTrak () {
+    }))
+    });
+
+function SithTrak() {
     return div({class: "app-container"},
-        h1({class: "css-planet-monitor",
-            content: cF( c=> "Obi-Wan currently on " + (sithApp.obiLoc? sithApp.obiLoc.name : "...dunno"))}),
+        h1({
+            class: "css-planet-monitor",
+            content: cF(c => "Obi-Wan currently on " + (sithApp.obiLoc ? sithApp.obiLoc.name : "...dunno"))
+        }),
 
         section({class: "css-scrollable-list"},
-             ul({ class: "css-slots"},
+            ul({class: "css-slots"},
                 {
                     name: "sith-list",
 
-                    kidValues: cF( c=> sithApp.sithIds),
+                    kidValues: cF(c => sithApp.sithIds),
                     kidKey: k => k.sithId,
                     kidFactory: sithView,
 
-                    next_up: cF( c=> (c.md.kids[0] && c.md.kids[0].info) ?
-                                        c.md.kids[0].info.master.id : null),
-                    next_down: cF( c=> { let last = c.md.kids[SLOT_CT-1];
-                                        return (last && last.info) ?
-                                            last.info.apprentice.id : null;})
+                    next_up: cF(c => (c.md.kids[0] && c.md.kids[0].info) ?
+                        c.md.kids[0].info.master.id : null),
+                    next_down: cF(c => {
+                        let last = c.md.kids[SLOT_CT - 1];
+                        return (last && last.info) ?
+                            last.info.apprentice.id : null;
+                    })
                 },
-                c => c.kidValuesKids()),
+                rebuildSithViews),
 
-            div({ class: "css-scroll-buttons",
-                  disabled: cF( c=> c.md.fmUp("sith-list").kids.some( sview => sview.withObi))},
+            div({
+                    class: "css-scroll-buttons",
+                    disabled: cF(c => c.md.fmUp("sith-list").kids.some(sview => sview.withObi))
+                },
                 scrollerButton("up"),
                 scrollerButton("down"))));
 }
-window['SithTrak'] = SithTrak;
 
-function scrollerButton( dir ) {
-    return button({
-        class: cF( c=> "css-button-" + dir + (c.md.disabled ? " css-button-disabled":"")),
-        onclick: md => {
-            for ( let n=0; n < 2; ++n)
-                sithApp.sithIds = (dir === "up" ?
-                    rotateInOnLeft( sithApp.sithIds, md.next_up)
-                    : rotateInOnRight( sithApp.sithIds, md.next_down))
-        },
-        disabled: cF( c=> c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])})
+function rebuildSithViews(kidsC) {
+    let curr = kidC.pv;
+
+    for (n = 0; n < sithApp.sithIds.length; ++n) {
+        let sithId = sithApp.sithIds[n]
+
+        if (sithId) {
+            cvi = curr.findIndex(v => v.sithId === sithId)
+            if (cvi === -1)
+                return sithView(sithId)
+            else
+                return curr[cvi]
+        } else {
+            return sithView(null)
+        }
+    }
 }
 
-function sithView( c, sithId) {
-    return li({ class: "css-slot",
-                style: cF( c=> c.md.withObi ? "color:red": null)},
-        {
-            sithId: sithId,
+window['SithTrak'] = SithTrak;
 
-            lookup: cF( c=> (c.md.sithId > 0) ?
+function scrollerButton(dir) {
+    return button({
+        class: cF(c => "css-button-" + dir + (c.md.disabled ? " css-button-disabled" : "")),
+        onclick: md => {
+            for (let n = 0; n < 2; ++n)
+                sithApp.sithIds = (dir === "up" ?
+                    rotateInOnLeft(sithApp.sithIds, md.next_up)
+                    : rotateInOnRight(sithApp.sithIds, md.next_down))
+        },
+        disabled: cF(c => c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])
+    })
+}
+
+function sithView(c, sithId) {
+    return li({
+            class: "css-slot",
+            style: cF(c => c.md.withObi ? "color:red" : null)
+        },
+        {
+            sithId: sithId || cF(c => {
+                let psib = c.md.psib();
+                if (psib && psib.sithId && psib.info && psib.info.apprentice) {
+                    return psib.info.apprentice.id
+                }
+                etc
+                etc
+                etc
+                and
+                watch
+                out
+                for cycles
+                    }),
+
+            lookup: cF(c => c.md.sithId ?
                 new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
 
-            cleanUp: md=> (md.lookup && md.lookup.xhr) ? md.lookup.xhr.abort():null,
+            cleanUp: md => (md.lookup && md.lookup.xhr) ? md.lookup.xhr.abort() : null,
 
-            info: cF( c=> (c.md.lookup? c.md.lookup.okResult : null),
-                    {observer: (s,md,i) => {
+            info: cF(c => (c.md.lookup ? c.md.lookup.okResult : null),
+                {
+                    observer: (s, md, i) => {
                         if (!i) return;
 
-                        withChg('bracket', ()=> {
+                        withChg('bracket', () => {
                             let slotN = sithApp.sithIds.indexOf(sithId)
                                 , newIds = sithApp.sithIds.slice()
                                 , m = slotSetMaybe(newIds, slotN - 1, i.master.id)
                                 , a = slotSetMaybe(newIds, slotN + 1, i.apprentice.id);
                             if (a || m)
-                                sithApp.sithIds = newIds;});}}),
+                                sithApp.sithIds = newIds;
+                        });
+                    }
+                }),
 
-            withObi: cF( c=> c.md.info && sithApp.obiLoc
-                        && (c.md.info.homeworld.name === sithApp.obiLoc.name))
+            withObi: cF(c => c.md.info && sithApp.obiLoc
+                && (c.md.info.homeworld.name === sithApp.obiLoc.name))
 
         },
-        h3({ content: cF( c=> (i = c.md.par.info)? i.name : "")}),
-        h6({ content: cF( c=> (i = c.md.par.info)? i.homeworld.name : "")}));
+        h3({content: cF(c => (i = c.md.par.info) ? i.name : "")}),
+        h6({content: cF(c => (i = c.md.par.info) ? i.homeworld.name : "")}));
 }
 
 // --- utils --------------------------------------------------------
-function slotSetMaybe( slots, slotN, elt ) {
+function slotSetMaybe(slots, slotN, elt) {
     return (elt && slotN >= 0 && slotN < SLOT_CT && ((slots[slotN] || -1) !== elt)) ?
         (slots[slotN] = elt) : false;
 }
 
-function rotateInOnLeft( a, e) {
-    return [e].concat( a.slice(0, SLOT_CT-1));
+function rotateInOnLeft(a, e) {
+    return [e].concat(a.slice(0, SLOT_CT - 1));
 }
 
-function rotateInOnRight( a, e) {
+function rotateInOnRight(a, e) {
     let na = a.slice(1);
-    na.push( e);
+    na.push(e);
     return na;
 }
 
