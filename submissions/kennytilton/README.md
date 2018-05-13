@@ -35,6 +35,7 @@ What should happen is [defined here](https://github.com/staltz/flux-challenge/bl
 * bracket that Sith with master above and apprentice below, if anys;
 * scroll up and down two at a time;
 * always lookup afresh when scrolling to get latest info;
+* if a lookup for Sith is active when the Sith gets scrolled off, abort the lookup;
 * if Obi-Wan is on the planet of a Sith:
 * ...highlight that Sith in red;
 * ...disable scrolling.
@@ -51,7 +52,7 @@ Now:
 * as you edit the `js/SithTrak.js` code, just refresh the page
 
 ### Bundling
-the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, but we are closing in on that.
+the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, and we are starting to think Matrix is too dynamic for the google closure compiler advanced mode.
 
 ## Discussion
 The elegance definition above presents another difficulty: data flow programs do not *have* program flow. The data flows and the UI shape simply conforms to the data. In a sense, the data flow ends with the dynamically altered UI, which itself is just data. 
