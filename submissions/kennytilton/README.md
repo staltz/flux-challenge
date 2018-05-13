@@ -1,12 +1,12 @@
 # SithTrak&trade;
 
-Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, eighty-four lines of indeterminable elegance as defined by the Challenge.
+Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, just 139 lines of indeterminable elegance as defined by the Challenge.
 
 >  Let's define code elegance to be "the ability of a programmer to easily understand
 >  the program's flow and state coordination, being completely familiar with the tools
 >  used but completely unfamiliar with the codebase.
 
-Indeterminable because no one else is familiar *at all* with Matrix, so we have no test dummy. But this could be my Submission Committee since the Matrix data flow engine has much in common with their projects:
+Indeterminable because no one else is familiar *at all* with Matrix, so we lack a test dummy. But this could be my Submission Committee since the Matrix data flow engine has much in common with their projects:
 
 * Michael Westrate, author of [MobX](https://github.com/mobxjs/mobx)
 * Alan Dipert and Micha Niskin, crew behind [Javelin](https://github.com/hoplon/javelin)
@@ -35,6 +35,7 @@ What should happen is [defined here](https://github.com/staltz/flux-challenge/bl
 * bracket that Sith with master above and apprentice below, if anys;
 * scroll up and down two at a time;
 * always lookup afresh when scrolling to get latest info;
+* if a lookup for Sith is active when the Sith gets scrolled off, abort the lookup;
 * if Obi-Wan is on the planet of a Sith:
 * ...highlight that Sith in red;
 * ...disable scrolling.
@@ -51,7 +52,7 @@ Now:
 * as you edit the `js/SithTrak.js` code, just refresh the page
 
 ### Bundling
-the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, but we are closing in on that.
+the script `trak-es5` will rebuild `dist/SithTrak.js` with simple optimizations. Open `index.html` to run that. No luck yet with advanced optimizations, and we are starting to think Matrix is too dynamic for the google closure compiler advanced mode.
 
 ## Discussion
 The elegance definition above presents another difficulty: data flow programs do not *have* program flow. The data flows and the UI shape simply conforms to the data. In a sense, the data flow ends with the dynamically altered UI, which itself is just data. 
@@ -75,7 +76,7 @@ Instead we have Flux:
 
 So our data swoops around in a highly purposed and constrained circle like a stadium crowd doing the wave, creating the illusion of control. But what if the hot dog guy is over there and the beer lady is over there? QED.
 
-Under the data flow paradigm, no one tells anyone what data they cannot have or when they can have it. Here is the view of a Sith somewhat distilled from the actual:
+Under the data flow paradigm, no one tells anyone what data they cannot have or when they can have it. Here is the view of a Sith -- not the latest version after a big refactoring, but it makes the point:
 
 ```` js
 function sithView( c, sithId) {
@@ -150,9 +151,9 @@ In more code not shown:
 * ...decide their classes should include a "disabled" class
 * again a generic mxWeb observer updates the DOM `classlist` and button `disabled` attributes.
 
-Sounds complex, right? Without data flow, it is. Now look at the full [data flow solution](https://github.com/kennytilton/flux-challenge/blob/master/submissions/kennytilton/js/SithTrak.js). The data flow paradigm  dissolves all that the complexity into so many simple rules. Those rules are easy to write and validate, and if we get one wrong we know exactly where to look. Those rules are as simple in a React view, but React rules do nothing to move the data used by a rule to where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
+Sounds complex, right? Without data flow, it is. Now look at the full [data flow solution](https://github.com/kennytilton/flux-challenge/blob/master/submissions/kennytilton/js/SithTrak.js). The data flow paradigm  dissolves all that the complexity into so many simple rules. Those rules are easy to write and validate, and if we get one wrong we know exactly where to look. Those rules are as simple in a React view, but React rules do nothing to move data to where it needs to be. In the data flow paradigm, views are first-class citizens who manage their own state, arranging for the state graph to stay as current as the view.
 
-No Flux, no Redux.
+Without Flux or Redux.
 
 QED
 
