@@ -1,6 +1,6 @@
 # SithTrak&trade;
 
-Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, just 139 lines of indeterminable elegance as defined by the Challenge.
+Welcome to the Matrix&trade; implementation of The Flux Challenge&trade;, just one hundred fifty-six lines of indeterminable elegance as defined by the Challenge.
 
 >  Let's define code elegance to be "the ability of a programmer to easily understand
 >  the program's flow and state coordination, being completely familiar with the tools
@@ -13,6 +13,15 @@ Indeterminable because no one else is familiar *at all* with Matrix, so we lack 
 * Yang Bo, author of [binding.scala](https://github.com/ThoughtWorksInc/Binding.scala)
 
 Vast amounts of other prior/concurrent art exist. 
+
+````
+Fun side note. This solution started at 84 lines until we belatedly grokked
+what was wanted in aborting XHR requests. This requirement means interrupting
+what would otherwise be simple data flow.
+
+The good news is that the data flow paradigm could handle the unusual "flow", the
+bad news is that it did almost double the code required.
+````
 
 ## Running the beast
 First, grab the whole Challenge:
