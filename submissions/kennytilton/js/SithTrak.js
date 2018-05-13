@@ -32,25 +32,26 @@ function obsSithInfo ( slot, sith, info) {
     let masterId = info.master && info.master.id
         , apprenticeId = info.apprentice && info.apprentice.id;
 
-    if (!(masterId || apprenticeId)) return
+    if (masterId || apprenticeId) {
+        let newIds = null
+            , myx = sith.par.sithIds.indexOf(sith.sithId)
 
-    let newIds = null
-        , myx = sith.par.sithIds.indexOf(sith.sithId)
+        if ( myx !== -1) {
 
-    if ( myx === -1) return
+            if (masterId && myx > 0 && sith.par.sithIds[myx - 1] !== masterId) {
+                newIds = sith.par.sithIds.slice()
+                newIds[myx - 1] = masterId
+            }
 
-    if (masterId && myx > 0 && sith.par.sithIds[myx-1] !== masterId) {
-            newIds = sith.par.sithIds.slice()
-            newIds[ myx-1] = masterId
-    }
+            if (apprenticeId && myx + 1 < SLOT_CT && sith.par.sithIds[myx + 1] !== apprenticeId) {
+                newIds = newIds || sith.par.sithIds.slice()
+                newIds[myx + 1] = apprenticeId
+            }
 
-    if (apprenticeId && myx + 1 < SLOT_CT && sith.par.sithIds[myx+1] !== apprenticeId) {
-            newIds = newIds || sith.par.sithIds.slice()
-            newIds[ myx+1] = apprenticeId
-    }
-
-    if (newIds) {
-        sith.par.sithIds = newIds
+            if (newIds) {
+                sith.par.sithIds = newIds
+            }
+        }
     }
 }
 
@@ -96,16 +97,11 @@ function SithTrak() {
         , section({class: "css-scrollable-list"},
             ul({class: "css-slots"}
                 , { name: "sith-list"}
-                , c=> {
-                    let sv = [];
-                    for (n = 0; n < SLOT_CT; ++n) {
-                        sv.push( sithView(n))
-                    }
-                    return sv})
+                , c=> range( SLOT_CT).map( slotN => sithView( slotN)))
             , div(
                 {
                     class: "css-scroll-buttons"
-                    // , disabled: cF(c => sithApp.siths.some( s => s && s.withObi))
+                    , disabled: cF(c => sithApp.siths.some( s => s && s.withObi))
                 },
                 scrollerUpButton(),
                 scrollerDownButton()))
@@ -137,19 +133,16 @@ function scrollerButton( dir, otherProp, otherSlot, onClickFn) {
         class: cF(c => "css-button-" + dir + (c.md.disabled ? " css-button-disabled" : ""))
         , onclick: onClickFn
         , disabled: cF(c => {
-            return false
             if (c.md.par.disabled) {
                 return true
             } else {
                 let keyS = sithApp.siths[otherSlot];
-                if (keyS && keyS.info) {
-                    if (keyS.info[otherProp])
-                        return keyS.info[otherProp].id === null
+                if (keyS && keyS.info && keyS.info[otherProp]) {
+                    return keyS.info[otherProp].id === null
                 } else {
                     return true
                 }
             }
-
         })
     })
 }
