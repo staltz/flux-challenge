@@ -53,7 +53,6 @@ function obsSithInfo ( slot, sith, info) {
     }
 
     if (newIds) {
-        clg('yep, infoe->newIds', newIds)
         sith.par.sithIds = newIds
     }
 }
@@ -72,8 +71,9 @@ function SithTrak() {
             , sithIds: cI([null, null, 3616, null, null])
             , siths: cF(c => c.md.sithIds.map(id => {
                     if ( id ) {
-                        let sx = (c.pv === kUnbound ? -1 : c.pv.indexOf(s => s.sithId === id))
-                        return sx === -1 ? new Sith( c.md, id) : c.pv[sx]
+                        let curr = (c.pv === kUnbound? [] : c.pv)
+                            , s = curr.find(s => s && s.sithId === id)
+                        return s || new Sith( c.md, id)
                     }
                 }))})
 
@@ -104,30 +104,67 @@ function SithTrak() {
                     return sv})
             , div({
                     class: "css-scroll-buttons",
-                    disabled: cF(c => c.md.fmUp("sith-list").kids.some(sview => sview.withObi))
+                    disabled: cF(c => sithApp.siths.some( s => s && s.withObi))
                 },
-                scrollerButton("up"),
-                scrollerButton("down")))
+                scrollerUpButton(),
+                scrollerDownButton()))
     )
 }
 
 window['SithTrak'] = SithTrak;
 
-function scrollerButton(dir) {
+
+function scrollerUpButton() {
     return button({
-        class: cF(c => "css-button-" + dir + (c.md.disabled ? " css-button-disabled" : "")),
-        onclick: md => {
-            for (let n = 0; n < 2; ++n)
-                sithApp.sithIds = (dir === "up" ?
-                    rotateInOnLeft(sithApp.sithIds, md.next_up)
-                    : rotateInOnRight(sithApp.sithIds, md.next_down))
-        },
-        disabled: cF(c => c.md.par.disabled || !c.md.fmTag("ul")['next_' + dir])
+        class: cF(c => "css-button-up" + (c.md.disabled ? " css-button-disabled" : ""))
+        , onclick: md => {
+            let mId = sithApp.siths[0].info.master.id
+            sithApp.sithIds = [null, mId].concat(sithApp.sithIds.slice(0,3))
+        }
+        , disabled: cF(c => {
+            if (c.md.par.disabled) {
+                return true
+            } else {
+                let keyS = sithApp.siths[0];
+                if (keyS && keyS.info) {
+                    clg('info ok: app', keyS.info.master)
+                    if (keyS.info.master)
+                        return keyS.info.master.id === null
+                } else {
+                    return true
+                }
+            }
+
+        })
+    })
+}
+
+function scrollerDownButton() {
+    return button({
+        class: cF(c => "css-button-down" + (c.md.disabled ? " css-button-disabled" : ""))
+        , onclick: md => {
+            let appId = sithApp.siths[SLOT_CT-1].info.apprentice.id
+            sithApp.sithIds = sithApp.sithIds.slice(2).concat([appId,null])
+        }
+        , disabled: cF(c => {
+            if (c.md.par.disabled) {
+                return true
+            } else {
+                let keyS = sithApp.siths[SLOT_CT-1];
+                if (keyS && keyS.info) {
+                    clg('info ok: app', keyS.info.apprentice)
+                    if (keyS.info.apprentice)
+                        return keyS.info.apprentice.id === null
+                } else {
+                    return true
+                }
+            }
+
+        })
     })
 }
 
 function sithInfo (slotN) {
-    clg('sinfo', sithApp, sithApp.siths)
     let sith = sithApp.siths[slotN]
     return sith && sith.info
 }
