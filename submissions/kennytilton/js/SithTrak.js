@@ -12,15 +12,27 @@ class Sith extends Model {
             {
                 sithId: sithId
                 , lookup: cF(c => {
-                    return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId)
+                    if ( c.md.par.withObi) {
+                        if (c.pv && c.pv.xhr && c.pv.xhr.isActive()) {
+                            clg('aborting lookup!!', c.md.sithId)
+                            c.pv.xhr.abort();
+                        }
+                        return null;
+                    } else if (!c.md.info) {
+                        return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId
+                            , {
+                                send: true, delay: 0, responseType: 'json'
+                                , okHandler: (s, xhr, response) => c.md.info = response
+                            })
+                    } else {
+                        return null
+                    }
                 })
-                , info: cF( c => (c.md.lookup ? c.md.lookup.okResult : null)
-                , { observer: obsSithInfo})
-
-                , withObi: cF(c => c.md.info
-                && app.obiLoc
-                && (c.md.info.homeworld.name === app.obiLoc.name))
-            })
+                , info: cI( null, { observer: obsSithInfo})
+                , withObi: cF(c => app.obiLoc
+                    && c.md.info
+                    && (c.md.info.homeworld.name === app.obiLoc.name))
+                })
     }
 }
 
@@ -81,12 +93,13 @@ function SithTrak() {
             // --- Sith loading -------------------------------------
             , sithIds: cI([null, null, 3616, null, null])
             , siths: cF(c => c.md.sithIds.map(id => {
-                    if ( id ) {
-                        let curr = (c.pv === kUnbound? [] : c.pv)
-                            , s = curr.find(s => s && s.sithId === id)
-                        return s || new Sith( c.md, id)
-                    } else return null;
-                }), { name: 'sithsObs', observer: obsSithAbortLost})})
+            if ( id ) {
+                let curr = (c.pv === kUnbound? [] : c.pv)
+                    , s = curr.find(s => s && s.sithId === id)
+                return s || new Sith( c.md, id)
+            } else return null;
+        }), { name: 'sithsObs', observer: obsSithAbortLost})
+            , withObi: cF(c => c.md.siths.some( s => s && s.withObi))})
 
     return div({class: "app-container"},
         h1({
@@ -101,11 +114,14 @@ function SithTrak() {
             , div(
                 {
                     class: "css-scroll-buttons"
-                    , disabled: cF(c => sithApp.siths.some( s => s && s.withObi))
-                },
-                scrollerUpButton(),
-                scrollerDownButton()))
-    )
+                    , disabled: cF( c=> {
+                        ast(sithApp);
+                        return sithApp.withObi
+                    })
+                }
+                , scrollerUpButton()
+                , scrollerDownButton()))
+        )
 }
 
 window['SithTrak'] = SithTrak;

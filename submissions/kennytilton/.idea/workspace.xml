@@ -17,8 +17,8 @@
       <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="535">
-              <caret line="53" column="9" lean-forward="false" selection-start-line="53" selection-start-column="9" selection-end-line="53" selection-end-column="9" />
+            <state relative-caret-position="-1419">
+              <caret line="18" column="25" lean-forward="true" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -27,10 +27,10 @@
       <file leaf-file-name="mxXHR.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/Matrix/mxXHR.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="68">
+              <caret line="4" column="75" lean-forward="false" selection-start-line="4" selection-start-column="31" selection-end-line="4" selection-end-column="75" />
               <folding>
-                <marker date="1525448332755" expanded="true" signature="354:524" ph="{...}" />
+                <marker date="1526233942235" expanded="true" signature="385:554" ph="{...}" />
               </folding>
             </state>
           </provider>
@@ -86,6 +86,18 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="mxWeb.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="258">
+              <caret line="143" column="4" lean-forward="false" selection-start-line="143" selection-start-column="4" selection-end-line="143" selection-end-column="4" />
+              <folding>
+                <marker date="1525451614001" expanded="true" signature="26021:26040" ph="{...}" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -98,7 +110,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>kidV</find>
       <find>will be</find>
       <find>reused</find>
       <find>moving</find>
@@ -122,12 +133,13 @@
       <find>sithId</find>
       <find>scrollReq</find>
       <find>unknown</find>
-      <find>sithApp</find>
       <find>unboun</find>
       <find>islot</find>
       <find>observer</find>
       <find>infoe</find>
       <find>info ok</find>
+      <find>withObi</find>
+      <find>sithApp</find>
     </findStrings>
     <replaceStrings>
       <replace>SithDB</replace>
@@ -173,13 +185,13 @@
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/index-adv.html" />
         <option value="$PROJECT_DIR$/index-dev.html" />
-        <option value="$PROJECT_DIR$/js/Matrix/mxXHR.js" />
         <option value="$PROJECT_DIR$/resource/himom.html" />
         <option value="$PROJECT_DIR$/js/Matrix/mxWeb.js" />
         <option value="$PROJECT_DIR$/resource/hiring-201805.htm" />
         <option value="$PROJECT_DIR$/whoshiring.html" />
         <option value="$PROJECT_DIR$/js/WhosHiring.js" />
         <option value="$PROJECT_DIR$/js/Matrix/Cells.js" />
+        <option value="$PROJECT_DIR$/js/Matrix/mxXHR.js" />
         <option value="$PROJECT_DIR$/js/SithTrak.js" />
       </list>
     </option>
@@ -326,13 +338,12 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="169829000" />
+    <option name="totallyTimeSpent" value="173363000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="153" y="144" width="1485" height="889" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1905724" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1905724" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879582" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -425,7 +436,7 @@
         <state relative-caret-position="602">
           <caret line="112" column="8" lean-forward="false" selection-start-line="112" selection-start-column="8" selection-end-line="112" selection-end-column="8" />
           <folding>
-            <marker date="1525448332755" expanded="true" signature="354:524" ph="{...}" />
+            <marker date="1526233942235" expanded="true" signature="385:554" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -603,31 +614,11 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/WhosHiring.js" />
-    <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="366">
-          <caret line="419" column="39" lean-forward="false" selection-start-line="419" selection-start-column="39" selection-end-line="419" selection-end-column="39" />
-          <folding>
-            <marker date="1525451614001" expanded="true" signature="26021:26040" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="258">
           <caret line="32" column="6" lean-forward="false" selection-start-line="32" selection-start-column="6" selection-end-line="32" selection-end-column="6" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/Matrix/mxXHR.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1525448332755" expanded="true" signature="354:524" ph="{...}" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -655,10 +646,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/mxXHR.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="75" lean-forward="false" selection-start-line="4" selection-start-column="31" selection-end-line="4" selection-end-column="75" />
+          <folding>
+            <marker date="1526233942235" expanded="true" signature="385:554" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="258">
+          <caret line="143" column="4" lean-forward="false" selection-start-line="143" selection-start-column="4" selection-end-line="143" selection-end-column="4" />
+          <folding>
+            <marker date="1525451614001" expanded="true" signature="26021:26040" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="535">
-          <caret line="53" column="9" lean-forward="false" selection-start-line="53" selection-start-column="9" selection-end-line="53" selection-end-column="9" />
+        <state relative-caret-position="-1419">
+          <caret line="18" column="25" lean-forward="true" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
           <folding />
         </state>
       </provider>

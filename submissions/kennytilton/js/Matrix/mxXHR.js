@@ -7,10 +7,10 @@ class mxXHR extends Model {
             {
                 uri: cI( uri),
                 xhr: cI( null), // returned by XhrIO.send
-                okResult: cI( null)
+                okResult: cI( null, {observer: options.okHandler})
             });
 
-        this.responseType = options.responseType;
+        this.responseType = options.responseType
 
         if ( options.send ){
             //clg('sending', uri);
