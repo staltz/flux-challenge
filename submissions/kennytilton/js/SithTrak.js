@@ -6,52 +6,87 @@ goog.require('Matrix.mxXHR');
 const SLOT_CT = 5;
 
 class Sith extends Model {
-    constructor( uri , options={send: true, delay: 0, responseType: 'json'}) {
-        super( null, "mxXhr",
+    constructor( app, sithId) {
+        ast( sithId)
+        super(app, "sith-"+sithId, Object.assign(
             {
-                uri: cI( uri),
-                xhr: cI( null), // returned by XhrIO.send
-                okResult: cI( null)
-            });
+                sithId: sithId
+                , lookup: cF(c => {
+                clg('lookup!', c.md.sithId)
+                return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId)
+            })
+                , info: cF( c => (c.md.lookup ? c.md.lookup.okResult : null)
+                            , { observer: obsSithInfo})
 
-        this.responseType = options.responseType;
+                , withObi: cF(c => c.md.info
+                && app.obiLoc
+                && (c.md.info.homeworld.name === app.obiLoc.name))
+            }))
+    }
+}
 
-        if ( options.send ){
-            //clg('sending', uri);
-            this.send( options.delay)
-        }
+var sithApp = null;
+
+function obsSithInfo ( slot, sith, info) {
+    if (!info) return;
+
+    let masterId = info.master && info.master.id
+        , apprenticeId = info.apprentice && info.apprentice.id;
+
+    if (!(masterId || apprenticeId)) return
+
+    let newIds = null
+        , myx = sith.par.sithIds.indexOf(sith.sithId)
+
+    if ( myx === -1) return
+
+    if (masterId && myx > 0
+        && sith.par.sithIds[myx-1] !== masterId) {
+            newIds = sith.par.sithIds.slice()
+            newIds[ myx-1] = masterId
     }
 
-const sithApp = new TagSession(null, 'SithTrakSession',
-    { // --- Obi-tracking -------------------------------------
-        obiTrakker: cF(c => new WebSocket('ws://localhost:4000')
-            .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data))
-        , obiLoc: cI(null)
+    if (apprenticeId && myx + 1 < SLOT_CT
+        && sith.par.sithIds[myx+1] !== apprenticeId) {
+            newIds = newIds || sith.par.sithIds.slice()
+            newIds[ myx+1] = apprenticeId
+    }
 
-        // --- Sith loading -------------------------------------
-        , sithIds: cI([null, null, 3616, null, null])
-        , siths: cF(c => s.md.sithIds.map(id => {
-        let sx = c.pv.indexOf(s => s.sithId === id)
-        return sx === -1 ? new Sith(id) : c.pv[sx]
+    if (newIds) {
+        clg('yep, infoe->newIds', newIds)
+        sith.par.sithIds = newIds
+    }
+}
 
-    }))
-    });
+// --- SithTrak (main) ------------------------------------------------------
 
 function SithTrak() {
+    let dbg = 2;
+    sithApp = new TagSession(null, 'SithTrakSession',
+        { // --- Obi-tracking -------------------------------------
+            obiTrakker: cF(c => new WebSocket('ws://localhost:4000')
+                .onmessage = msg => c.md.obiLoc = JSON.parse(msg.data))
+            , obiLoc: cI(null)
+
+            // --- Sith loading -------------------------------------
+            , sithIds: cI([null, null, 3616, null, null])
+            , siths: cF(c => c.md.sithIds.map(id => {
+                    if ( id ) {
+                        let sx = (c.pv === kUnbound ? -1 : c.pv.indexOf(s => s.sithId === id))
+                        return sx === -1 ? new Sith( c.md, id) : c.pv[sx]
+                    }
+                }))})
+
     return div({class: "app-container"},
         h1({
             class: "css-planet-monitor",
             content: cF(c => "Obi-Wan currently on " + (sithApp.obiLoc ? sithApp.obiLoc.name : "...dunno"))
-        }),
+        })
 
-        section({class: "css-scrollable-list"},
-            ul({class: "css-slots"},
-                {
+        , section({class: "css-scrollable-list"},
+            ul({class: "css-slots"}
+                , {
                     name: "sith-list",
-
-                    kidValues: cF(c => sithApp.sithIds),
-                    kidKey: k => k.sithId,
-                    kidFactory: sithView,
 
                     next_up: cF(c => (c.md.kids[0] && c.md.kids[0].info) ?
                         c.md.kids[0].info.master.id : null),
@@ -60,33 +95,20 @@ function SithTrak() {
                         return (last && last.info) ?
                             last.info.apprentice.id : null;
                     })
-                },
-                rebuildSithViews),
-
-            div({
+                }
+                , c=> {
+                    let sv = [];
+                    for (n = 0; n < SLOT_CT; ++n) {
+                        sv.push( sithView(n))
+                    }
+                    return sv})
+            , div({
                     class: "css-scroll-buttons",
                     disabled: cF(c => c.md.fmUp("sith-list").kids.some(sview => sview.withObi))
                 },
                 scrollerButton("up"),
-                scrollerButton("down"))));
-}
-
-function rebuildSithViews(kidsC) {
-    let curr = kidC.pv;
-
-    for (n = 0; n < sithApp.sithIds.length; ++n) {
-        let sithId = sithApp.sithIds[n]
-
-        if (sithId) {
-            cvi = curr.findIndex(v => v.sithId === sithId)
-            if (cvi === -1)
-                return sithView(sithId)
-            else
-                return curr[cvi]
-        } else {
-            return sithView(null)
-        }
-    }
+                scrollerButton("down")))
+    )
 }
 
 window['SithTrak'] = SithTrak;
@@ -104,69 +126,21 @@ function scrollerButton(dir) {
     })
 }
 
-function sithView(c, sithId) {
-    return li({
-            class: "css-slot",
-            style: cF(c => c.md.withObi ? "color:red" : null)
-        },
+function sithInfo (slotN) {
+    clg('sinfo', sithApp, sithApp.siths)
+    let sith = sithApp.siths[slotN]
+    return sith && sith.info
+}
+
+function sithView( slotN) {
+    return li(
         {
-            sithId: sithId || cF(c => {
-                let psib = c.md.psib();
-                if (psib && psib.sithId && psib.info && psib.info.apprentice) {
-                    return psib.info.apprentice.id
-                }
-                etc
-                etc
-                etc
-                and
-                watch
-                out
-                for cycles
-                    }),
-
-            lookup: cF(c => c.md.sithId ?
-                new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId) : null),
-
-            cleanUp: md => (md.lookup && md.lookup.xhr) ? md.lookup.xhr.abort() : null,
-
-            info: cF(c => (c.md.lookup ? c.md.lookup.okResult : null),
-                {
-                    observer: (s, md, i) => {
-                        if (!i) return;
-
-                        withChg('bracket', () => {
-                            let slotN = sithApp.sithIds.indexOf(sithId)
-                                , newIds = sithApp.sithIds.slice()
-                                , m = slotSetMaybe(newIds, slotN - 1, i.master.id)
-                                , a = slotSetMaybe(newIds, slotN + 1, i.apprentice.id);
-                            if (a || m)
-                                sithApp.sithIds = newIds;
-                        });
-                    }
-                }),
-
-            withObi: cF(c => c.md.info && sithApp.obiLoc
-                && (c.md.info.homeworld.name === sithApp.obiLoc.name))
-
+            class: "css-slot",
+            style: cF(c => {
+                let sith = sithApp.siths[slotN]
+                return (sith && sith.withObi) ? "color:red" : null
+            })
         },
-        h3({content: cF(c => (i = c.md.par.info) ? i.name : "")}),
-        h6({content: cF(c => (i = c.md.par.info) ? i.homeworld.name : "")}));
+        h3({content: cF(c => (i = sithInfo(slotN)) ? i.name : "")}),
+        h6({content: cF(c => (i = sithInfo(slotN)) ? i.homeworld.name : "")}));
 }
-
-// --- utils --------------------------------------------------------
-function slotSetMaybe(slots, slotN, elt) {
-    return (elt && slotN >= 0 && slotN < SLOT_CT && ((slots[slotN] || -1) !== elt)) ?
-        (slots[slotN] = elt) : false;
-}
-
-function rotateInOnLeft(a, e) {
-    return [e].concat(a.slice(0, SLOT_CT - 1));
-}
-
-function rotateInOnRight(a, e) {
-    let na = a.slice(1);
-    na.push(e);
-    return na;
-}
-
-

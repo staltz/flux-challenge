@@ -17,8 +17,8 @@
       <file leaf-file-name="SithTrak.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-361">
-              <caret line="7" column="25" lean-forward="false" selection-start-line="7" selection-start-column="25" selection-end-line="7" selection-end-column="25" />
+            <state relative-caret-position="943">
+              <caret line="77" column="21" lean-forward="false" selection-start-line="77" selection-start-column="21" selection-end-line="77" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -56,6 +56,26 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="Cells.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="8319">
+              <caret line="931" column="9" lean-forward="false" selection-start-line="931" selection-start-column="9" selection-end-line="931" selection-end-column="9" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Model.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="258">
+              <caret line="32" column="6" lean-forward="false" selection-start-line="32" selection-start-column="6" selection-end-line="32" selection-end-column="6" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -68,7 +88,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>disabled</find>
       <find>sending</find>
       <find>clg</find>
       <find>gWithinIntegrity</find>
@@ -97,6 +116,7 @@
       <find>scrollReq</find>
       <find>unknown</find>
       <find>sithApp</find>
+      <find>unboun</find>
       <find>islot</find>
     </findStrings>
     <replaceStrings>
@@ -296,7 +316,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="151241000" />
+    <option name="totallyTimeSpent" value="158921000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="152" y="145" width="1485" height="889" extended-state="0" />
@@ -571,14 +591,6 @@
     <entry file="file://$PROJECT_DIR$/resource/himom.html" />
     <entry file="file://$PROJECT_DIR$/resource/hiring-201805.htm" />
     <entry file="file://$PROJECT_DIR$/whoshiring.html" />
-    <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="868" column="5" lean-forward="false" selection-start-line="868" selection-start-column="5" selection-end-line="868" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/trak-es5">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="680">
@@ -588,14 +600,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/WhosHiring.js" />
-    <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="272" column="9" lean-forward="false" selection-start-line="272" selection-start-column="9" selection-end-line="272" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/Matrix/mxWeb.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="366">
@@ -624,10 +628,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/Model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="258">
+          <caret line="32" column="6" lean-forward="false" selection-start-line="32" selection-start-column="6" selection-end-line="32" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Matrix/Cells.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8319">
+          <caret line="931" column="9" lean-forward="false" selection-start-line="931" selection-start-column="9" selection-end-line="931" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/SithTrak.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-361">
-          <caret line="7" column="25" lean-forward="false" selection-start-line="7" selection-start-column="25" selection-end-line="7" selection-end-column="25" />
+        <state relative-caret-position="943">
+          <caret line="77" column="21" lean-forward="false" selection-start-line="77" selection-start-column="21" selection-end-line="77" selection-end-column="21" />
           <folding />
         </state>
       </provider>
