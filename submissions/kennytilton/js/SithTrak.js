@@ -8,20 +8,19 @@ const SLOT_CT = 5;
 class Sith extends Model {
     constructor( app, sithId) {
         ast( sithId)
-        super(app, "sith-"+sithId, Object.assign(
+        super(app, "sith-"+sithId,
             {
                 sithId: sithId
                 , lookup: cF(c => {
-                clg('lookup!', c.md.sithId)
-                return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId)
-            })
+                    return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId)
+                })
                 , info: cF( c => (c.md.lookup ? c.md.lookup.okResult : null)
-                            , { observer: obsSithInfo})
+                , { observer: obsSithInfo})
 
                 , withObi: cF(c => c.md.info
                 && app.obiLoc
                 && (c.md.info.homeworld.name === app.obiLoc.name))
-            }))
+            })
     }
 }
 
@@ -40,14 +39,12 @@ function obsSithInfo ( slot, sith, info) {
 
     if ( myx === -1) return
 
-    if (masterId && myx > 0
-        && sith.par.sithIds[myx-1] !== masterId) {
+    if (masterId && myx > 0 && sith.par.sithIds[myx-1] !== masterId) {
             newIds = sith.par.sithIds.slice()
             newIds[ myx-1] = masterId
     }
 
-    if (apprenticeId && myx + 1 < SLOT_CT
-        && sith.par.sithIds[myx+1] !== apprenticeId) {
+    if (apprenticeId && myx + 1 < SLOT_CT && sith.par.sithIds[myx+1] !== apprenticeId) {
             newIds = newIds || sith.par.sithIds.slice()
             newIds[ myx+1] = apprenticeId
     }
@@ -59,8 +56,21 @@ function obsSithInfo ( slot, sith, info) {
 
 // --- SithTrak (main) ------------------------------------------------------
 
+function obsSithAbortLost( slot, app, newv, oldv) {
+    if (oldv === kUnbound) return
+
+    oldv.map(s => {
+        if (s && newv.indexOf(s) === -1) {
+            if (s.lookup && s.lookup.xhr) {
+                if (s.lookup.xhr.isActive()) {
+                    s.lookup.xhr.abort()
+                }
+            }
+        }
+    })
+}
+
 function SithTrak() {
-    let dbg = 2;
     sithApp = new TagSession(null, 'SithTrakSession',
         { // --- Obi-tracking -------------------------------------
             obiTrakker: cF(c => new WebSocket('ws://localhost:4000')
@@ -74,8 +84,8 @@ function SithTrak() {
                         let curr = (c.pv === kUnbound? [] : c.pv)
                             , s = curr.find(s => s && s.sithId === id)
                         return s || new Sith( c.md, id)
-                    }
-                }))})
+                    } else return null;
+                }), { name: 'sithsObs', observer: obsSithAbortLost})})
 
     return div({class: "app-container"},
         h1({
@@ -85,26 +95,17 @@ function SithTrak() {
 
         , section({class: "css-scrollable-list"},
             ul({class: "css-slots"}
-                , {
-                    name: "sith-list",
-
-                    next_up: cF(c => (c.md.kids[0] && c.md.kids[0].info) ?
-                        c.md.kids[0].info.master.id : null),
-                    next_down: cF(c => {
-                        let last = c.md.kids[SLOT_CT - 1];
-                        return (last && last.info) ?
-                            last.info.apprentice.id : null;
-                    })
-                }
+                , { name: "sith-list"}
                 , c=> {
                     let sv = [];
                     for (n = 0; n < SLOT_CT; ++n) {
                         sv.push( sithView(n))
                     }
                     return sv})
-            , div({
-                    class: "css-scroll-buttons",
-                    disabled: cF(c => sithApp.siths.some( s => s && s.withObi))
+            , div(
+                {
+                    class: "css-scroll-buttons"
+                    // , disabled: cF(c => sithApp.siths.some( s => s && s.withObi))
                 },
                 scrollerUpButton(),
                 scrollerDownButton()))
@@ -113,11 +114,11 @@ function SithTrak() {
 
 window['SithTrak'] = SithTrak;
 
-
 function scrollerUpButton() {
     return scrollerButton('up', 'master', 0
         , md => {
-            let mId = sithApp.siths[0].info.master.id
+            let s = sithApp.siths[0]
+                , mId = s && s.info && s.info.master && s.info.master.id
             sithApp.sithIds = [null, mId].concat(sithApp.sithIds.slice(0,3))
         })
 }
@@ -125,7 +126,8 @@ function scrollerUpButton() {
 function scrollerDownButton() {
     return scrollerButton('down', 'apprentice', SLOT_CT - 1
         , md => {
-            let appId = sithApp.siths[SLOT_CT - 1].info.apprentice.id
+            let s = sithApp.siths[SLOT_CT - 1]
+                , appId = s && s.info && s.info.apprentice && s.info.apprentice.id
             sithApp.sithIds = sithApp.sithIds.slice(2).concat([appId, null])
         })
 }
@@ -135,12 +137,12 @@ function scrollerButton( dir, otherProp, otherSlot, onClickFn) {
         class: cF(c => "css-button-" + dir + (c.md.disabled ? " css-button-disabled" : ""))
         , onclick: onClickFn
         , disabled: cF(c => {
+            return false
             if (c.md.par.disabled) {
                 return true
             } else {
                 let keyS = sithApp.siths[otherSlot];
                 if (keyS && keyS.info) {
-                    clg('info ok: app', keyS.info[otherProp])
                     if (keyS.info[otherProp])
                         return keyS.info[otherProp].id === null
                 } else {
@@ -151,12 +153,10 @@ function scrollerButton( dir, otherProp, otherSlot, onClickFn) {
         })
     })
 }
-function sithInfo (slotN) {
-    let sith = sithApp.siths[slotN]
-    return sith && sith.info
-}
 
 function sithView( slotN) {
+    let sithInfo = (slotN) => sithApp.siths[slotN] && sithApp.siths[slotN].info
+
     return li(
         {
             class: "css-slot",
