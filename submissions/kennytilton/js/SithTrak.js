@@ -115,46 +115,34 @@ window['SithTrak'] = SithTrak;
 
 
 function scrollerUpButton() {
-    return button({
-        class: cF(c => "css-button-up" + (c.md.disabled ? " css-button-disabled" : ""))
-        , onclick: md => {
+    return scrollerButton('up', 'master', 0
+        , md => {
             let mId = sithApp.siths[0].info.master.id
             sithApp.sithIds = [null, mId].concat(sithApp.sithIds.slice(0,3))
-        }
-        , disabled: cF(c => {
-            if (c.md.par.disabled) {
-                return true
-            } else {
-                let keyS = sithApp.siths[0];
-                if (keyS && keyS.info) {
-                    clg('info ok: app', keyS.info.master)
-                    if (keyS.info.master)
-                        return keyS.info.master.id === null
-                } else {
-                    return true
-                }
-            }
-
         })
-    })
 }
 
 function scrollerDownButton() {
+    return scrollerButton('down', 'apprentice', SLOT_CT - 1
+        , md => {
+            let appId = sithApp.siths[SLOT_CT - 1].info.apprentice.id
+            sithApp.sithIds = sithApp.sithIds.slice(2).concat([appId, null])
+        })
+}
+
+function scrollerButton( dir, otherProp, otherSlot, onClickFn) {
     return button({
-        class: cF(c => "css-button-down" + (c.md.disabled ? " css-button-disabled" : ""))
-        , onclick: md => {
-            let appId = sithApp.siths[SLOT_CT-1].info.apprentice.id
-            sithApp.sithIds = sithApp.sithIds.slice(2).concat([appId,null])
-        }
+        class: cF(c => "css-button-" + dir + (c.md.disabled ? " css-button-disabled" : ""))
+        , onclick: onClickFn
         , disabled: cF(c => {
             if (c.md.par.disabled) {
                 return true
             } else {
-                let keyS = sithApp.siths[SLOT_CT-1];
+                let keyS = sithApp.siths[otherSlot];
                 if (keyS && keyS.info) {
-                    clg('info ok: app', keyS.info.apprentice)
-                    if (keyS.info.apprentice)
-                        return keyS.info.apprentice.id === null
+                    clg('info ok: app', keyS.info[otherProp])
+                    if (keyS.info[otherProp])
+                        return keyS.info[otherProp].id === null
                 } else {
                     return true
                 }
@@ -163,7 +151,6 @@ function scrollerDownButton() {
         })
     })
 }
-
 function sithInfo (slotN) {
     let sith = sithApp.siths[slotN]
     return sith && sith.info
