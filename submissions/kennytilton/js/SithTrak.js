@@ -7,31 +7,39 @@ const SLOT_CT = 5;
 
 class Sith extends Model {
     constructor( app, sithId) {
-        ast( sithId)
         super(app, "sith-"+sithId,
             {
                 sithId: sithId
                 , lookup: cF(c => {
-                    if ( c.md.par.withObi) {
-                        if (c.pv && c.pv.xhr && c.pv.xhr.isActive()) {
+                    if (c.md.info) {
+                        // forget everything if we have the info already
+                        return null
+                    } else if ( c.md.par.withObi) {
+                        // Obi is with a displayed Sith, abort all requests (spec silliness)
+                        // abort any existing lookup
+                        if (c.pv !==kUnbound && c.pv && c.pv.xhr && c.pv.xhr.isActive()) {
                             clg('aborting lookup!!', c.md.sithId)
-                            c.pv.xhr.abort();
+                            c.pv.xhr.abort()
                         }
-                        return null;
-                    } else if (!c.md.info) {
+                        return null
+                    } else {
                         return new mxXHR("http://localhost:3000/dark-jedis/" + c.md.sithId
                             , {
                                 send: true, delay: 0, responseType: 'json'
-                                , okHandler: (s, xhr, response) => c.md.info = response
+                                , okHandler: (s, xhr, response) => {
+                                    // we have to imperatively set the info because deriving it
+                                    // formulaically would be cyclic:
+                                    //   info <- lookup <- withObi <- info.homeworld
+                                    if ( !c.md.par.withObi) // spec silliness
+                                        c.md.info = response
+                                }
                             })
-                    } else {
-                        return null
                     }
                 })
                 , info: cI( null, { observer: obsSithInfo})
                 , withObi: cF(c => app.obiLoc
-                    && c.md.info
-                    && (c.md.info.homeworld.name === app.obiLoc.name))
+                                    && c.md.info
+                                    && (c.md.info.homeworld.name === app.obiLoc.name))
                 })
     }
 }
@@ -45,43 +53,30 @@ function obsSithInfo ( slot, sith, info) {
         , apprenticeId = info.apprentice && info.apprentice.id;
 
     if (masterId || apprenticeId) {
-        let newIds = null
+        let currentIds = sith.par.sithIds
             , myx = sith.par.sithIds.indexOf(sith.sithId)
 
         if ( myx !== -1) {
-
-            if (masterId && myx > 0 && sith.par.sithIds[myx - 1] !== masterId) {
-                newIds = sith.par.sithIds.slice()
-                newIds[myx - 1] = masterId
-            }
-
-            if (apprenticeId && myx + 1 < SLOT_CT && sith.par.sithIds[myx + 1] !== apprenticeId) {
-                newIds = newIds || sith.par.sithIds.slice()
-                newIds[myx + 1] = apprenticeId
-            }
-
-            if (newIds) {
-                sith.par.sithIds = newIds
-            }
+            currentIds = sithInject( masterId, currentIds, myx - 1)
+            currentIds = sithInject( apprenticeId, currentIds, myx + 1)
+            // somewhat cute: if no sithInject call returned a copy,
+            // these two will be the same and be a NOP in the Cells engine
+            sith.par.sithIds = currentIds
         }
     }
 }
 
-// --- SithTrak (main) ------------------------------------------------------
-
-function obsSithAbortLost( slot, app, newv, oldv) {
-    if (oldv === kUnbound) return
-
-    oldv.map(s => {
-        if (s && newv.indexOf(s) === -1) {
-            if (s.lookup && s.lookup.xhr) {
-                if (s.lookup.xhr.isActive()) {
-                    s.lookup.xhr.abort()
-                }
-            }
-        }
-    })
+function sithInject ( id, siths, idx) {
+    if (id && idx >= 0 && idx < SLOT_CT && siths[idx] !== id) {
+        newIds = siths.slice()
+        newIds[idx] = id
+        return newIds
+    } else {
+        return siths
+    }
 }
+
+// --- SithTrak (main) ------------------------------------------------------
 
 function SithTrak() {
     sithApp = new TagSession(null, 'SithTrakSession',
@@ -126,6 +121,22 @@ function SithTrak() {
 
 window['SithTrak'] = SithTrak;
 
+function obsSithAbortLost( slot, app, newv, oldv) {
+    if (oldv === kUnbound) return
+
+    oldv.map(s => {
+        if (s && newv.indexOf(s) === -1) {
+            if (s.lookup && s.lookup.xhr) {
+                if (s.lookup.xhr.isActive()) {
+                    s.lookup.xhr.abort()
+                }
+            }
+        }
+    })
+}
+
+// --- scrolling --------------------------------------------------
+
 function scrollerUpButton() {
     return scrollerButton('up', 'master', 0
         , md => {
@@ -162,6 +173,8 @@ function scrollerButton( dir, otherProp, otherSlot, onClickFn) {
         })
     })
 }
+
+// --- sith View ---------------------------------------------------
 
 function sithView( slotN) {
     let sithInfo = (slotN) => sithApp.siths[slotN] && sithApp.siths[slotN].info
