@@ -53,14 +53,13 @@ function obsSithInfo ( slot, sith, info) {
         , apprenticeId = info.apprentice && info.apprentice.id;
 
     if (masterId || apprenticeId) {
-        let currentIds = sith.par.sithIds
-            , myx = sith.par.sithIds.indexOf(sith.sithId)
+        let myx = sith.par.sithIds.indexOf(sith.sithId)
 
         if ( myx !== -1) {
-            currentIds = sithInject( masterId, currentIds, myx - 1)
+            let currentIds = sithInject( masterId, sith.par.sithIds, myx - 1)
             currentIds = sithInject( apprenticeId, currentIds, myx + 1)
             // somewhat cute: if no sithInject call returned a copy,
-            // these two will be the same and be a NOP in the Cells engine
+            // these two will be the same and be a NOP to the Cells engine
             sith.par.sithIds = currentIds
         }
     }
