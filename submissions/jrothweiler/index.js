@@ -19,53 +19,39 @@ const App = function() {
         }
     }, []);
 
-    let fetchSithLordById = function(id) {
-        fetch('http://localhost:3000/dark-jedis/' + id).then((response) => {
+    let fetchSithLordById = function(url) {
+        return fetch(url).then((response) => {
             return response.json();
         }).then((data) =>  {
-            return data;
+            setTableRowData((prevRowData) => {
+                prevRowData.push(data);
+                return prevRowData}
+                );
+            let dataApprentice = data.apprentice;
+            console.log(dataApprentice);
+            return data.apprentice.url !== null ? fetchSithLordById(dataApprentice.url) : data;
+            
         })
     }
 
     React.useEffect(() => {
-        let sidiousData = fetchSithLordById(3616);
-
-        let nextMasterId = sidiousData.apprentice;
-
-        while (nextMasterId !== null) {
-            let nextMasterData = fetchSithLordById(nextMasterId);
-            nextMasterId = nextMasterData.apprentice;
-        }
-
-
+        fetchSithLordById('http://localhost:3000/dark-jedis/3616');
     }, [])
-
+    
+    const children = tableRowData.map((data, idx) =>{
+        return <li className="css-slot" key={data.name}>
+                <h3>{data.name}</h3>
+                <h6>Homeworld: {data.homeworld.name}</h6>
+               </li>
+        
+    })
     return <div class="app-container">
     <div class="css-root">
 <h1 class="css-planet-monitor">Obi-Wan currently on {currentPlanet}</h1>
   
       <section class="css-scrollable-list">
         <ul class="css-slots">
-          <li class="css-slot">
-            <h3>Jorak Uln</h3>
-            <h6>Homeworld: Korriban</h6>
-          </li>
-          <li class="css-slot">
-            <h3>Skere Kaan</h3>
-            <h6>Homeworld: Coruscant</h6>
-          </li>
-          <li class="css-slot">
-            <h3>Na'daz</h3>
-            <h6>Homeworld: Ryloth</h6>
-          </li>
-          <li class="css-slot">
-            <h3>Kas'im</h3>
-            <h6>Homeworld: Nal Hutta</h6>
-          </li>
-          <li class="css-slot">
-            <h3>Darth Bane</h3>
-            <h6>Homeworld: Apatros</h6>
-          </li>
+          {children}
         </ul>
   
         <div class="css-scroll-buttons">
