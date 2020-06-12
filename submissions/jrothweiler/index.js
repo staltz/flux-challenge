@@ -2,8 +2,23 @@ const App = function() {
 
     let [currentPlanet, setCurrentPlanet] = React.useState(null);
     let [tableRowData, setTableRowData] = React.useState([]);
+    let [firstRowData, setFirstRowData] = React.useState(null);
 
     let ws = React.useRef(null);
+
+    React.useEffect(() => {
+        if (firstRowData !== null ) {
+            let lastRowApprentice = tableRowData[tableRowData.length - 1].apprentice;
+            if (lastRowApprentice.url !== null) {
+
+                fetchSithLordById(lastRowApprentice.url, tableRowData.slice(2))
+                    .then(rows => {
+                        setTableRowData(rows);
+                    })
+            } 
+        }
+        
+    }, [firstRowData])
 
     React.useEffect(() => {
         ws.current = new WebSocket('ws://localhost:4000');
@@ -19,23 +34,30 @@ const App = function() {
         }
     }, []);
 
-    let fetchSithLordById = function(url) {
+    let fetchSithLordById = function(url, acc) {
         return fetch(url).then((response) => {
             return response.json();
         }).then((data) =>  {
-            setTableRowData((prevRowData) => {
-                prevRowData.push(data);
-                return prevRowData}
-                );
             let dataApprentice = data.apprentice;
-            console.log(dataApprentice);
-            return data.apprentice.url !== null ? fetchSithLordById(dataApprentice.url) : data;
+            acc.push(data);
+            setTableRowData(acc);
+            if (data.apprentice.url !== null && acc.length <= 4) {
+                return fetchSithLordById(dataApprentice.url, acc);
+            } else {
+                return acc;
+            }
             
         })
     }
 
+    let handleDownScroll = () => {
+        setFirstRowData(tableRowData[2]);
+    };
+
     React.useEffect(() => {
-        fetchSithLordById('http://localhost:3000/dark-jedis/3616');
+        fetchSithLordById('http://localhost:3000/dark-jedis/5105', []).then(rows => {
+            setTableRowData(rows);
+        });
     }, [])
     
     const children = tableRowData.map((data, idx) =>{
@@ -56,7 +78,7 @@ const App = function() {
   
         <div class="css-scroll-buttons">
           <button class="css-button-up"></button>
-          <button class="css-button-down"></button>
+          <button class="css-button-down" onClick={handleDownScroll}></button>
         </div>
       </section>
     </div>
