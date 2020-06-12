@@ -2,23 +2,33 @@ const App = function() {
 
     let [currentPlanet, setCurrentPlanet] = React.useState(null);
     let [tableRowData, setTableRowData] = React.useState([]);
-    let [firstRowData, setFirstRowData] = React.useState(null);
+    let currentUrl = React.useRef('http://localhost:3000/dark-jedis/5105') 
 
     let ws = React.useRef(null);
 
-    React.useEffect(() => {
-        if (firstRowData !== null ) {
-            let lastRowApprentice = tableRowData[tableRowData.length - 1].apprentice;
-            if (lastRowApprentice.url !== null) {
+    let fetchOnce = function(url) {
+        return fetch(url).then((response) => {
+            return response.json();
+        }).then((data) =>  {
+            currentUrl.current = data.apprentice.url;
+            setTableRowData(currentRows => {
+                let newRowArray = []
 
-                fetchSithLordById(lastRowApprentice.url, tableRowData.slice(2))
-                    .then(rows => {
-                        setTableRowData(rows);
-                    })
-            } 
+                currentRows.forEach(row => {
+                    newRowArray.push(row);
+                })
+                newRowArray.push(data);
+                return newRowArray;
+            })
+        })
+    }
+
+    React.useEffect(() => {
+        console.log("Effect");
+        if (tableRowData.length < 5 && currentUrl.current !== null) {
+            fetchOnce(currentUrl.current)
         }
-        
-    }, [firstRowData])
+    }, [tableRowData]);
 
     React.useEffect(() => {
         ws.current = new WebSocket('ws://localhost:4000');
@@ -34,31 +44,9 @@ const App = function() {
         }
     }, []);
 
-    let fetchSithLordById = function(url, acc) {
-        return fetch(url).then((response) => {
-            return response.json();
-        }).then((data) =>  {
-            let dataApprentice = data.apprentice;
-            acc.push(data);
-            setTableRowData(acc);
-            if (data.apprentice.url !== null && acc.length <= 4) {
-                return fetchSithLordById(dataApprentice.url, acc);
-            } else {
-                return acc;
-            }
-            
-        })
-    }
-
     let handleDownScroll = () => {
-        setFirstRowData(tableRowData[2]);
+        setTableRowData(tableRowData.slice(2));
     };
-
-    React.useEffect(() => {
-        fetchSithLordById('http://localhost:3000/dark-jedis/5105', []).then(rows => {
-            setTableRowData(rows);
-        });
-    }, [])
     
     const children = tableRowData.map((data, idx) =>{
         return <li className="css-slot" key={data.name}>
