@@ -6,12 +6,19 @@ const App = function() {
     let currentUrlUp = React.useRef('http://localhost:3000/dark-jedis/2350')  
     let direction = React.useRef('down');
     let ws = React.useRef(null);
-
+    let upBtnClass = currentUrlUp.current !== null ? "css-button-up" : "css-button-up css-button-disabled"
+    let downBtnClass = currentUrl.current !== null ? "css-button-down" : "css-button-down css-button-disabled"
+    let upBtnDisable = currentUrlUp.current === null 
+    let downBtnDisable = currentUrl.current === null
     let fetchOnce = function(url) {
         return fetch(url).then((response) => {
             return response.json();
         }).then((data) =>  {
             currentUrl.current = data.apprentice.url;
+            if(tableRowData[0]){
+                currentUrlUp.current = tableRowData[0].master.url;
+            }
+            
             setTableRowData(currentRows => {
                 let newRowArray = []
                 //console.log(data);
@@ -29,6 +36,7 @@ const App = function() {
             return response.json();
         }).then((data) =>  {
             currentUrlUp.current = data.master.url;
+            currentUrl.current = tableRowData[tableRowData.length-1].apprentice.url;
             setTableRowData(currentRows => {
                 let newRowArray = []
                 console.log(data);
@@ -91,8 +99,8 @@ const App = function() {
         </ul>
   
         <div class="css-scroll-buttons">
-          <button class="css-button-up" onClick={handleUpScroll}></button>
-          <button class="css-button-down" onClick={handleDownScroll}></button>
+          <button class={upBtnClass} onClick={handleUpScroll} disabled={upBtnDisable}></button>
+          <button class={downBtnClass} onClick={handleDownScroll} disabled={downBtnDisable}></button>
         </div>
       </section>
     </div>
