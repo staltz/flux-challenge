@@ -2,7 +2,7 @@ const App = function() {
 
     let [currentPlanet, setCurrentPlanet] = React.useState(null);
     let [tableRowData, setTableRowData] = React.useState([null, null, null, null, null]);
-    let currentUrl = React.useRef('http://localhost:3000/dark-jedis/3616')
+    let currentUrl = React.useRef('http://localhost:3000/dark-jedis/5105')
     let currentUrlUp = React.useRef('http://localhost:3000/dark-jedis/2350')  
     let direction = React.useRef('down');
     let ws = React.useRef(null);
@@ -43,7 +43,7 @@ const App = function() {
             return response.json();
         }).then((data) =>  {
             currentUrlUp.current = data.master.url;
-            currentUrl.current = tableRowData[tableRowData.length-1].apprentice.url;
+            currentUrl.current = tableRowData[4].apprentice.url;
             setTableRowData(currentRows => {
                 let newRowArray = []
                 console.log(data);
@@ -87,13 +87,13 @@ const App = function() {
 
     let handleDownScroll = () => {
         direction.current= 'down';
-        setTableRowData((previousRows) => {[...previousRows.slice(2), null, null]});
+        setTableRowData((previousRows) => [...previousRows.slice(2), null, null]);
     };
     
     let handleUpScroll = () =>{
         direction.current= 'up';
         
-        setTableRowData((previousRows) => {[...previousRows.slice(2), null, null]});
+        setTableRowData((previousRows) => [null, null, ...previousRows.splice(0,3)]);
     }
     const children = tableRowData.map((data, idx) =>{
         if(data===null){
