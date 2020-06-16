@@ -48,7 +48,7 @@ const App = function() {
                 let newRowArray = []
                 console.log(data);
                 let lastNullIndex = currentRows.lastIndexOf(null);
-                currentRows.forEach(row => {
+                currentRows.forEach((row, inx) => {
                     if(inx === lastNullIndex) {
                         newRowArray.push(data);
                     } else {
