@@ -1,7 +1,7 @@
 const App = function() {
 
     let [currentPlanet, setCurrentPlanet] = React.useState(null);
-    let [tableRowData, setTableRowData] = React.useState([]);
+    let [tableRowData, setTableRowData] = React.useState([null, null, null, null, null]);
     let currentUrl = React.useRef('http://localhost:3000/dark-jedis/3616')
     let currentUrlUp = React.useRef('http://localhost:3000/dark-jedis/2350')  
     let direction = React.useRef('down');
@@ -22,10 +22,17 @@ const App = function() {
             setTableRowData(currentRows => {
                 let newRowArray = []
                 //console.log(data);
-                currentRows.forEach(row => {
-                    newRowArray.push(row);
+                let firstNullIndex = currentRows.indexOf(null);
+                currentRows.forEach((row, inx) => {
+                    if(inx === firstNullIndex) {
+                        newRowArray.push(data);
+                    } else {
+                        newRowArray.push(row);
+                    }
+                    
+                    
                 })
-                newRowArray.push(data);
+                //newRowArray.push(data);
                 return newRowArray;
             })
         })
@@ -40,10 +47,16 @@ const App = function() {
             setTableRowData(currentRows => {
                 let newRowArray = []
                 console.log(data);
+                let lastNullIndex = currentRows.lastIndexOf(null);
                 currentRows.forEach(row => {
-                    newRowArray.push(row);
+                    if(inx === lastNullIndex) {
+                        newRowArray.push(data);
+                    } else {
+                        newRowArray.push(row);
+                    }
+                    //newRowArray.push(row);
                 })
-                newRowArray.unshift(data);
+                //newRowArray.unshift(data);
                 return newRowArray;
             })
         })
@@ -51,9 +64,9 @@ const App = function() {
 
     React.useEffect(() => {
         console.log("Effect");
-        if (tableRowData.length < 5 && currentUrl.current !== null&&direction.current ==='down') {
+        if (tableRowData.indexOf(null) !== -1 && currentUrl.current !== null&&direction.current ==='down') {
             fetchOnce(currentUrl.current)
-        }else if(tableRowData.length < 5 && currentUrlUp.current !== null&&direction.current ==='up'){
+        }else if(tableRowData.indexOf(null) !== -1 && currentUrlUp.current !== null&&direction.current ==='up'){
             fetchOnceUp(currentUrlUp.current);
         }
     }, [tableRowData]);
@@ -74,19 +87,26 @@ const App = function() {
 
     let handleDownScroll = () => {
         direction.current= 'down';
-        setTableRowData(tableRowData.slice(2));
+        setTableRowData((previousRows) => {[...previousRows.slice(2), null, null]});
     };
     
     let handleUpScroll = () =>{
         direction.current= 'up';
         
-        setTableRowData(tableRowData.splice(0,3));
+        setTableRowData((previousRows) => {[...previousRows.slice(2), null, null]});
     }
     const children = tableRowData.map((data, idx) =>{
-        return <li className="css-slot" key={data.name}>
-                <h3>{data.name}</h3>
-                <h6>Homeworld: {data.homeworld.name}</h6>
-               </li>
+        if(data===null){
+            return <li className="css-slot"/>
+                    
+                  
+        }else {
+            return <li className="css-slot" key={data.name}>
+                    <h3>{data.name}</h3>
+                    <h6>Homeworld: {data.homeworld.name}</h6>
+                   </li>
+        }
+        
         
     })
     return <div class="app-container">
