@@ -2,8 +2,9 @@ const App = function() {
 
     let [currentPlanet, setCurrentPlanet] = React.useState(null);
     let [tableRowData, setTableRowData] = React.useState([]);
-    let currentUrl = React.useRef('http://localhost:3000/dark-jedis/5105') 
-
+    let currentUrl = React.useRef('http://localhost:3000/dark-jedis/3616')
+    let currentUrlUp = React.useRef('http://localhost:3000/dark-jedis/2350')  
+    let direction = React.useRef('down');
     let ws = React.useRef(null);
 
     let fetchOnce = function(url) {
@@ -13,7 +14,7 @@ const App = function() {
             currentUrl.current = data.apprentice.url;
             setTableRowData(currentRows => {
                 let newRowArray = []
-
+                //console.log(data);
                 currentRows.forEach(row => {
                     newRowArray.push(row);
                 })
@@ -23,10 +24,29 @@ const App = function() {
         })
     }
 
+    let fetchOnceUp = function(url) {
+        return fetch(url).then((response) => {
+            return response.json();
+        }).then((data) =>  {
+            currentUrlUp.current = data.master.url;
+            setTableRowData(currentRows => {
+                let newRowArray = []
+                console.log(data);
+                currentRows.forEach(row => {
+                    newRowArray.push(row);
+                })
+                newRowArray.unshift(data);
+                return newRowArray;
+            })
+        })
+    }
+
     React.useEffect(() => {
         console.log("Effect");
-        if (tableRowData.length < 5 && currentUrl.current !== null) {
+        if (tableRowData.length < 5 && currentUrl.current !== null&&direction.current ==='down') {
             fetchOnce(currentUrl.current)
+        }else if(tableRowData.length < 5 && currentUrlUp.current !== null&&direction.current ==='up'){
+            fetchOnceUp(currentUrlUp.current);
         }
     }, [tableRowData]);
 
@@ -45,9 +65,15 @@ const App = function() {
     }, []);
 
     let handleDownScroll = () => {
+        direction.current= 'down';
         setTableRowData(tableRowData.slice(2));
     };
     
+    let handleUpScroll = () =>{
+        direction.current= 'up';
+        
+        setTableRowData(tableRowData.splice(0,3));
+    }
     const children = tableRowData.map((data, idx) =>{
         return <li className="css-slot" key={data.name}>
                 <h3>{data.name}</h3>
@@ -65,7 +91,7 @@ const App = function() {
         </ul>
   
         <div class="css-scroll-buttons">
-          <button class="css-button-up"></button>
+          <button class="css-button-up" onClick={handleUpScroll}></button>
           <button class="css-button-down" onClick={handleDownScroll}></button>
         </div>
       </section>
