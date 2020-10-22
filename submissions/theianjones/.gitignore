@@ -1,0 +1,15 @@
+/lib/
+/classes/
+/out/
+/target/
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.repl
+.nrepl-port
+/.idea/
+/.calva/
+/.shadow-cljs/
+/.cpcache/
+/resources/public/js/main/**
+/node_modules/
