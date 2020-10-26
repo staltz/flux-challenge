@@ -8,10 +8,8 @@
             [app.proxy :refer [sith-output]]
             [app.view :as view]))
 
-(defonce SPA (atom nil))
-
-(defn mount []
-  (reset! SPA (app/mount! @SPA view/Root "app")))
+(defn mount [app]
+  (app/mount! app view/Root "app"))
 
 (defn client-did-mount
   "
@@ -20,24 +18,21 @@
   http://book.fulcrologic.com/#_adding_edges
   "
   [app]
-  (prn {:params sith-output})
   (df/load! app :default-siths view/Sith {:target (targeting/append-to [:siths :list/siths])}))
+
+(defonce app (app/fulcro-app {:client-did-mount client-did-mount
+                          :remotes          {:remote remote}}))
 
 (defn ^:export init
   []
-  (let [api-url "http://localhost:3000"]
-    (-> (reset! SPA (app/fulcro-app {:client-did-mount client-did-mount
-                                     :remotes          {:remote remote}})))
-    (mount)))
+  (mount app)
+  (js/console.log "Loaded"))
 
 (defn ^:export refresh
   "During development, shadow-cljs will call this on every hot reload of source. See shadow-cljs.edn"
   []
   ;; re-mounting will cause forced UI refresh, update internals, etc.
-  (mount)
+  (mount app)
   ;; As of Fulcro 3.3.0, this addition will help with stale queries when using dynamic routing:
-  ;; (comp/refresh-dynamic-queries! @SPA)
+  (comp/refresh-dynamic-queries! app)
   (js/console.log "Hot reload"))
-
-(comment
-  )

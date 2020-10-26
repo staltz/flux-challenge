@@ -21,8 +21,8 @@
 (def sith-output
   [:sith/name
    :sith/id
-   :sith/master-id
-   :sith/apprentice-id
+   :sith/master
+   :sith/apprentice
    {:sith/homeWorld [:homeWorld/name :homeWorld/id]}
   ])
 
@@ -40,8 +40,8 @@
           sith {:sith/homeWorld (qualify-homeworld body)
                 :sith/id (:id body)
                 :sith/name (:name body)
-                :sith/master-id (-> body :master :id)
-                :sith/apprentice-id (-> body :apprentice :id)}]
+                :sith/master (-> body :master :id)
+                :sith/apprentice (-> body :apprentice :id)}]
       sith)))
 
 (def default-sith {:sith/id 3616})
