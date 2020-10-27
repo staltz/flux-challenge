@@ -57,5 +57,5 @@
       ::pc/output sith-output}
      (get-sith env params))
    (pc/defresolver first-sith [env _]
-     {::pc/output [{:default-siths [:sith/id]}]}
-     {:default-siths [default-sith]})])
+     {::pc/output [:default-sith [:sith/id]]}
+     {:default-sith default-sith})])

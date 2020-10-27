@@ -18,7 +18,7 @@
   http://book.fulcrologic.com/#_adding_edges
   "
   [app]
-  (df/load! app :default-siths view/Sith {:target (targeting/append-to [:siths :list/siths])}))
+  (df/load! app :default-sith view/Sith {:target [:slot/by-id :one :slot/sith]}))
 
 (defonce app (app/fulcro-app {:client-did-mount client-did-mount
                           :remotes          {:remote remote}}))
