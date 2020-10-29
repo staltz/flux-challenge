@@ -1,15 +1,36 @@
 (ns app.client
+  (:require-macros
+   [cljs.core.async.macros :refer [go go-loop]])
   (:require [goog.dom :as gdom]
             [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.data-fetch :as df]
             [com.fulcrologic.fulcro.algorithms.data-targeting :as targeting]
+            [chord.client :refer [ws-ch]]
+            [cljs.core.async :refer [<!]]
             [app.rest :refer [remote]]
             [app.proxy :refer [sith-output]]
             [app.view :as view]))
 
 (defn mount [app]
   (app/mount! app view/Root "app"))
+
+(def endpoints {:planet "ws://localhost:4000"
+                :jedi   "http://localhost:3000/dark-jedis/"})
+
+(defonce ws (atom {:connection (ws-ch (:planet endpoints) {:format :json-kw})
+                   :listening? false}))
+
+(defn listen [ch app]
+  (go-loop [] (let [{:keys [message]} (<! ch)]
+                (comp/transact! app `[(view/set-current-planet {:planet ~message})])
+                (when message (recur)))))
+
+(defn setup-planet-listener [app]
+  (when-not (:listening? @ws)
+    (go (let [{:keys [ws-channel]} (<! (:connection @ws))]
+          (listen ws-channel app)
+          (swap! ws assoc :listening? true)))))
 
 (defn client-did-mount
   "
@@ -18,10 +39,11 @@
   http://book.fulcrologic.com/#_adding_edges
   "
   [app]
-  (df/load! app :default-sith view/Sith {:target [:slot/by-id :one :slot/sith]}))
+  (df/load! app :default-sith view/Sith {:target [:slot/by-id :one :slot/sith]})
+  (setup-planet-listener app))
 
 (defonce app (app/fulcro-app {:client-did-mount client-did-mount
-                          :remotes          {:remote remote}}))
+                              :remotes          {:remote remote}}))
 
 (defn ^:export init
   []
