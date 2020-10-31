@@ -31,7 +31,7 @@
       (comp/transact! component [(set-button {:button-key :up-enabled :button-value value})]))))
 
 (defsc Sith [this {:sith/keys [id name homeWorld] :as props}]
-  {:query [:sith/id :sith/name :sith/master :sith/apprentice  {:sith/homeWorld [:homeWorld/name :homeWorld/id]}]
+  {:query sith-output
    :ident :sith/id
    :componentDidMount #(toggle-button-enabled % false)
    :componentWillUnmount #(toggle-button-enabled % true)}
