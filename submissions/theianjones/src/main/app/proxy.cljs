@@ -5,6 +5,7 @@
             [clojure.string :as string]))
 
 (defn fetch
+  "this function takes the pathom env and adds HTTP headers and then sends HTTP request."
   [{:keys [_ api-url]
     :as env}
    {::keys [path method body]
@@ -19,6 +20,7 @@
       :always http/request)))
 
 (def sith-output
+  "helper that defines the output of both the sith resolvers."
   [:sith/name
    :sith/id
    :sith/master
@@ -27,6 +29,7 @@
   ])
 
 (defn qualify-homeworld [sith-response]
+  "this function takes a sith http response and constructs the homeworld"
   {:homeWorld/name (-> sith-response
                        :homeworld
                        :name)
@@ -35,6 +38,7 @@
                      :id)})
 
 (defn get-sith [env {:sith/keys [id] :as params}]
+  "async function that fetches a /dark-jedi/:id and returns the transformed result"
   (async/go
     (let [{::http/keys [body]} (async/<! (fetch env {::path (str "/dark-jedis/" id)}))
           sith {:sith/homeWorld (qualify-homeworld body)
@@ -44,7 +48,9 @@
                 :sith/apprentice (-> body :apprentice :id)}]
       sith)))
 
-(def default-sith {:sith/id 3616})
+(def default-sith
+  "Darth Sideous is the default sith."
+  {:sith/id 3616})
 
 (def register
   "

@@ -13,6 +13,7 @@
             [app.view :as view]))
 
 (defn mount [app]
+  "mount the app in the div with id app"
   (app/mount! app view/Root "app"))
 
 (def endpoints {:planet "ws://localhost:4000"
@@ -27,6 +28,7 @@
                 (when message (recur)))))
 
 (defn setup-planet-listener [app]
+  "The websocket code is outside of fulcro. We are listening to the websocket port and sending a transaction to fulcro when we get a message from the async channel."
   (when-not (:listening? @ws)
     (go (let [{:keys [ws-channel]} (<! (:connection @ws))]
           (listen ws-channel app)
@@ -35,17 +37,22 @@
 (defn client-did-mount
   "
   adding a target to this load was the secret sauce. We load the data into the fulcro app db and then we need to tell fulcro where to put the data.
-  In this case, we have a row of :siths, where :list/siths holds and array of sith ids. This adds an edge to the UI graph.
+  In this case, we want to add data to the first slot of our 5 slots. This adds an edge to the UI graph.
   http://book.fulcrologic.com/#_adding_edges
   "
   [app]
   (df/load! app :default-sith view/Sith {:target [:slot/by-id :one :slot/sith]})
   (setup-planet-listener app))
 
-(defonce app (app/fulcro-app {:client-did-mount client-did-mount
+
+(comment
+  "we defonce so that when we reload this page, the app wont get redefined.")
+(defonce app
+  (app/fulcro-app {:client-did-mount client-did-mount
                               :remotes          {:remote remote}}))
 
 (defn ^:export init
+  "The function we call when we load the application."
   []
   (mount app)
   (js/console.log "Loaded"))

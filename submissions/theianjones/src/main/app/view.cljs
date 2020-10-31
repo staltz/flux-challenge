@@ -17,11 +17,18 @@
   we could just put a df/load into the mutations... you could load from the Sith component. When the mutation is in a cljc file, then you cant import your mutations as well as importing your cljs component into the cljc file... clojure doesnt like you going back and forth like that.
   (df/load! app [:person/id id] PersonDetail))
 
+(comment
+  "this is the mutation we use to disable the buttons to load more siths.")
 (defmutation set-button [{:keys [button-key button-value]}]
   (action [{:keys [app state]}]
           (swap! state assoc button-key button-value)))
 
+
 (defn toggle-button-enabled [component value]
+  "
+This function disables the down button if the apprentice does not exist.
+It also disables the up button if the master doesnt exist.
+"
   (let [p (comp/props component)
         master-exists? (some? (:sith/master p))
         apprentice-exists? (some? (:sith/apprentice p))]
@@ -30,8 +37,11 @@
     (when (not master-exists?)
       (comp/transact! component [(set-button {:button-key :up-enabled :button-value value})]))))
 
+
+(comment
+  "We want to load the sith and disable any buttons if the data for this sith doesnt have the attributes we are looking for")
 (defsc Sith [this {:sith/keys [id name homeWorld] :as props}]
-  {:query sith-output
+  {:query [:sith/id :sith/name :sith/master :sith/apprentice  {:sith/homeWorld [:homeWorld/name :homeWorld/id]}]
    :ident :sith/id
    :componentDidMount #(toggle-button-enabled % false)
    :componentWillUnmount #(toggle-button-enabled % true)}
@@ -40,13 +50,25 @@
    (dom/h6 "Homeworld: "
            (dom/span (:homeWorld/name homeWorld)))))
 
-(def ui-sith (comp/factory Sith {:keyfn :sith/id}))
+
+(def ui-sith
+  "we can define what attribute we want react to use as a key if we are mapping over a list with this component."
+  (comp/factory Sith {:keyfn :sith/id}))
+
 
 (defn load-sith [query-component component where id]
+  "
+We pass the query-component so that this function doesnt have to live in this file.
+The second argument is the component we are loading the sith from.
+It takes which slot to target when the data loads as the third argument.
+This function will create the sith ident from the id in the fourth argument."
   (let [load-target [:slot/by-id where :slot/sith]
         sith-ident [:sith/id id]]
     (df/load! component sith-ident query-component {:target load-target :abort-id :jedi})))
 
+
+(comment
+  "This is component does a lot of the heavy lifting. We can target each of these component slots to load a sith into that slot. When the component mounts, We load the apprentice in the slot below this slot (if it exists) and we load the master in the slot above (if it exists). This assumes that the slot is empty.")
 (defsc SithSlot [this {:db/keys [id] :slot/keys [sith] :as props} {:keys [at-home?]}]
   {:query [:db/id {:slot/sith (comp/get-query Sith)}]
    :initial-state (fn [{:keys [id]}] {:db/id id :slot/sith nil})
@@ -69,18 +91,21 @@
 (def ui-slot (comp/factory SithSlot {:keyfn :db/id}))
 
 (defn slot->app-target [slot-id]
+  "given a slot id (:one :two :three etc) we add one to that slot for an apprentice"
   (slot-id {:one :two
             :two :three
             :three :four
             :four :five}))
 
 (defn slot->mas-target [slot-id]
+  "given a slot id (:one :two :three etc) we subtract one to that slot number for their master"
   (slot-id {:two :one
             :three :two
             :four :three
             :five :four}))
 
 (defn target-occupied? [slots-data slot-id]
+  "determines if the give slot is currently empty"
   (reduce (fn [target-occupied? [id val]]
             (if (= (:db/id val) slot-id)
               (some? (:slot/sith val))
@@ -89,17 +114,17 @@
           slots-data))
 
 (defn slot-at-home? [slots slot-id current-planet]
+  "determines if the current planet and the sith's homeworld in a give slot match"
   (reduce (fn [at-home? [_ val]]
             (if (= (:db/id val) slot-id)
               (= (-> val :slot/sith :sith/homeWorld :homeWorld/name) current-planet)
               at-home?))
           false
           slots))
-(comment
-  (let [x {:slot/one {:db/id :one, :slot/sith {:sith/id 3616, :sith/name "Darth Sidious", :sith/master 2350, :sith/apprentice 1489, :sith/homeWorld {:homeWorld/name "Naboo", :homeWorld/id 7}}}, :slot/two {:db/id :two, :slot/sith {:sith/id 1489, :sith/name "Darth Vader", :sith/master 3616, :sith/apprentice 1330, :sith/homeWorld {:homeWorld/name "Tatooine", :homeWorld/id 18}}}, :slot/three {:db/id :three, :slot/sith {:sith/id 1330, :sith/name "Antinnis Tremayne", :sith/master 1489, :sith/homeWorld {:homeWorld/name "Coruscant", :homeWorld/id 58}}}, :slot/four {:db/id :four, :slot/sith nil}, :slot/five {:db/id :five, :slot/sith nil}, :fulcro.client.primitives/computed {:current-planet "Felucia"}}]
-    (slot-at-home? x :one "Naboo")))
+
 
 (defn get-slot-props [component slot-id]
+  "generates the props so that the SithSlot component can load their master or apprentice correctly. For example, this function will return an app-target for a given slot if that :slot/sith has a :sith/apprentice and the slot below it is not occupied. This way the SithSlot component knows to load a sith purely based on the presence of the app-target or mas-target."
   (let [props (comp/props component)
         current-planet (comp/get-computed component :current-planet)
         app-target (slot->app-target slot-id)
