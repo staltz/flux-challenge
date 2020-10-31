@@ -52,6 +52,7 @@
    :ident [:slot/by-id :db/id]
    :componentDidUpdate (fn [this prev-props _]
                          (let [p (comp/props this)
+                               at-home? (:at-home? (comp/get-computed this))
                                app-id (-> p :slot/sith :sith/apprentice)
                                app-target (:app-target (comp/get-computed this))
                                mas-id (-> p :slot/sith :sith/master)
@@ -108,24 +109,63 @@
      :mas-target (and mas-target-occupied? mas-target)
      :at-home? (slot-at-home? props slot-id current-planet)}))
 
+(defn set-both-buttons [component value]
+  (comp/transact! component [(set-button {:button-key :down-enabled :button-value value})
+                             (set-button {:button-key :up-enabled :button-value value})]))
+
+(defn compact [col]
+  (remove nil? col))
+
+
+(defn slots->siths [slots]
+  (compact (map (fn [[_ slot]] (:slot/sith slot)) slots)))
+
+
+(defn all-sith-have-attr? [siths attr]
+  (reduce (fn [master-or-appr-missing? sith]
+            (or master-or-appr-missing? (not (some? (attr sith)))))
+          false
+          siths))
+(def x [{:sith/id 3616, :sith/name "Darth Sidious", :sith/master 2350, :sith/apprentice 1489, :sith/homeWorld {:homeWorld/name "Naboo", :homeWorld/id 7}} {:sith/id 1489, :sith/name "Darth Vader", :sith/master 3616, :sith/apprentice 1330, :sith/homeWorld {:homeWorld/name "Tatooine", :homeWorld/id 18}} {:sith/id 1330, :sith/name "Antinnis Tremayne", :sith/master 1489, :sith/homeWorld {:homeWorld/name "Coruscant", :homeWorld/id 58}}])
+
+(all-sith-have-attr? x :sith/apprentice)
+
+(defn update-buttons [component]
+  (let [props (comp/props component)
+        computed (comp/get-computed component)
+        current-planet (:current-planet computed)
+        siths (slots->siths props)
+        sith-at-home-detected? (reduce
+                                (fn [detected-at-home? {:sith/keys [homeWorld]}]
+                                  (or (= (:homeWorld/name homeWorld) current-planet) detected-at-home?))
+                                false
+                                siths)
+        master-missing? (all-sith-have-attr? siths :sith/master)
+        appr-missing? (all-sith-have-attr? siths :sith/apprentice)]
+    (if sith-at-home-detected?
+      (set-both-buttons component false)
+      (comp/transact! component [(set-button {:button-key :down-enabled :button-value (not appr-missing?)})
+                                 (set-button {:button-key :up-enabled :button-value (not master-missing?)})]))))
+
 (defsc SithList [this {:slot/keys [one two three four five] :as props}]
-  {:query [{:slot/one (comp/get-query SithSlot)}
-           {:slot/two (comp/get-query SithSlot)}
-           {:slot/three (comp/get-query SithSlot)}
-           {:slot/four (comp/get-query SithSlot)}
-           {:slot/five (comp/get-query SithSlot)}]
-   :initial-state (fn [_] {:slot/one (comp/get-initial-state SithSlot {:id :one})
-                           :slot/two (comp/get-initial-state SithSlot {:id :two})
-                           :slot/three (comp/get-initial-state SithSlot {:id :three})
-                           :slot/four (comp/get-initial-state SithSlot {:id :four})
-                           :slot/five (comp/get-initial-state SithSlot {:id :five})})
-   :ident (fn [] [:LIST :only-one])}
-  (dom/ul :.css-slots
-          (ui-slot (comp/computed one (get-slot-props this :one)))
-          (ui-slot (comp/computed two (get-slot-props this :two)))
-          (ui-slot (comp/computed three (get-slot-props this :three)))
-          (ui-slot (comp/computed four (get-slot-props this :four)))
-          (ui-slot (comp/computed five (get-slot-props this :five)))))
+    {:query [{:slot/one (comp/get-query SithSlot)}
+             {:slot/two (comp/get-query SithSlot)}
+             {:slot/three (comp/get-query SithSlot)}
+             {:slot/four (comp/get-query SithSlot)}
+             {:slot/five (comp/get-query SithSlot)}]
+     :initial-state (fn [_] {:slot/one (comp/get-initial-state SithSlot {:id :one})
+                             :slot/two (comp/get-initial-state SithSlot {:id :two})
+                             :slot/three (comp/get-initial-state SithSlot {:id :three})
+                             :slot/four (comp/get-initial-state SithSlot {:id :four})
+                             :slot/five (comp/get-initial-state SithSlot {:id :five})})
+     :ident (fn [] [:LIST :only-one])
+     :componentDidUpdate (fn [this _ _] (update-buttons this))}
+    (dom/ul :.css-slots
+            (ui-slot (comp/computed one (get-slot-props this :one)))
+            (ui-slot (comp/computed two (get-slot-props this :two)))
+            (ui-slot (comp/computed three (get-slot-props this :three)))
+            (ui-slot (comp/computed four (get-slot-props this :four)))
+            (ui-slot (comp/computed five (get-slot-props this :five)))))
 
 (def ui-sith-list (comp/factory SithList {:keyfn :db/id}))
 
