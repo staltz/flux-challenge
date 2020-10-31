@@ -1,5 +1,6 @@
 (ns app.view
-  (:require [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
+  (:require [com.fulcrologic.fulcro.application :as app]
+            [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
             [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.data-fetch :as df]
@@ -44,7 +45,7 @@
 (defn load-sith [query-component component where id]
   (let [load-target [:slot/by-id where :slot/sith]
         sith-ident [:sith/id id]]
-    (df/load! component sith-ident query-component {:target load-target})))
+    (df/load! component sith-ident query-component {:target load-target :abort-id :jedi})))
 
 (defsc SithSlot [this {:db/keys [id] :slot/keys [sith] :as props} {:keys [at-home?]}]
   {:query [:db/id {:slot/sith (comp/get-query Sith)}]
@@ -143,7 +144,8 @@
         master-missing? (all-sith-have-attr? siths :sith/master)
         appr-missing? (all-sith-have-attr? siths :sith/apprentice)]
     (if sith-at-home-detected?
-      (set-both-buttons component false)
+      (do ;; (app/abort! component :jedi) pathom remote doesnt support aborting requests
+        (set-both-buttons component false))
       (comp/transact! component [(set-button {:button-key :down-enabled :button-value (not appr-missing?)})
                                  (set-button {:button-key :up-enabled :button-value (not master-missing?)})]))))
 
