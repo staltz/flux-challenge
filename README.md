@@ -1,4 +1,10 @@
-# Flux Challenge
+# Project Overview
+
+<a href="https://www.loom.com/share/d19842c0cfc7492e88bb7ec54f793a48"> <p>Flux Challenge Overview - Watch Video</p> <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/d19842c0cfc7492e88bb7ec54f793a48-with-play.gif"> </a>
+
+
+
+## Flux Challenge
 
 ## Database reader of Sith lords
 

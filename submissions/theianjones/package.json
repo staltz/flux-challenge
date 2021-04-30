@@ -1,0 +1,12 @@
+{
+  "name": "theianjones",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "ijones16",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "shadow-cljs": "^2.11.5"
+  }
+}
